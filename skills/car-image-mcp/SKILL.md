@@ -1,11 +1,11 @@
 ---
 name: car-image-mcp
-description: Connect an agent or IDE to the Car Image API over MCP, and fix it when the tools do not appear. Covers the hosted HTTP server and the local stdio alternative, where the CAR_IMAGE_API_KEY goes in Claude Code, Codex, Cursor, Claude Desktop and generic MCP hosts, what each of the eight tools costs, and how to diagnose a 401, a missing server or an empty tool list. Use for setup, configuration and connection troubleshooting; do not use for calling the API from code (car-image-sdk) or for image workflows once the tools already work (car-image).
+description: Connect an agent or IDE to the Car Image API over MCP, and fix it when the tools do not appear. Covers the hosted HTTP server and the local stdio alternative, where the CAR_IMAGE_API_KEY goes in Claude Code, Codex, Cursor, Claude Desktop and generic MCP hosts, what each of the sixteen tools costs, and how to diagnose a 401, a missing server or an empty tool list. Use for setup, configuration and connection troubleshooting; do not use for calling the API from code (car-image-sdk) or for image workflows once the tools already work (car-image).
 ---
 
 # Connecting over MCP
 
-Two servers expose the same eight tools. Prefer the hosted one — there is nothing to install and nothing to keep up to date.
+Two servers expose the same sixteen tools. Prefer the hosted one — there is nothing to install and nothing to keep up to date.
 
 - **Hosted (recommended):** `https://carimage.dev/api/mcp`, Streamable HTTP, with `Authorization: Bearer $CAR_IMAGE_API_KEY`
 - **Local stdio:** `npx @meterapp/car-image mcp`, reads `CAR_IMAGE_API_KEY` or the key stored by `car-image login`
@@ -63,7 +63,7 @@ Install the plugin (`codex plugin add car-image@meterapp`) and the server comes 
 
 Most hosts expand `${CAR_IMAGE_API_KEY}` from the environment. **If yours does not, do not paste the literal key into a file you commit** — export it into the host's environment instead, or use the stdio server, which reads the stored key.
 
-## The eight tools
+## The sixteen tools
 
 | Tool | Costs |
 | --- | --- |
@@ -75,10 +75,20 @@ Most hosts expand `${CAR_IMAGE_API_KEY}` from the environment. **If yours does n
 | `get_account` | free |
 | `rate_image` | free |
 | `describe_api` | free |
+| `list_requests` | free, no key needed |
+| `request_vehicle` | free |
+| `request_feature` | free |
+| `get_request` | free, no key needed |
+| `upvote_request` | free |
+| `comment_on_request` | free |
+| `share_building` | free — private to the Car Image team |
+| `share_referral` | free — private to the Car Image team |
+
+Only the first two cost credits. The request tools file, browse and upvote vehicle and feature requests; `share_building` and `share_referral` tell the team about the user and are never published.
 
 ## Verifying
 
-Ask the host to list tools (`/mcp` in Claude Code and Codex). You should see all eight under `car-image`.
+Ask the host to list tools (`/mcp` in Claude Code and Codex). You should see all sixteen under `car-image`.
 
 A free end-to-end check that spends nothing:
 

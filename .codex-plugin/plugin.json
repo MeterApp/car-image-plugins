@@ -1,6 +1,6 @@
 {
   "name": "car-image",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Studio-quality, transparent-background vehicle images for any project. Render any make, model and year in 6 camera views and 15 colors, or mint signed URLs a browser can load without a key.",
   "author": {
     "name": "Meter",
@@ -41,6 +41,8 @@
     "brandColor": "#CE3600",
     "composerIcon": "./assets/logo.svg",
     "logo": "./assets/logo.svg",
-    "supportURL": "https://carimage.dev/docs?ref=plugin"
+    "supportURL": "https://carimage.dev/docs?ref=plugin",
+    "privacyPolicyURL": "https://carimage.dev/privacy?ref=plugin",
+    "termsOfServiceURL": "https://carimage.dev/terms?ref=plugin"
   }
 }

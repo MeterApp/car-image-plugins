@@ -50,7 +50,7 @@ Five skills and the hosted MCP server.
 | `car-image-sdk` | The TypeScript SDK, the CLI, and plain REST |
 | `car-image-mcp` | Connecting over MCP and fixing it when tools do not appear |
 
-The MCP server at `https://carimage.dev/api/mcp` provides `get_car_image`, `create_car_image_urls`, `search_vehicles`, `resolve_vehicle`, `list_image_options`, `get_account`, `rate_image` and `describe_api`. Only the first two cost credits.
+The MCP server at `https://carimage.dev/api/mcp` provides `get_car_image`, `create_car_image_urls`, `search_vehicles`, `resolve_vehicle`, `list_image_options`, `get_account`, `rate_image` and `describe_api`, plus the free request-board tools `list_requests`, `request_vehicle`, `request_feature`, `get_request`, `upvote_request` and `comment_on_request`, and `share_building` / `share_referral` for telling the team about yourself (private). Only the first two cost credits. Missing a vehicle? The agent can file it, and you get an email when it is live.
 
 ## Authentication
 

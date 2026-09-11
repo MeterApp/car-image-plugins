@@ -27,7 +27,7 @@ It reads the view and color out of the phrase too, so you usually do not need to
 
 - **High, one clear candidate** — go ahead and render.
 - **Low, or several candidates that all fit** — show the candidates and ask. Do not guess. "Civic" spans 1990 to 2027; "Mustang" could be a 1994 or a 2024; "911" has many generations.
-- **No candidates** — the vehicle is not in the catalog. Say so plainly. Do not substitute a similar car without telling the user.
+- **No candidates** — the vehicle is not in the catalog. Say so plainly, then offer to file it with `request_vehicle` (make, model, optional year and a note). It is free; the team adds requested vehicles and emails the user when it is live, and if someone already asked, the call upvotes their request instead. Do not substitute a similar car without telling the user.
 
 ## Searching and listing
 
@@ -68,4 +68,4 @@ This is the right choice when you need instant filtering, offline behavior, or h
 
 When you resolved something ambiguous, say so in one line: "Rendering the 2024 Porsche 911 (base model) — there are also Turbo and GT3 variants the catalog doesn't separate." That is the difference between a user trusting the image and being surprised by it.
 
-If the catalog does not have the vehicle, say that rather than rendering the nearest thing. A silently substituted car is worse than no image.
+If the catalog does not have the vehicle, say that rather than rendering the nearest thing, and offer `request_vehicle` so the gap gets closed. A silently substituted car is worse than no image.
