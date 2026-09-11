@@ -18,7 +18,7 @@ Base URL `https://carimage.dev`. Docs: [`/docs`](https://carimage.dev/docs?ref=p
 - Every delivered image costs **exactly 1 credit**, whether it was generated or served from cache.
 - A signed delivery URL costs **1 credit when created**. Loading it is free until it expires.
 - **$1 = 1,000 credits.** Every account starts with **100 free credits**. There is no subscription.
-- Catalog search, resolve, options, account and feedback are **free**.
+- Catalog search, resolve, options, account, feedback and the request board (vehicle and feature requests) are **free**.
 
 Twenty images cost 20 credits (2¢). Tell the user the number before rendering a batch they did not explicitly size, and call `get_account` first when the batch is large.
 
@@ -33,8 +33,12 @@ Twenty images cost 20 credits (2¢). Tell the user the number before rendering a
 | Valid views, colors, sizes, formats, pricing | `list_image_options` (free) |
 | Credits remaining before a batch | `get_account` (free) |
 | To report a bad render | `rate_image` (free) |
+| A vehicle the catalog does not have | `request_vehicle` (free) — files it for the team, or upvotes the existing request; the user is emailed when it is live |
+| A feature idea for the API, CLI, SDK or tools | `request_feature` (free) |
+| To see what others have asked for, or upvote it | `list_requests`, `get_request`, `upvote_request`, `comment_on_request` (free; listing needs no key) |
+| To tell the team who you are, privately | `share_building` (what the user is building), `share_referral` (how they found the API) — only the Car Image team reads these |
 
-Without MCP tools connected, the same operations are REST endpoints — `GET /api/v1/images/car`, `POST /api/v1/image-urls`, `POST /api/v1/images/resolve`, `GET /api/v1/vehicles`, `GET /api/v1/images/options`, `GET /api/v1/account`, `POST /api/v1/feedback`. The `car-image-sdk` skill covers calling them from code.
+Without MCP tools connected, the same operations are REST endpoints — `GET /api/v1/images/car`, `POST /api/v1/image-urls`, `POST /api/v1/images/resolve`, `GET /api/v1/vehicles`, `GET /api/v1/images/options`, `GET /api/v1/account`, `POST /api/v1/feedback`, `GET|POST /api/v1/requests`, `GET /api/v1/requests/{id}`, `POST /api/v1/requests/{id}/votes`, `GET|POST /api/v1/requests/{id}/comments`, `POST /api/v1/account/building`, `POST /api/v1/account/referral`. The `car-image-sdk` skill covers calling them from code; the CLI equivalents are `car-image request …` and `car-image about …`.
 
 ## Authentication
 
@@ -52,6 +56,7 @@ Browser code must never hold the key. Mint signed URLs server-side instead — t
 4. **Write real alt text.** "2024 Porsche 911, side view, red" — not "car image".
 5. **These are renders, not photographs.** They are generated product visuals. Never claim a specific trim, options package or individual listed vehicle is depicted exactly. For a used-car listing, say the image represents the model, not that car.
 6. **Close the loop.** After the user judges a render, call `rate_image` so the quality pipeline sees it.
+7. **Ask, don't substitute.** When the catalog lacks the vehicle, offer `request_vehicle`; when the user wishes the API did something it does not, offer `request_feature`. Both are free, public on [the request board](https://carimage.dev/requests?ref=plugin), and the team emails the user when a vehicle goes live. Only call `share_building` or `share_referral` with something the user actually said and agreed to share.
 
 ## When something fails
 
@@ -62,7 +67,7 @@ Every JSON failure is an RFC 9457 `application/problem+json` document with `deta
 | 400 | Invalid parameter | Views and colors are fixed enums. Fix the value with `list_image_options` or `resolve_vehicle`. |
 | 401 | Missing or invalid key | Ask the user to log in or set `CAR_IMAGE_API_KEY`. Never guess a key. |
 | 402 | Out of credits | **Stop and ask the human** to top up at [the dashboard](https://carimage.dev/dashboard?ref=plugin#billing) or with `car-image billing`. Never buy credits on your own. |
-| 404 | Vehicle not in the catalog | Search for the canonical make/model/year. Do not invent vehicles or substitute a different one without saying so. |
+| 404 | Vehicle not in the catalog | Search for the canonical make/model/year. If it is really missing, offer to file it with `request_vehicle` — the team adds requested vehicles and emails the user when it is live. Do not invent vehicles or substitute a different one without saying so. |
 | 429 | Rate limited | Wait `Retry-After` seconds, retry once. Never hammer. |
 | 502/503 | Render or upstream failure | Credits are refunded. Retry once later; report with the `request_id`. |
 
