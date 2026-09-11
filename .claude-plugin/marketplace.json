@@ -1,0 +1,18 @@
+{
+  "$schema": "https://code.claude.com/schemas/marketplace.json",
+  "name": "meterapp",
+  "owner": {
+    "name": "Meter",
+    "email": "hello@meterapp.co",
+    "url": "https://meterapp.co"
+  },
+  "description": "Plugins by Meter. Car Image API: studio-quality, transparent-background vehicle renders for agents, apps and browsers.",
+  "plugins": [
+    {
+      "name": "car-image",
+      "source": "./",
+      "description": "Studio-quality, transparent-background vehicle images for any project. Five skills plus the hosted MCP server: render any make, model and year in 6 views and 15 colors, mint signed URLs a browser can load without a key, and resolve free text to exact parameters.",
+      "category": "productivity"
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "name": "car-image",
+  "version": "1.0.0",
+  "description": "Studio-quality, transparent-background vehicle images for any project. Render any make, model and year in 6 camera views and 15 colors, or mint signed URLs a browser can load without a key.",
+  "author": {
+    "name": "Meter",
+    "email": "hello@meterapp.co",
+    "url": "https://meterapp.co"
+  },
+  "homepage": "https://carimage.dev/docs?ref=plugin",
+  "repository": "https://github.com/MeterApp/car-image-plugins",
+  "license": "MIT",
+  "keywords": [
+    "car",
+    "vehicle",
+    "image",
+    "render",
+    "automotive",
+    "mcp",
+    "png",
+    "transparent"
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "Car Image API",
+    "shortDescription": "Transparent-background car images for any project",
+    "longDescription": "Drop a real vehicle into whatever you are building. Ask for any make, model and year from 1990 to 2027 and get a studio-quality render on a transparent background, in six camera views and fifteen colors. For web pages and emails, mint signed URLs that load without exposing your API key. One credit per image, $1 buys 1,000, and every account starts with 100 free.",
+    "developerName": "Meter",
+    "category": "Productivity",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://carimage.dev",
+    "defaultPrompt": [
+      "Add a red 2024 Porsche 911 side view to the hero section.",
+      "Build a comparison page with front-3/4 renders of the 2023 Toyota RAV4, Honda CR-V and Mazda CX-5.",
+      "How many credits do I have left, and what does a batch of 40 images cost?"
+    ],
+    "brandColor": "#CE3600",
+    "composerIcon": "./assets/logo.svg",
+    "logo": "./assets/logo.svg",
+    "supportURL": "https://carimage.dev/docs?ref=plugin"
+  }
+}

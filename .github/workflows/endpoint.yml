@@ -1,0 +1,37 @@
+name: Endpoint reachable
+
+# The manifests hard-code one hosted MCP URL. If it moves or breaks, every
+# install silently stops working, so check it on a schedule rather than waiting
+# for a bug report.
+on:
+  schedule:
+    - cron: "41 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  mcp:
+    name: MCP endpoint
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: The URL in .mcp.json answers
+        run: |
+          url="$(node -p "require('./.mcp.json').mcpServers['car-image'].url")"
+          echo "checking $url"
+          # No key here, so 401 is the healthy answer: the server is up and
+          # demanding authentication. Anything 5xx, or no answer, is an outage.
+          status="$(curl -sS -o /dev/null -w '%{http_code}' -X POST "$url" \
+            -H 'Content-Type: application/json' \
+            -H 'Accept: application/json, text/event-stream' \
+            -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}' || echo 000)"
+          echo "status $status"
+          case "$status" in
+            401|403) echo "endpoint is up and requires auth, as expected" ;;
+            200) echo "endpoint answered unauthenticated; surprising but up" ;;
+            *) echo "unexpected status $status" >&2; exit 1 ;;
+          esac

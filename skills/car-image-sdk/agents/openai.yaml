@@ -1,0 +1,6 @@
+interface:
+  display_name: "Car Image SDK & CLI"
+  short_description: "Call the Car Image API from code"
+  default_prompt: "Use $car-image-sdk to write code against the Car Image API."
+policy:
+  allow_implicit_invocation: true

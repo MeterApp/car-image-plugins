@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "car-image",
+  "displayName": "Car Image API",
+  "version": "1.0.0",
+  "description": "Studio-quality, transparent-background vehicle images for any project. Render any make, model and year in 6 camera views and 15 colors, or mint signed URLs a browser can load without a key.",
+  "author": {
+    "name": "Meter",
+    "email": "hello@meterapp.co",
+    "url": "https://meterapp.co"
+  },
+  "homepage": "https://carimage.dev/docs?ref=plugin",
+  "repository": "https://github.com/MeterApp/car-image-plugins",
+  "license": "MIT",
+  "keywords": ["car", "vehicle", "image", "render", "automotive", "mcp", "png", "transparent"]
+}

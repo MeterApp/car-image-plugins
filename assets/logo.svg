@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Car Image API">
+  <rect width="64" height="64" rx="14" fill="#CE3600"/>
+  <g fill="none" stroke="#FFFFFF" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M14 39.5v-5.2c0-1.6.9-3 2.3-3.7l4.1-2 3.8-7.1c.9-1.6 2.5-2.6 4.4-2.6h12.6c1.8 0 3.5 1 4.4 2.6l3.6 6.7 4.2 1.6c1.6.6 2.6 2.1 2.6 3.8v5.9"/>
+    <path d="M20.7 28.1h28.2M14 39.5h42.1"/>
+    <circle cx="22.4" cy="43.1" r="4.6"/>
+    <circle cx="47.7" cy="43.1" r="4.6"/>
+  </g>
+</svg>
