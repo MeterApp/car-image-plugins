@@ -2,7 +2,7 @@
 
 Studio-quality, transparent-background renders of any vehicle, wherever your agent works. One repository, native packaging for each client, plus the vendor-neutral [Open Plugins](https://agent-plugins.org) manifest.
 
-Any make, model and year from **1990 to 2027** — 1,599 makes and 44,254 models from the open [`@meterapp/vehicle-db`](https://github.com/MeterApp/vehicle-db) catalog. Six camera views, fifteen colors, PNG/WebP/JPG up to 1024 px.
+Any make, model and year from **1990 to 2027** — 1,599 makes and 44,254 models from the open [`@meterapp/vehicle-db`](https://github.com/MeterApp/vehicle-db) catalog. Six camera views, fifteen colors, PNG/WebP/JPG up to 1024 px, delivered at any width × height (`fit` contain, cover or inside), transparent or on a solid background, optionally trimmed to the car.
 
 **1 credit per image · $1 = 1,000 credits · 100 free credits · no subscription.**
 
@@ -50,13 +50,13 @@ Five skills and the hosted MCP server.
 | `car-image-sdk` | The TypeScript SDK, the CLI, and plain REST |
 | `car-image-mcp` | Connecting over MCP and fixing it when tools do not appear |
 
-The MCP server at `https://carimage.dev/api/mcp` provides `get_car_image`, `create_car_image_urls`, `search_vehicles`, `resolve_vehicle`, `list_image_options`, `get_account`, `rate_image` and `describe_api`, plus the free request-board tools `list_requests`, `request_vehicle`, `request_feature`, `get_request`, `upvote_request` and `comment_on_request`, and `share_building` / `share_referral` for telling the team about yourself (private). Only the first two cost credits. Missing a vehicle? The agent can file it, and you get an email when it is live.
+The hosted MCP server at `https://carimage.dev/api/mcp` exposes eight core tools: `get_car_image`, `create_car_image_urls`, `search_vehicles`, `resolve_vehicle`, `list_image_options`, `get_account`, `rate_image` and `describe_api`. Only the first two cost credits. This plugin connects to `https://carimage.dev/api/mcp?toolset=all`, which adds the free request-board tools `list_requests`, `request_vehicle`, `request_feature`, `get_request`, `upvote_request` and `comment_on_request`, and `share_building` / `share_referral` for telling the team about yourself (private) — sixteen tools in all, because the skills teach them. Missing a vehicle? The agent can file it, and you get an email when it is live.
 
 ## Authentication
 
 | Surface | Credential |
 | --- | --- |
-| Hosted MCP | `Authorization: Bearer $CAR_IMAGE_API_KEY` |
+| Hosted MCP (`/api/mcp`, or `/api/mcp?toolset=all` for the request board) | `Authorization: Bearer $CAR_IMAGE_API_KEY` |
 | SDK and CLI | `CAR_IMAGE_API_KEY`, or the key stored by `car-image login` |
 | Browsers | **Never a key** — signed delivery URLs only |
 

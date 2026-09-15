@@ -19,9 +19,10 @@ Only a `200` that delivers an image or mints signed URLs costs credits. Every er
 
 | Status | Cause | Action |
 | --- | --- | --- |
-| 400 | Unknown or repeated query parameter, `make` and `brand` together, a color outside the 15 presets, a size above 1024, malformed JSON, an empty `query`. | Fix it and retry once. Retrying unchanged always fails. Batch problems carry `index` for the offending item; `list_image_options` lists every valid value. |
+| 400 | Unknown or repeated query parameter, `make` and `brand` together, a color outside the 15 presets, a dimension above 1024, an unknown `fit` or `format`, an unparseable `background`, `background=transparent` with `jpg`, `padding` without `trim` or above 50, a malformed `Idempotency-Key`, malformed JSON, an empty `query`. | Fix it and retry once. Retrying unchanged always fails. Batch problems carry `index` for the offending item; `list_image_options` lists every valid value, including the fit modes, background vocabulary and padding ceiling. |
 | 404 | The make/model/year is not in the catalog, `mode=cached` asked for a variant never rendered, or feedback referenced a request that delivered no image. | Search the catalog for the canonical slugs (`vehicle-catalog` skill). Do not retry unchanged, and do not silently substitute a different vehicle. |
 | 413 | Body too large: 64 KiB for `POST /api/v1/image-urls`, 8 KiB for feedback, 4 KiB for resolve. | Split into batches of at most 50 images. |
+| 422 | The `Idempotency-Key` on `POST /api/v1/image-urls` was already used, within the last 24 hours, for a different body. | Send a new key for a new request, or the identical body to replay the earlier response. Nothing was charged. |
 
 ## Stop and involve the human
 
@@ -36,6 +37,7 @@ Only a `200` that delivers an image or mints signed URLs costs credits. Every er
 
 | Status | Cause | Action |
 | --- | --- | --- |
+| 409 | A `POST /api/v1/image-urls` with the same `Idempotency-Key` is still being processed. | Wait the seconds in `Retry-After`, then repeat the identical request: you receive the first request's response, marked `Idempotent-Replayed: true`, and pay nothing more. |
 | 429 | Rate limited — 120 requests per minute per key by default. `RateLimit-Limit`, `RateLimit-Remaining` and `RateLimit-Reset` are on every authenticated response. | Wait the integer seconds in `Retry-After`, then retry with exponential backoff and jitter. Never hammer. |
 | 500 | Unexpected server failure. Nothing was charged. | Retry once with backoff. Include the `request_id` when reporting. |
 | 502 | The render failed. The credit was refunded. | Check the `code` extension member first — see below. |

@@ -13,20 +13,21 @@ Both lookups below are **free**. Use them liberally.
 
 ## Free text in, parameters out
 
-`resolve_vehicle` (REST: `POST /api/v1/images/resolve`) takes a phrase and returns `params`, `candidates` and a `confidence` between 0 and 1.
+`resolve_vehicle` (REST: `POST /api/v1/images/resolve`) takes a phrase and returns `params`, `candidates` and a `confidence` of `high`, `medium` or `low`.
 
 ```
 "red 2024 porsche 911 side view"
   → params: { make: "Porsche", model: "911", year: 2024, view: "side", color: "red" }
-    confidence: 0.97
+    confidence: "high"
 ```
 
 It reads the view and color out of the phrase too, so you usually do not need to parse anything yourself.
 
 **Act on confidence:**
 
-- **High, one clear candidate** — go ahead and render.
-- **Low, or several candidates that all fit** — show the candidates and ask. Do not guess. "Civic" spans 1990 to 2027; "Mustang" could be a 1994 or a 2024; "911" has many generations.
+- **`high`, one clear candidate** — go ahead and render.
+- **`medium`** — render, but say in one line which vehicle you chose and why, so the user can correct you before the next credit.
+- **`low`, or several candidates that all fit** — show the candidates and ask. Do not guess. "Civic" spans 1990 to 2027; "Mustang" could be a 1994 or a 2024; "911" has many generations.
 - **No candidates** — the vehicle is not in the catalog. Say so plainly, then offer to file it with `request_vehicle` (make, model, optional year and a note). It is free; the team adds requested vehicles and emails the user when it is live, and if someone already asked, the call upvotes their request instead. Do not substitute a similar car without telling the user.
 
 ## Searching and listing

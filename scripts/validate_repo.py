@@ -21,6 +21,11 @@ ERRORS: list[str] = []
 PLUGIN_NAME = "car-image"
 MARKETPLACE_NAME = "meterapp"
 MCP_URL = "https://carimage.dev/api/mcp"
+# The hosted server exposes the eight core tools by default. The skills teach
+# the request board too (request_vehicle, upvote_request, ...), so the plugin
+# connects with the full toolset; without the query those tools do not exist
+# for the agent and the skills would name tools the host cannot see.
+PLUGIN_MCP_URL = f"{MCP_URL}?toolset=all"
 ORIGIN = "https://carimage.dev"
 # The server repository is private: a link there 404s for everyone outside the
 # org, and `/plugin marketplace add` of a private repo simply fails. Assembled
@@ -118,11 +123,21 @@ if len(agents_plugins) != 1 or agents_plugins[0].get("name") != PLUGIN_NAME:
 server = load_json(".mcp.json").get("mcpServers", {}).get(PLUGIN_NAME, {})
 expected = {
     "type": "http",
-    "url": MCP_URL,
+    "url": PLUGIN_MCP_URL,
     "headers": {"Authorization": "Bearer ${CAR_IMAGE_API_KEY}"},
 }
 if server != expected:
     error(f".mcp.json must configure the hosted server exactly as {expected}, got {server}")
+
+# The setup skill documents both toolsets; a skill that still promises
+# "sixteen tools" on the bare URL sends users to a server with eight.
+mcp_skill = ROOT / "skills" / "car-image-mcp" / "SKILL.md"
+if mcp_skill.is_file():
+    mcp_text = mcp_skill.read_text(encoding="utf-8")
+    if "?toolset=all" not in mcp_text or "--toolset all" not in mcp_text:
+        error("car-image-mcp: must explain ?toolset=all (hosted) and --toolset all (stdio)")
+    if re.search(r"same sixteen tools", mcp_text):
+        error("car-image-mcp: the bare hosted URL exposes eight core tools, not sixteen")
 
 # --- skills ----------------------------------------------------------------
 

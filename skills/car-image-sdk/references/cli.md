@@ -22,22 +22,36 @@ car-image logout
 
 | Command | What it does |
 | --- | --- |
-| `get --make --model --year [--view] [--color] [--size\|--width --height] [--format] [--out file\|-] [--url] [--json]` | Downloads one image (1 credit). `--out -` writes to stdout. `--url` prints a signed URL instead. |
-| `url --make … [--ttl 3600] [--max-uses 0] [--batch file.json] [--json]` | Creates signed delivery URLs (1 credit each, up to 50 per batch). |
-| `resolve <free text…>` | Free text → parameters, candidates, confidence, and a ready-to-run `car-image get …`. Free. |
+| `get --make --model --year [--view] [--color] [--size \| --width [--height] [--fit contain\|cover\|inside]] [--background transparent\|white\|black\|<hex>] [--trim [--padding 0-50]] [--format png\|webp\|jpg\|auto] [--out file\|-] [--url] [--json]` | Downloads one image (1 credit). `--out -` writes to stdout. `--url` prints a signed URL instead. See "Sizing" below. |
+| `url --make … [same sizing flags] [--ttl 3600] [--max-uses 0] [--renew [--renew-days 365]] [--idempotency-key <key>] [--json]` | Creates one signed delivery URL (1 credit). `--renew` keeps it alive past the TTL at 1 credit per opened window. |
+| `url --batch file.json [--ttl 3600] [--max-uses 0] [--renew [--renew-days 365]] [--idempotency-key <key>] [--json]` | Up to 50 signed URLs in one call (1 credit each). Entries may carry `view`, `color`, `size`, `width`, `height`, `fit`, `background`, `trim`, `padding`, `format`. |
+| `resolve <free text…>` | Free text → parameters, candidates, confidence (`high`, `medium` or `low`), and a ready-to-run `car-image get …`. Free. |
 | `search <query…> [--limit] [--year]` | Fuzzy catalog search. Free, no key required. |
-| `options` | Views with yaw angles, colors with hex, sizes, formats, pricing, catalog coverage. Free. |
+| `options` | Views with yaw angles, colors with hex, sizes, fit modes, backgrounds, trim limits, formats, pricing, catalog coverage. Free. |
 | `describe [operationId\|path\|all] [--json]` | Explains any REST endpoint from `/openapi.json`: parameters, enums, defaults, response headers, error codes. |
 | `feedback (--request-id ID \| --make … --year …) (--rating 1-5 \| --good \| --bad) [--reason]` | Rates a delivered image. Free. |
 | `doctor [--json] [--yes] [--no-image]` | Smoke-tests every endpoint with status, latency, cache state and fix hints. Exit 1 on any failure. |
 | `billing [--credits …] [--portal]` | Opens hosted Stripe Checkout or the billing portal. The CLI never touches card data. |
-| `mcp` | Runs the stdio MCP server. |
-| `agent-config [--host claude-code\|claude-desktop\|cursor\|chatgpt\|generic] [--remote] [--json]` | Prints ready-to-paste MCP configuration. |
+| `mcp [--toolset core\|all]` | Runs the stdio MCP server: `core` (default) is the eight image tools, `all` adds the request board. |
+| `agent-config [--host claude-code\|claude-desktop\|cursor\|chatgpt\|generic] [--remote] [--json]` | Prints ready-to-paste MCP configuration (core toolset, with the `?toolset=all` opt-in noted). |
 | `config path \| get <key> \| set <key> <value> \| list` | Keys: `autoUpdate`, `telemetry`, `baseUrl`. |
 
 Global flags: `--json`, `--quiet`, `--base-url`, `--api-key`, `--no-color`, `-h`, `-v`.
 Environment: `CAR_IMAGE_API_KEY`, `CAR_IMAGE_API_URL`, `CAR_IMAGE_CONFIG`, `CAR_IMAGE_TELEMETRY=0`.
 Exit codes: `0` ok, `1` failure, `2` usage error.
+
+## Sizing
+
+`get`, `url` and every `--batch` entry share the sizing options. `--width`/`--height` are 1–1024 px; one keeps the aspect ratio, both together return exactly that box (`--width 600 --height 400` is 600×400, no longer a square), placed by `--fit contain` (default: whole car, padded), `cover` (fill and centre-crop) or `inside` (may return a smaller image). `--trim` crops to the car's own bounds before sizing so it fills a non-square slot; `--padding 0-50` keeps a margin (percent of the car's longer side) and only applies with `--trim`. `--background` is `transparent` (default), `white`, `black` or hex (`rrggbb`, `#rrggbb`, `rgb`, `#rgb`); it flattens PNG and WebP too, and `jpg` defaults to white. `--format auto` lets each client negotiate WebP or PNG from its `Accept` header — on a signed URL, on every load. Nothing is upscaled past 1024.
+
+```bash
+car-image get --make Porsche --model 911 --year 2024 --view side --width 1024 --height 512 --trim --padding 6 --out hero.png
+car-image url --make Porsche --model 911 --year 2024 --width 600 --height 338 --trim --format auto --ttl 604800
+```
+
+A batch file is an array (or `{"images": [...]}`) of 1–50 entries such as `{ "make": "Toyota", "model": "RAV4", "year": 2023, "width": 512, "height": 320, "trim": true, "padding": 5, "background": "white", "format": "webp" }`.
+
+`url` sends an `Idempotency-Key` on every call — generated, or `--idempotency-key <key>` (1–255 characters of letters, digits, `.` `_` `:` `-`). The same key with the same request within 24 hours replays the first response (`Idempotent-Replayed: true`) instead of billing again; a different request under the same key is a `422`, and a retry that overtakes the first request still running is a `409` with `Retry-After`. Choose the key yourself when a job queue or a rerun may repeat the command.
 
 ## Scripting
 

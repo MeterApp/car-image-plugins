@@ -2,7 +2,7 @@
   "mcpServers": {
     "car-image": {
       "type": "http",
-      "url": "https://carimage.dev/api/mcp",
+      "url": "https://carimage.dev/api/mcp?toolset=all",
       "headers": {
         "Authorization": "Bearer ${CAR_IMAGE_API_KEY}"
       }

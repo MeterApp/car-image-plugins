@@ -25,19 +25,21 @@ npm install @meterapp/car-image-sdk
 import { CarImageClient } from "@meterapp/car-image-sdk";
 
 const client = new CarImageClient({ apiKey: process.env.CAR_IMAGE_API_KEY });
-const image = await client.getImage({ make: "Porsche", model: "911", year: 2024, view: "side", color: "red" });
+const image = await client.getImage({ make: "Porsche", model: "911", year: 2024, view: "side", color: "red", width: 800, height: 450, trim: true });
 // image.bytes, image.source ("cache" | "generated"), image.creditsCharged, image.creditsRemaining, image.requestId
 ```
 
 Zero runtime dependencies. `apiKey` and `baseUrl` fall back to `CAR_IMAGE_API_KEY` and `CAR_IMAGE_API_URL` on a server. Retries on `429` and `503` with full jitter, honoring `Retry-After`, are built in — **and it never retries a `402`**, because being out of credits is not a transient failure.
 
+`ImageParams` takes the vehicle, `view`, `color`, and the sizing options: `size` (`thumb|small|medium|large`) or `width`/`height` (1–1024; both together return exactly that box), `fit` (`contain` default, `cover`, `inside`), `background` (`transparent` default, `white`, `black` or hex), `trim` with `padding` (0–50 %), and `format` (`png`, `webp`, `jpg`, `auto`). The `car-image` skill explains when to use which.
+
 ## The CLI in one line
 
 ```bash
-npx @meterapp/car-image get --make Porsche --model 911 --year 2024 --view side --color red --out porsche.png
+npx @meterapp/car-image get --make Porsche --model 911 --year 2024 --view side --color red --width 800 --height 450 --trim --out porsche.png
 ```
 
-`car-image login` does a browser device flow and stores the key with mode `0600`. `car-image doctor` smoke-tests every endpoint and tells you what is wrong. `car-image resolve <free text>` prints the parameters and a ready-to-run command.
+`car-image login` does a browser device flow and stores the key with mode `0600`. `car-image doctor` smoke-tests every endpoint and tells you what is wrong. `car-image resolve <free text>` prints the parameters and a ready-to-run command. `get` and `url` take `--fit`, `--background`, `--trim [--padding 0-50]` and `--format png|webp|jpg|auto`; `url` also takes `--idempotency-key`.
 
 ## Errors are typed
 
@@ -74,6 +76,8 @@ try {
 - Never write a retry loop around a `402`.
 
 **Batch what can be batched.** `createImageUrls` takes up to 50 images in one call. Fifty separate calls cost the same credits but waste time and rate limit.
+
+**Retries of a paid `POST` are already safe.** `createImageUrls` sends an `Idempotency-Key` (`sdk_<uuid>`) with every call, so the SDK's own retry after a dropped connection replays the first response instead of minting and billing again. When the retry may come from another process — a job queue, a cron, a rebuilt page — pass `{ idempotencyKey }` yourself (1–255 characters of letters, digits, `.` `_` `:` `-`): the server replays the same key with the same body for 24 hours (`Idempotent-Replayed: true`), answers `422` to the same key with a different body, and `409` with `Retry-After` while the first request is still running. Over plain REST, set the header on `POST /api/v1/image-urls`.
 
 **Respect the rate limit.** 120 requests per minute per key by default. In a bulk job, run a small concurrency (4-8) rather than firing everything at once, and let the SDK's backoff handle `429`.
 
@@ -123,6 +127,11 @@ Checks the budget first, skips finished work, stops dead on `402`, and reports w
 curl --fail-with-body -H "Authorization: Bearer $CAR_IMAGE_API_KEY" \
   "https://carimage.dev/api/v1/images/car?make=porsche&model=911&year=2024&view=front-3-4&color=red&size=medium&format=webp" \
   --output porsche-911.webp
+
+# Exactly 600×400, car trimmed to fill the box, on a light grey background (hex without the #)
+curl --fail-with-body -H "Authorization: Bearer $CAR_IMAGE_API_KEY" \
+  "https://carimage.dev/api/v1/images/car?make=porsche&model=911&year=2024&view=side&w=600&h=400&trim=1&padding=6&background=f4f4f4" \
+  --output porsche-911-600x400.png
 ```
 
-Response headers carry `X-Credits-Charged`, `X-Credits-Remaining`, `X-Image-Source` (`cache` or `generated`) and `X-Request-Id`. The machine-readable contract is [`/openapi.json`](https://carimage.dev/openapi.json); `car-image describe <operationId>` explains any endpoint from it.
+The query spells the dimensions `w` and `h` (1–1024), with `fit=contain|cover|inside` (default `contain`), `background=transparent|white|black|<hex>`, `trim=1` with `padding=0-50`, and `format=png|webp|jpg|auto` (`auto` answers with `Vary: Accept`). Response headers carry `X-Credits-Charged`, `X-Credits-Remaining`, `X-Image-Source` (`cache` or `generated`), `X-Image-Width`, `X-Image-Height` and `X-Request-Id`. The machine-readable contract is [`/openapi.json`](https://carimage.dev/openapi.json); `car-image describe <operationId>` explains any endpoint from it.

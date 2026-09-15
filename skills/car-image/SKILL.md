@@ -9,7 +9,8 @@ Studio-quality, transparent-background renders of any vehicle in the open [`@met
 
 - **Views:** `front`, `front-3-4`, `side`, `side-right`, `rear`, `rear-3-4`
 - **Colors:** `white black gray silver blue red green brown beige tan orange yellow gold burgundy purple`
-- **Formats:** `png` (transparent), `webp`, `jpg`, up to 1024 px (`size=thumb|small|medium|large` = 256/512/768/1024)
+- **Formats:** `png` (transparent), `webp`, `jpg`, or `auto` (WebP or PNG negotiated from `Accept`), up to 1024 px
+- **Sizing:** `size=thumb|small|medium|large` (256/512/768/1024), or `width`/`height` 1–1024 — both together return exactly that box, placed by `fit=contain|cover|inside`; `trim` crops to the car first; `background` flattens onto a solid color. See [Getting the size right](#getting-the-size-right).
 
 Base URL `https://carimage.dev`. Docs: [`/docs`](https://carimage.dev/docs?ref=plugin), [`/agents.md`](https://carimage.dev/agents.md), [`/openapi.json`](https://carimage.dev/openapi.json).
 
@@ -38,7 +39,24 @@ Twenty images cost 20 credits (2¢). Tell the user the number before rendering a
 | To see what others have asked for, or upvote it | `list_requests`, `get_request`, `upvote_request`, `comment_on_request` (free; listing needs no key) |
 | To tell the team who you are, privately | `share_building` (what the user is building), `share_referral` (how they found the API) — only the Car Image team reads these |
 
+The rows from `request_vehicle` down exist only when the server was connected with `?toolset=all` (the plugin does this) or `car-image mcp --toolset all`; a bare `https://carimage.dev/api/mcp` exposes the eight core tools above them. The `car-image-mcp` skill explains both.
+
 Without MCP tools connected, the same operations are REST endpoints — `GET /api/v1/images/car`, `POST /api/v1/image-urls`, `POST /api/v1/images/resolve`, `GET /api/v1/vehicles`, `GET /api/v1/images/options`, `GET /api/v1/account`, `POST /api/v1/feedback`, `GET|POST /api/v1/requests`, `GET /api/v1/requests/{id}`, `POST /api/v1/requests/{id}/votes`, `GET|POST /api/v1/requests/{id}/comments`, `POST /api/v1/account/building`, `POST /api/v1/account/referral`. The `car-image-sdk` skill covers calling them from code; the CLI equivalents are `car-image request …` and `car-image about …`.
+
+## Getting the size right
+
+`get_car_image` and each `create_car_image_urls` entry take the same sizing inputs as the REST endpoints. The source render is square; nothing is upscaled past 1024 px.
+
+| Input | Values | Use it when |
+| --- | --- | --- |
+| `size` | `thumb` 256, `small` 512, `medium` 768, `large` 1024 | A square is fine. |
+| `width`, `height` | 1–1024 px each | The layout has a box. One dimension keeps the aspect ratio; both together return exactly `width`×`height` (600×400 is 600×400, no longer a 400×400 square). |
+| `fit` | `contain` (default), `cover`, `inside` | Only matters with both dimensions. `contain` keeps the whole car and pads with transparency or the `background`; `cover` fills the box and centre-crops; `inside` keeps the car within the box and may return a smaller image (the old behaviour). |
+| `trim`, `padding` | `true`; 0–50 | The slot is not square. `trim` crops to the car's alpha bounds before sizing so it fills the box instead of floating in the square source frame; `padding` keeps a margin, as a percentage of the car's longer side, and only applies with `trim`. |
+| `background` | `transparent` (default), `white`, `black`, hex as `rrggbb`, `#rrggbb`, `rgb` or `#rgb` | The surface cannot show transparency or wants a flat color. A solid background flattens PNG and WebP too; `jpg` cannot be transparent and defaults to white. |
+| `format` | `png` (default), `webp`, `jpg`, `auto` | `auto` negotiates WebP or PNG from each client's `Accept` header (`Vary: Accept`); a signed URL created with `auto` negotiates on every load. |
+
+A 16:9 hero: `width: 1024, height: 576, trim: true, padding: 6`. A thumbnail on a grey card: `size: "thumb", background: "#f4f4f4"`. The same vehicle, view and color is one render however it is sized, so different boxes of the same car stay fast.
 
 ## Authentication
 
@@ -51,7 +69,7 @@ Browser code must never hold the key. Mint signed URLs server-side instead — t
 ## Work the user can trust
 
 1. **Resolve before you spend.** When the request is free text, resolve it first. Rendering the wrong vehicle still costs a credit.
-2. **Ask when it is ambiguous.** If `confidence` is low or several candidates fit, show the candidates and let the user pick. "Civic" spans four decades.
+2. **Ask when it is ambiguous.** `confidence` is `high`, `medium` or `low`. On `low`, or when several candidates fit, show the candidates and let the user pick; on `medium`, say in one line which vehicle you chose. "Civic" spans four decades.
 3. **Reuse parameters.** Identical make/model/year/view/color hits the cache, so repeated requests stay cheap and fast.
 4. **Write real alt text.** "2024 Porsche 911, side view, red" — not "car image".
 5. **These are renders, not photographs.** They are generated product visuals. Never claim a specific trim, options package or individual listed vehicle is depicted exactly. For a used-car listing, say the image represents the model, not that car.
@@ -64,7 +82,7 @@ Every JSON failure is an RFC 9457 `application/problem+json` document with `deta
 
 | Status | Meaning | Do |
 | --- | --- | --- |
-| 400 | Invalid parameter | Views and colors are fixed enums. Fix the value with `list_image_options` or `resolve_vehicle`. |
+| 400 | Invalid parameter | Views, colors, `fit` and `format` are fixed enums; `padding` needs `trim`; `jpg` cannot be `transparent`; dimensions stop at 1024. Fix the value with `list_image_options` or `resolve_vehicle`. |
 | 401 | Missing or invalid key | Ask the user to log in or set `CAR_IMAGE_API_KEY`. Never guess a key. |
 | 402 | Out of credits | **Stop and ask the human** to top up at [the dashboard](https://carimage.dev/dashboard?ref=plugin#billing) or with `car-image billing`. Never buy credits on your own. |
 | 404 | Vehicle not in the catalog | Search for the canonical make/model/year. If it is really missing, offer to file it with `request_vehicle` — the team adds requested vehicles and emails the user when it is live. Do not invent vehicles or substitute a different one without saying so. |

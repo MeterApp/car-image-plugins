@@ -25,18 +25,20 @@ Construct it once per process, at module scope. It holds no connection state, so
 | --- | --- | --- |
 | `getImage(params, options?)` | `ImageResult` — `bytes`, `contentType`, `width`, `height`, `creditsCharged`, `creditsRemaining`, `source`, `etag`, `requestId` | 1 credit |
 | `getImageUrl(params, options?)` | One signed delivery URL | 1 credit |
-| `createImageUrls(images, { ttlSeconds, maxUses }?)` | `data[]` of `{ id, url, expires_at, max_uses, … }` — 1 to 50 images | 1 credit per URL |
-| `resolve(query, options?)` | `data.params`, `candidates`, `confidence` | free |
+| `createImageUrls(images, { ttlSeconds, maxUses, renew, renewDays, idempotencyKey }?)` | `data[]` of `{ id, url, expires_at, max_uses, renews_until, … }` — 1 to 50 images; `renew: true` keeps a URL alive past the TTL at 1 credit per opened window (email, CMS, PDFs); an `Idempotency-Key` (generated unless `idempotencyKey` is given) makes a retry replay instead of re-bill | 1 credit per URL, plus 1 per opened renewal window |
+| `resolve(query, options?)` | `data.params`, `candidates`, `confidence` (`"high"`, `"medium"` or `"low"`) | free |
 | `searchVehicles(query, options?)` | Canonical makes, models and available years | free |
 | `vehicles(filter?, options?)` | Years, or makes for a year, or models for a year and make | free |
-| `options(options?)` | Views with yaw angles, colors with hex, sizes, formats, pricing | free |
+| `options(options?)` | Views with yaw angles, colors with hex, sizes, fit modes (`fits`, `default_fit`), `backgrounds`, `trim` limits, formats, pricing | free |
 | `account(options?)` | `data.credits`, `auto_reload`, `has_payment_method`, `pricing`, `usage_30d`, `key.scopes` | free |
 | `feedback(input, options?)` | Acknowledgement | free |
 | `health(options?)` / `openapi(options?)` | Service status / the OpenAPI document | free |
 
 `vehicles()` is overloaded: no filter returns years, `{ year }` returns makes, `{ year, makeId }` returns models.
 
-`ImageParams`: `make`, `model`, `year`, and optionally `view`, `color`, `size` (`thumb|small|medium|large`) or `width`/`height` up to 1024, and `format` (`png|webp|jpg`).
+`ImageParams`: `make`, `model`, `year`, and optionally `view`, `color`, `size` (`thumb|small|medium|large`) or `width`/`height` (1–1024 each), `fit` (`contain` default, `cover`, `inside` — only matters with both dimensions, which return exactly `width`×`height`), `background` (`transparent` default, `white`, `black`, or hex as `rrggbb`, `#rrggbb`, `rgb`, `#rgb`; `jpg` defaults to white), `trim` (crop to the car's bounds before sizing) with `padding` (0–50 % of its longer side, only with `trim`), and `format` (`png|webp|jpg|auto`; `auto` negotiates WebP or PNG from `Accept`). `assertImageParams` throws before any request for dimensions outside 1–1024 or a `padding` without `trim`. The constants `FITS`, `REQUEST_FORMATS`, `MAX_DIMENSION` and `MAX_PADDING_PERCENT` are exported for validation and UI.
+
+Retrying `createImageUrls` is safe by construction: every call carries an `Idempotency-Key` (`sdk_<uuid>`), so a `POST` whose connection dropped is retried like a `GET` and the server replays the first answer rather than minting again. Pass `idempotencyKey` yourself when the retry may come from another process; the server keeps a key for 24 hours, answers `422` to the same key with a different body and `409` (`Retry-After`) while the original is still running.
 
 ## Errors
 
@@ -95,3 +97,5 @@ The SDK is `fetch`-based with no Node built-ins, so it runs unchanged on Vercel 
 ## MCP tool definitions
 
 `@meterapp/car-image-sdk/mcp` exports the shared tool definitions used by both the hosted and the stdio MCP servers — names, descriptions, JSON schemas and annotations. Import them if you are building your own agent surface and want the tool contracts to match the official ones exactly.
+
+Tools come in two sets: `MCP_TOOLSETS.core` (`DEFAULT_MCP_TOOLSET`, `"core"`) is the eight image tools and `MCP_TOOLSETS.all` adds the eight request-board tools; `McpToolset` is the type, `isMcpToolset(value)` validates a name from a URL or flag, and `mcpInstructions(toolset)` returns the server instructions for either set. The hosted server serves `core` at `https://carimage.dev/api/mcp` and `all` at `https://carimage.dev/api/mcp?toolset=all`; the stdio server takes `car-image mcp --toolset all`.
