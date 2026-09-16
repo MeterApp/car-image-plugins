@@ -21,7 +21,7 @@ ERRORS: list[str] = []
 PLUGIN_NAME = "car-image"
 MARKETPLACE_NAME = "meterapp"
 MCP_URL = "https://carimage.dev/api/mcp"
-# The hosted server exposes the eight core tools by default. The skills teach
+# The hosted server exposes the eleven core tools by default. The skills teach
 # the request board too (request_vehicle, upvote_request, ...), so the plugin
 # connects with the full toolset; without the query those tools do not exist
 # for the agent and the skills would name tools the host cannot see.
@@ -33,10 +33,10 @@ ORIGIN = "https://carimage.dev"
 PRIVATE_REPO = "/".join(("MeterApp", "car-image-server"))
 PUBLIC_REPO = "https://github.com/MeterApp/car-image-plugins"
 
-SKILLS = ["car-image", "car-image-urls", "vehicle-catalog", "car-image-sdk", "car-image-mcp"]
+SKILLS = ["car-image", "car-image-urls", "vehicle-catalog", "car-3d", "car-image-sdk", "car-image-mcp"]
 # Skills that tell the agent to call an MCP tool must declare the dependency so
 # Codex can offer to connect the server when the skill is invoked.
-MCP_DEPENDENT = {"car-image", "car-image-urls", "vehicle-catalog"}
+MCP_DEPENDENT = {"car-image", "car-image-urls", "vehicle-catalog", "car-3d"}
 
 
 def error(message: str) -> None:
@@ -130,14 +130,14 @@ if server != expected:
     error(f".mcp.json must configure the hosted server exactly as {expected}, got {server}")
 
 # The setup skill documents both toolsets; a skill that still promises
-# "sixteen tools" on the bare URL sends users to a server with eight.
+# "nineteen tools" on the bare URL sends users to a server with eleven.
 mcp_skill = ROOT / "skills" / "car-image-mcp" / "SKILL.md"
 if mcp_skill.is_file():
     mcp_text = mcp_skill.read_text(encoding="utf-8")
     if "?toolset=all" not in mcp_text or "--toolset all" not in mcp_text:
         error("car-image-mcp: must explain ?toolset=all (hosted) and --toolset all (stdio)")
-    if re.search(r"same sixteen tools", mcp_text):
-        error("car-image-mcp: the bare hosted URL exposes eight core tools, not sixteen")
+    if re.search(r"same (sixteen|nineteen) tools", mcp_text):
+        error("car-image-mcp: the bare hosted URL exposes eleven core tools, not nineteen")
 
 # --- skills ----------------------------------------------------------------
 

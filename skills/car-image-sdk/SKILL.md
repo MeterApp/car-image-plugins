@@ -1,6 +1,6 @@
 ---
 name: car-image-sdk
-description: Write code that calls the Car Image API — the zero-dependency TypeScript SDK (@meterapp/car-image-sdk), the CLI (@meterapp/car-image) for shells, scripts and CI, or plain REST with fetch or curl in any language. Covers client setup, typed errors, retries, batching, keeping the key server-side, and downloading renders in bulk. Use when implementing or reviewing code that talks to the API; do not use for deciding which vehicle to render (vehicle-catalog) or connecting an agent over MCP (car-image-mcp).
+description: Write code that calls the Car Image API — the zero-dependency TypeScript SDK (@meterapp/car-image-sdk), the CLI (@meterapp/car-image) for shells, scripts and CI, or plain REST with fetch or curl in any language. Covers client setup, typed errors, retries, batching, keeping the key server-side, downloading renders in bulk, decoding VINs and creating, polling and downloading 3D models from code. Use when implementing or reviewing code that talks to the API; do not use for deciding which vehicle to render (vehicle-catalog) or connecting an agent over MCP (car-image-mcp).
 ---
 
 # Calling the API from code
@@ -31,7 +31,9 @@ const image = await client.getImage({ make: "Porsche", model: "911", year: 2024,
 
 Zero runtime dependencies. `apiKey` and `baseUrl` fall back to `CAR_IMAGE_API_KEY` and `CAR_IMAGE_API_URL` on a server. Retries on `429` and `503` with full jitter, honoring `Retry-After`, are built in — **and it never retries a `402`**, because being out of credits is not a transient failure.
 
-`ImageParams` takes the vehicle, `view`, `color`, and the sizing options: `size` (`thumb|small|medium|large`) or `width`/`height` (1–1024; both together return exactly that box), `fit` (`contain` default, `cover`, `inside`), `background` (`transparent` default, `white`, `black` or hex), `trim` with `padding` (0–50 %), and `format` (`png`, `webp`, `jpg`, `auto`). The `car-image` skill explains when to use which.
+`ImageParams` takes the vehicle (`make`, `model`, `year`, or `vehicle: "veh_…"`, a stable id), `view`, `color` (a preset name or any hex such as `"#1a2b3c"`), and the sizing options: `size` (`thumb|small|medium|large`) or `width`/`height` (1–1024; both together return exactly that box), `fit` (`contain` default, `cover`, `inside`), `background` (`transparent` default, `white`, `black` or hex), `trim` with `padding` (0–50 %), and `format` (`png`, `webp`, `jpg`, `auto`). The `car-image` skill explains when to use which.
+
+Beyond images (SDK 1.4.0): `client.decodeVin(vin, { year? })` decodes a VIN for free and returns the catalog `vehicle` with its id; `client.vehicle(id)` looks an id up; `client.create3dModel({ make, model, year | vehicle, color?, webhookUrl?, webhookSecret? })` starts a 3D model (1,000 credits, charged at creation), `client.get3dModel(id)` polls it, `client.list3dModels({ limit? })` lists them and `client.download3dModel(id, "glb" | "usdz" | "fbx" | "thumbnail")` follows the signed redirect and returns the bytes. The `car-3d` skill covers the lifecycle and the price.
 
 ## The CLI in one line
 
@@ -39,7 +41,7 @@ Zero runtime dependencies. `apiKey` and `baseUrl` fall back to `CAR_IMAGE_API_KE
 npx @meterapp/car-image get --make Porsche --model 911 --year 2024 --view side --color red --width 800 --height 450 --trim --out porsche.png
 ```
 
-`car-image login` does a browser device flow and stores the key with mode `0600`. `car-image doctor` smoke-tests every endpoint and tells you what is wrong. `car-image resolve <free text>` prints the parameters and a ready-to-run command. `get` and `url` take `--fit`, `--background`, `--trim [--padding 0-50]` and `--format png|webp|jpg|auto`; `url` also takes `--idempotency-key`.
+`car-image login` does a browser device flow and stores the key with mode `0600`. `car-image doctor` smoke-tests every endpoint and tells you what is wrong. `car-image resolve <free text>` prints the parameters and a ready-to-run command. `get` and `url` take `--vehicle veh_…` (instead of make, model and year), `--color` as a preset or `#1a2b3c`, `--fit`, `--background`, `--trim [--padding 0-50]` and `--format png|webp|jpg|auto`; `url` also takes `--idempotency-key`. `car-image vin <VIN> [--year] [--json]` decodes a VIN for free (CLI 1.3.0); `car-image 3d create --make --model --year [--color] [--vehicle] [--webhook-url] [--webhook-secret] [--wait] [--out <dir>] [--json]`, `3d get <id> [--wait] [--json]`, `3d download <id> [--format glb|usdz|fbx|thumbnail] [--out <file>]` and `3d list [--limit] [--json]` handle 3D models.
 
 ## Errors are typed
 
@@ -81,7 +83,9 @@ try {
 
 **Respect the rate limit.** 120 requests per minute per key by default. In a bulk job, run a small concurrency (4-8) rather than firing everything at once, and let the SDK's backoff handle `429`.
 
-**Cache on identity.** The same make/model/year/view/color/size is the same image. Key your cache on those, not on a URL, and you will stop paying for renders you already have.
+**Cache on identity.** The same make/model/year/view/color/size is the same image. Key your cache on those — or better, on the stable `vehicle_id` every response echoes — not on a URL, and you will stop paying for renders you already have.
+
+**A 3D model is 1,000 credits.** `create3dModel` charges at creation, so guard it the way you would a purchase: check `client.account()`, dedupe on the vehicle id and color, keep the request `id` so a rerun polls `get3dModel` instead of creating again, and let the SDK's `Idempotency-Key` cover a dropped connection. Poll every 10–15 seconds; a faster loop only sees the same answer.
 
 ## A bulk download that behaves
 
@@ -134,4 +138,4 @@ curl --fail-with-body -H "Authorization: Bearer $CAR_IMAGE_API_KEY" \
   --output porsche-911-600x400.png
 ```
 
-The query spells the dimensions `w` and `h` (1–1024), with `fit=contain|cover|inside` (default `contain`), `background=transparent|white|black|<hex>`, `trim=1` with `padding=0-50`, and `format=png|webp|jpg|auto` (`auto` answers with `Vary: Accept`). Response headers carry `X-Credits-Charged`, `X-Credits-Remaining`, `X-Image-Source` (`cache` or `generated`), `X-Image-Width`, `X-Image-Height` and `X-Request-Id`. The machine-readable contract is [`/openapi.json`](https://carimage.dev/openapi.json); `car-image describe <operationId>` explains any endpoint from it.
+The query spells the vehicle as `make`, `model` and `year`, or as `vehicle=veh_…` (a stable id); the paint as `color=<preset>` or `color=1a2b3c` (bare hex; responses echo `#1a2b3c`); the dimensions `w` and `h` (1–1024), with `fit=contain|cover|inside` (default `contain`), `background=transparent|white|black|<hex>`, `trim=1` with `padding=0-50`, and `format=png|webp|jpg|auto` (`auto` answers with `Vary: Accept`). `GET /api/v1/vin/{vin}` decodes a VIN for free; `POST /api/v1/3d` (1,000 credits, send an `Idempotency-Key`), `GET /api/v1/3d/{id}` and `GET /api/v1/3d/{id}/files/{kind}` (a 302 to a one-hour signed URL; `curl -L`) are the 3D endpoints. Response headers carry `X-Credits-Charged`, `X-Credits-Remaining`, `X-Image-Source` (`cache` or `generated`), `X-Image-Width`, `X-Image-Height` and `X-Request-Id`. The machine-readable contract is [`/openapi.json`](https://carimage.dev/openapi.json); `car-image describe <operationId>` explains any endpoint from it.

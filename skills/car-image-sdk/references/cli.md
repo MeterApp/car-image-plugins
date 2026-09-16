@@ -22,17 +22,22 @@ car-image logout
 
 | Command | What it does |
 | --- | --- |
-| `get --make --model --year [--view] [--color] [--size \| --width [--height] [--fit contain\|cover\|inside]] [--background transparent\|white\|black\|<hex>] [--trim [--padding 0-50]] [--format png\|webp\|jpg\|auto] [--out file\|-] [--url] [--json]` | Downloads one image (1 credit). `--out -` writes to stdout. `--url` prints a signed URL instead. See "Sizing" below. |
+| `get --make --model --year \| --vehicle veh_… [--view] [--color <preset\|#1a2b3c>] [--size \| --width [--height] [--fit contain\|cover\|inside]] [--background transparent\|white\|black\|<hex>] [--trim [--padding 0-50]] [--format png\|webp\|jpg\|auto] [--out file\|-] [--url] [--json]` | Downloads one image (1 credit). `--vehicle` is a stable catalog id in place of make, model and year; `--color` takes a preset or any hex. `--out -` writes to stdout. `--url` prints a signed URL instead. See "Sizing" below. |
 | `url --make … [same sizing flags] [--ttl 3600] [--max-uses 0] [--renew [--renew-days 365]] [--idempotency-key <key>] [--json]` | Creates one signed delivery URL (1 credit). `--renew` keeps it alive past the TTL at 1 credit per opened window. |
 | `url --batch file.json [--ttl 3600] [--max-uses 0] [--renew [--renew-days 365]] [--idempotency-key <key>] [--json]` | Up to 50 signed URLs in one call (1 credit each). Entries may carry `view`, `color`, `size`, `width`, `height`, `fit`, `background`, `trim`, `padding`, `format`. |
-| `resolve <free text…>` | Free text → parameters, candidates, confidence (`high`, `medium` or `low`), and a ready-to-run `car-image get …`. Free. |
-| `search <query…> [--limit] [--year]` | Fuzzy catalog search. Free, no key required. |
-| `options` | Views with yaw angles, colors with hex, sizes, fit modes, backgrounds, trim limits, formats, pricing, catalog coverage. Free. |
+| `resolve <free text…>` | Free text → parameters (with the vehicle id), candidates, confidence (`high`, `medium` or `low`), and a ready-to-run `car-image get …`. Free. |
+| `search <query…> [--limit] [--year]` | Fuzzy catalog search, with a vehicle id per model year. Free, no key required. |
+| `vin <VIN> [--year] [--json]` | Decodes a full or partial VIN (`*` for unknown positions): year, make, model, trim, engine, every vPIC attribute, the catalog vehicle id and a ready-to-run `car-image get --vehicle …`. Free. |
+| `3d create --make --model --year [--color] [--vehicle] [--webhook-url] [--webhook-secret] [--wait] [--out <dir>] [--json]` | Requests a 3D model (1,000 credits, charged at creation; an `Idempotency-Key` is sent). `--wait` polls until ready or failed; with `--out` it then downloads GLB, USDZ, FBX and the thumbnail into the directory. |
+| `3d get <id> [--wait] [--json]` | Status, progress and file URLs of a 3D request; `--wait` blocks until it settles. Free. |
+| `3d download <id> [--format glb\|usdz\|fbx\|thumbnail] [--out <file>]` | Downloads one file of a ready model (default `glb`), following the signed redirect. Free. |
+| `3d list [--limit] [--json]` | Your recent 3D requests, newest first. Free. |
+| `options` | Views with yaw angles, preset colors with hex and the hex paint rule, sizes, fit modes, backgrounds, trim limits, formats, pricing, catalog coverage, the vehicle-id format. Free. |
 | `describe [operationId\|path\|all] [--json]` | Explains any REST endpoint from `/openapi.json`: parameters, enums, defaults, response headers, error codes. |
 | `feedback (--request-id ID \| --make … --year …) (--rating 1-5 \| --good \| --bad) [--reason]` | Rates a delivered image. Free. |
 | `doctor [--json] [--yes] [--no-image]` | Smoke-tests every endpoint with status, latency, cache state and fix hints. Exit 1 on any failure. |
 | `billing [--credits …] [--portal]` | Opens hosted Stripe Checkout or the billing portal. The CLI never touches card data. |
-| `mcp [--toolset core\|all]` | Runs the stdio MCP server: `core` (default) is the eight image tools, `all` adds the request board. |
+| `mcp [--toolset core\|all]` | Runs the stdio MCP server: `core` (default) is the eleven core tools (images, catalog, VIN, 3D), `all` adds the request board. |
 | `agent-config [--host claude-code\|claude-desktop\|cursor\|chatgpt\|generic] [--remote] [--json]` | Prints ready-to-paste MCP configuration (core toolset, with the `?toolset=all` opt-in noted). |
 | `config path \| get <key> \| set <key> <value> \| list` | Keys: `autoUpdate`, `telemetry`, `baseUrl`. |
 
@@ -49,7 +54,20 @@ car-image get --make Porsche --model 911 --year 2024 --view side --width 1024 --
 car-image url --make Porsche --model 911 --year 2024 --width 600 --height 338 --trim --format auto --ttl 604800
 ```
 
-A batch file is an array (or `{"images": [...]}`) of 1–50 entries such as `{ "make": "Toyota", "model": "RAV4", "year": 2023, "width": 512, "height": 320, "trim": true, "padding": 5, "background": "white", "format": "webp" }`.
+A batch file is an array (or `{"images": [...]}`) of 1–50 entries such as `{ "make": "Toyota", "model": "RAV4", "year": 2023, "width": 512, "height": 320, "trim": true, "padding": 5, "background": "white", "format": "webp" }`; an entry may name the vehicle as `"vehicle": "veh_…"` instead, and `"color": "#1a2b3c"` is any paint.
+
+## VINs and 3D models
+
+```bash
+car-image vin 1HGCM82633A004352 --json | jq .data.vehicle.id      # -> "veh_3qfyk22gfhsx3", free
+car-image get --vehicle veh_3qfyk22gfhsx3 --view front-3-4 --color "#1a2b3c" --out accord.png
+
+car-image 3d create --make Toyota --model Camry --year 2025 --color red --wait --out ./camry   # 1,000 credits, then downloads every file
+car-image 3d get <id> --json | jq .data.status                      # queued | processing | ready | failed
+car-image 3d download <id> --format usdz --out camry.usdz
+```
+
+`3d create` charges 1,000 credits the moment it is accepted, cached or not, so a script should keep the returned `id` and rerun `3d get <id> --wait` rather than creating again. The first model of a vehicle takes 3–5 minutes; another color of the same vehicle 1–2 minutes.
 
 `url` sends an `Idempotency-Key` on every call — generated, or `--idempotency-key <key>` (1–255 characters of letters, digits, `.` `_` `:` `-`). The same key with the same request within 24 hours replays the first response (`Idempotent-Replayed: true`) instead of billing again; a different request under the same key is a `422`, and a retry that overtakes the first request still running is a `409` with `Retry-After`. Choose the key yourself when a job queue or a rerun may repeat the command.
 

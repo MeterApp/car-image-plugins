@@ -11,7 +11,7 @@
     {
       "name": "car-image",
       "source": "./",
-      "description": "Studio-quality, transparent-background vehicle images for any project. Five skills plus the hosted MCP server: render any make, model and year in 6 views and 15 colors, mint signed URLs a browser can load without a key, and resolve free text to exact parameters.",
+      "description": "Studio-quality, transparent-background vehicle images for any project. Six skills plus the hosted MCP server: render any make, model and year in 6 views and any paint color, mint signed URLs a browser can load without a key, resolve free text or a VIN to exact parameters, and build 3D models.",
       "category": "productivity"
     }
   ]

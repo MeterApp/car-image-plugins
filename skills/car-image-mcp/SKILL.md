@@ -1,6 +1,6 @@
 ---
 name: car-image-mcp
-description: Connect an agent or IDE to the Car Image API over MCP, and fix it when the tools do not appear. Covers the hosted HTTP server and the local stdio alternative, where the CAR_IMAGE_API_KEY goes in Claude Code, Codex, Cursor, Claude Desktop and generic MCP hosts, what each of the eight core tools costs and which eight more ?toolset=all adds, and how to diagnose a 401, a missing server or an empty tool list. Use for setup, configuration and connection troubleshooting; do not use for calling the API from code (car-image-sdk) or for image workflows once the tools already work (car-image).
+description: Connect an agent or IDE to the Car Image API over MCP, and fix it when the tools do not appear. Covers the hosted HTTP server and the local stdio alternative, where the CAR_IMAGE_API_KEY goes in Claude Code, Codex, Cursor, Claude Desktop and generic MCP hosts, what each of the eleven core tools costs (images, signed URLs, catalog, VIN decoding, 3D models) and which eight more ?toolset=all adds, and how to diagnose a 401, a missing server or an empty tool list. Use for setup, configuration and connection troubleshooting; do not use for calling the API from code (car-image-sdk) or for image workflows once the tools already work (car-image).
 ---
 
 # Connecting over MCP
@@ -10,7 +10,7 @@ Two servers expose the same tools. Prefer the hosted one — there is nothing to
 - **Hosted (recommended):** `https://carimage.dev/api/mcp`, Streamable HTTP, with `Authorization: Bearer $CAR_IMAGE_API_KEY`
 - **Local stdio:** `npx @meterapp/car-image mcp`, reads `CAR_IMAGE_API_KEY` or the key stored by `car-image login`
 
-Both come in two toolsets. The default, `core`, is the eight tools an agent needs to find, render and embed a car. Appending `?toolset=all` to the hosted URL — or passing `--toolset all` to `car-image mcp` — adds the eight request-board tools, sixteen in total. Fewer tools cost the agent less context and make the right one easier to pick, so opt in only when the agent should also file vehicle and feature requests.
+Both come in two toolsets. The default, `core`, is the eleven tools an agent needs to find, render, embed, decode and model a car. Appending `?toolset=all` to the hosted URL — or passing `--toolset all` to `car-image mcp` — adds the eight request-board tools, nineteen in total. Fewer tools cost the agent less context and make the right one easier to pick, so opt in only when the agent should also file vehicle and feature requests.
 
 If you installed the `car-image` plugin, the hosted server is already configured with `?toolset=all` (the skills teach the request tools) — skip to [Verifying](#verifying).
 
@@ -73,7 +73,7 @@ Most hosts expand `${CAR_IMAGE_API_KEY}` from the environment. **If yours does n
 
 ## The tools
 
-### Core — every connection has these eight
+### Core — every connection has these eleven
 
 | Tool | Costs |
 | --- | --- |
@@ -81,12 +81,15 @@ Most hosts expand `${CAR_IMAGE_API_KEY}` from the environment. **If yours does n
 | `create_car_image_urls` | 1 credit per URL |
 | `search_vehicles` | free |
 | `resolve_vehicle` | free |
+| `decode_vin` | free |
+| `create_3d_model` | 1,000 credits |
+| `get_3d_model` | free |
 | `list_image_options` | free |
 | `get_account` | free |
 | `rate_image` | free |
 | `describe_api` | free |
 
-Only the first two cost credits. Both take `fit`, `background`, `trim` and `padding` alongside width and height, so an agent can ask for exactly the box a layout needs, and `format` accepts `auto` (a signed URL negotiates WebP or PNG per viewer; an inline `get_car_image` delivers PNG for it). `create_car_image_urls` also honors `renew` and `renew_days`, and takes `idempotency_key`: pass one whenever the call might be repeated, because a retry with the same key and arguments replays the first result (`idempotent_replayed: true`) instead of billing again. `resolve_vehicle` reports its confidence as `high`, `medium` or `low`.
+Three cost credits. `get_car_image` and `create_car_image_urls` take `vehicle` (a stable `veh_…` id) in place of make, model and year, `color` as a preset or any hex, and `fit`, `background`, `trim` and `padding` alongside width and height, so an agent can ask for exactly the box a layout needs, and `format` accepts `auto` (a signed URL negotiates WebP or PNG per viewer; an inline `get_car_image` delivers PNG for it). `create_car_image_urls` also honors `renew` and `renew_days`, and takes `idempotency_key`: pass one whenever the call might be repeated, because a retry with the same key and arguments replays the first result (`idempotent_replayed: true`) instead of billing again. `resolve_vehicle` reports its confidence as `high`, `medium` or `low` and returns the vehicle id. `decode_vin` turns a full or partial VIN into the catalog vehicle. `create_3d_model` is 1,000 credits at creation and `get_3d_model` polls it (the `car-3d` skill).
 
 ### Request board — eight more with `?toolset=all` or `--toolset all`
 
@@ -105,7 +108,7 @@ The request tools file, browse and upvote vehicle and feature requests; `share_b
 
 ## Verifying
 
-Ask the host to list tools (`/mcp` in Claude Code and Codex). With the bare hosted URL or a plain `car-image mcp` you should see **eight** tools under `car-image`; with `?toolset=all` (what the plugin ships) or `--toolset all`, **sixteen**. Eight where you expected sixteen is not a fault — the URL simply has no `?toolset=all`.
+Ask the host to list tools (`/mcp` in Claude Code and Codex). With the bare hosted URL or a plain `car-image mcp` you should see **eleven** tools under `car-image`; with `?toolset=all` (what the plugin ships) or `--toolset all`, **nineteen**. Eleven where you expected nineteen is not a fault — the URL simply has no `?toolset=all`.
 
 A free end-to-end check that spends nothing:
 
@@ -125,7 +128,7 @@ curl -sS -X POST https://carimage.dev/api/mcp \
   -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
 ```
 
-That returns the eight core tools, or tells you exactly what is wrong. Use `"https://carimage.dev/api/mcp?toolset=all"` as the URL to see all sixteen. `car-image doctor` tests the REST endpoints the same way.
+That returns the eleven core tools, or tells you exactly what is wrong. Use `"https://carimage.dev/api/mcp?toolset=all"` as the URL to see all nineteen. `car-image doctor` tests the REST endpoints the same way.
 
 ## When it does not work
 
@@ -133,11 +136,11 @@ That returns the eight core tools, or tells you exactly what is wrong. Use `"htt
 
 **Server listed, zero tools, or a connection error.** Almost always authentication. Run the `curl` above: a `401` problem document means the key is missing, malformed or revoked. Check that `CAR_IMAGE_API_KEY` is exported in the environment the *host* was launched from — a key in `~/.zshrc` is invisible to a GUI app started from the Dock. Log in again with `car-image login` if in doubt.
 
-**Eight tools, but no `request_vehicle`, `list_requests` or `share_building`.** The connection is on the core toolset, which is working as designed. Change the URL to `https://carimage.dev/api/mcp?toolset=all` (or add `--toolset all` to the stdio command) and restart the host.
+**Eleven tools, but no `request_vehicle`, `list_requests` or `share_building`.** The connection is on the core toolset, which is working as designed. Change the URL to `https://carimage.dev/api/mcp?toolset=all` (or add `--toolset all` to the stdio command) and restart the host.
 
 **`400 Unknown toolset`.** The query value must be `core` or `all`; anything else is rejected before any tool is listed.
 
-**Tools appear but every call fails with 402.** The account is out of credits. Report the balance and let the human top up; never buy credits automatically.
+**Tools appear but every call fails with 402.** The account is out of credits (a 3D model needs 1,000 at once, so it is the usual cause). Report the balance and let the human top up; never buy credits automatically.
 
 **Calls fail with 403.** The key lacks `images:read`. Create a correctly scoped key.
 

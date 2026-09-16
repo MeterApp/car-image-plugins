@@ -27,7 +27,7 @@ With MCP connected, use `create_car_image_urls`. Over REST it is `POST /api/v1/i
 }
 ```
 
-Each entry returns `id`, `url`, `expires_at`, `max_uses`, `renews_until` and the normalized vehicle (which echoes `fit`, `background`, `trim` and `padding`).
+Each entry returns `id`, `url`, `expires_at`, `max_uses`, `renews_until` and the normalized vehicle (which opens with `vehicle_id` and echoes `fit`, `background`, `trim` and `padding`). An entry may name the vehicle as `"vehicle": "veh_…"` (a stable id) instead of make, model and year, and `"color": "#1a2b3c"` is any paint at the same price.
 
 - **`images`** — 1 to 50 per call. Body limit is 64 KiB; split larger jobs into batches of 50. Each entry takes the same sizing options as `get_car_image`: `size` or `width`/`height` (1–1024; both together return exactly that box), `fit` (`contain` default, `cover`, `inside`), `background` (`transparent` default, `white`, `black` or hex), `trim` with `padding` (0–50 %), and `format` (`png`, `webp`, `jpg`, `auto`). The `car-image` skill has the full table.
 - **`ttl_seconds`** — 60 to 604800 (7 days). Default 3600.

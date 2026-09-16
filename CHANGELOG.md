@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.4.0 — 2026-09-16
+
+Any paint, stable vehicle ids, VIN decoding and 3D models.
+
+- **Any paint color.** `color` is one of the 15 presets or any hex (`"#1a2b3c"` in JSON, `color=1a2b3c` in a URL); responses echo `#1a2b3c`, presets their name, and a hex equal to a preset swatch is that preset. Same 1 credit as a preset. Every "fifteen colors" claim in the skills is now "any paint color".
+- **Stable vehicle ids.** Every make, model and year has a permanent `veh_…` id; `search_vehicles`, `resolve_vehicle` and `decode_vin` return them, `get_car_image`, `create_car_image_urls` and `create_3d_model` take `vehicle` in place of make, model and year, and every echoed vehicle object opens with `vehicle_id`. `vehicle-catalog` explains when to prefer the id.
+- **VIN decoding.** New core tool `decode_vin` (REST `GET /api/v1/vin/{vin}`), free: full or partial VINs to year, make, model, trim, engine, every vPIC attribute and the catalog vehicle id. `vehicle-catalog` covers `valid`, `errors`, `suggested_vin` and what to show next to the image.
+- **3D models.** New skill `car-3d` for `create_3d_model` (1,000 credits, charged at creation) and `get_3d_model` (free): the status lifecycle, 3–5 minutes for a first model and 1–2 for another color, polling versus webhooks, verifying `X-CarImage-Signature`, downloading GLB, USDZ, FBX and the thumbnail, and embedding with `<model-viewer>`. `agents/openai.yaml` declares the MCP dependency.
+- `car-image-mcp`: the core toolset is eleven tools, nineteen with `?toolset=all`; the tables and the verification steps say so.
+- `car-image`: the "Pick the right call" table gains the VIN and 3D rows and the REST list gains the new endpoints; the error reference covers unknown ids, `VIN not recognized`, `3D model not ready` (409) and `model_3d_at_capacity` (503).
+- `car-image-sdk`: SDK 1.5.0 (`decodeVin`, `create3dModel`, `get3dModel`, `list3dModels`, `download3dModel`, `vehicle`; `ImageParams.vehicle` and hex `color`) and CLI 1.4.0 (`vin`, `3d create|get|download|list`, `--vehicle`, hex `--color`).
+
 ## 1.3.0 — 2026-09-15
 
 The MCP tools now accept what the skills teach.

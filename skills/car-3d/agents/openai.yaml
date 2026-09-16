@@ -1,0 +1,13 @@
+interface:
+  display_name: "Car 3D Models"
+  short_description: "GLB, USDZ and FBX of any real vehicle in any paint"
+  default_prompt: "Use $car-3d to get a textured 3D model of a specific vehicle."
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "car-image"
+      description: "Car Image API hosted MCP server"
+      transport: "streamable_http"
+      url: "https://carimage.dev/api/mcp"
+policy:
+  allow_implicit_invocation: true

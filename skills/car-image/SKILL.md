@@ -8,18 +8,20 @@ description: Fetch studio-quality, transparent-background images of real vehicle
 Studio-quality, transparent-background renders of any vehicle in the open [`@meterapp/vehicle-db`](https://github.com/MeterApp/vehicle-db) catalog — 1,599 makes, 44,254 models, model years 1990-2027.
 
 - **Views:** `front`, `front-3-4`, `side`, `side-right`, `rear`, `rear-3-4`
-- **Colors:** `white black gray silver blue red green brown beige tan orange yellow gold burgundy purple`
+- **Colors:** any paint. The 15 presets `white black gray silver blue red green brown beige tan orange yellow gold burgundy purple`, or any hex (`"#1a2b3c"` in JSON, `color=1a2b3c` in a URL); a custom paint costs the same 1 credit as a preset
+- **Vehicle ids:** every make, model and year has a stable id such as `veh_395yw8tn73ff8`; pass it as `vehicle` in place of make, model and year (both together is a 400)
 - **Formats:** `png` (transparent), `webp`, `jpg`, or `auto` (WebP or PNG negotiated from `Accept`), up to 1024 px
 - **Sizing:** `size=thumb|small|medium|large` (256/512/768/1024), or `width`/`height` 1–1024 — both together return exactly that box, placed by `fit=contain|cover|inside`; `trim` crops to the car first; `background` flattens onto a solid color. See [Getting the size right](#getting-the-size-right).
 
-Base URL `https://carimage.dev`. Docs: [`/docs`](https://carimage.dev/docs?ref=plugin), [`/agents.md`](https://carimage.dev/agents.md), [`/openapi.json`](https://carimage.dev/openapi.json).
+Base URL `https://carimage.dev`. Docs: [`/docs`](https://carimage.dev/docs?ref=plugin), [`/agents.md`](https://carimage.dev/agents.md), [`/openapi.json`](https://carimage.dev/openapi.json). Beyond images, the same API decodes VINs for free (`decode_vin`) and builds 3D models (`create_3d_model`, 1,000 credits; the `car-3d` skill).
 
 ## What an image costs — say this before a big batch
 
 - Every delivered image costs **exactly 1 credit**, whether it was generated or served from cache.
 - A signed delivery URL costs **1 credit when created**. Loading it is free until it expires.
 - **$1 = 1,000 credits.** Every account starts with **100 free credits**. There is no subscription.
-- Catalog search, resolve, options, account, feedback and the request board (vehicle and feature requests) are **free**.
+- Catalog search, resolve, VIN decoding, vehicle lookups by id, options, account, feedback and the request board (vehicle and feature requests) are **free**.
+- A **3D model costs 1,000 credits ($1.00)**, charged at creation; polling and downloads are free. Confirm before creating one (the `car-3d` skill).
 
 Twenty images cost 20 credits (2¢). Tell the user the number before rendering a batch they did not explicitly size, and call `get_account` first when the batch is large.
 
@@ -29,8 +31,10 @@ Twenty images cost 20 credits (2¢). Tell the user the number before rendering a
 | --- | --- |
 | Image bytes in a script, backend or notebook | `get_car_image` — returns the image inline plus `credits_charged`, `credits_remaining`, `source` (`cache`/`generated`), `request_id` |
 | A URL a browser, email or document can load | `create_car_image_urls` → see the `car-image-urls` skill |
-| Free text like "red 2024 porsche 911 side view" | `resolve_vehicle` first → see the `vehicle-catalog` skill |
-| To confirm a vehicle exists, or list a make's models | `search_vehicles` (free) |
+| Free text like "red 2024 porsche 911 side view" | `resolve_vehicle` first → see the `vehicle-catalog` skill; its `params.vehicle_id` is what to render |
+| A VIN, full or partial | `decode_vin` (free) → year, make, model, trim, engine and the catalog `vehicle.id` to render; see the `vehicle-catalog` skill |
+| A 3D model (GLB, USDZ, FBX) of a vehicle | `create_3d_model` (1,000 credits) then `get_3d_model` (free) → see the `car-3d` skill |
+| To confirm a vehicle exists, or list a make's models | `search_vehicles` (free; returns a vehicle id per year) |
 | Valid views, colors, sizes, formats, pricing | `list_image_options` (free) |
 | Credits remaining before a batch | `get_account` (free) |
 | To report a bad render | `rate_image` (free) |
@@ -39,9 +43,9 @@ Twenty images cost 20 credits (2¢). Tell the user the number before rendering a
 | To see what others have asked for, or upvote it | `list_requests`, `get_request`, `upvote_request`, `comment_on_request` (free; listing needs no key) |
 | To tell the team who you are, privately | `share_building` (what the user is building), `share_referral` (how they found the API) — only the Car Image team reads these |
 
-The rows from `request_vehicle` down exist only when the server was connected with `?toolset=all` (the plugin does this) or `car-image mcp --toolset all`; a bare `https://carimage.dev/api/mcp` exposes the eight core tools above them. The `car-image-mcp` skill explains both.
+The rows from `request_vehicle` down exist only when the server was connected with `?toolset=all` (the plugin does this) or `car-image mcp --toolset all`; a bare `https://carimage.dev/api/mcp` exposes the eleven core tools above them. The `car-image-mcp` skill explains both.
 
-Without MCP tools connected, the same operations are REST endpoints — `GET /api/v1/images/car`, `POST /api/v1/image-urls`, `POST /api/v1/images/resolve`, `GET /api/v1/vehicles`, `GET /api/v1/images/options`, `GET /api/v1/account`, `POST /api/v1/feedback`, `GET|POST /api/v1/requests`, `GET /api/v1/requests/{id}`, `POST /api/v1/requests/{id}/votes`, `GET|POST /api/v1/requests/{id}/comments`, `POST /api/v1/account/building`, `POST /api/v1/account/referral`. The `car-image-sdk` skill covers calling them from code; the CLI equivalents are `car-image request …` and `car-image about …`.
+Without MCP tools connected, the same operations are REST endpoints — `GET /api/v1/images/car`, `POST /api/v1/image-urls`, `POST /api/v1/images/resolve`, `GET /api/v1/vin/{vin}`, `POST /api/v1/3d`, `GET /api/v1/3d/{id}`, `GET /api/v1/3d/{id}/files/{kind}`, `GET /api/v1/vehicles`, `GET /api/v1/vehicles/{id}`, `GET /api/v1/images/options`, `GET /api/v1/account`, `POST /api/v1/feedback`, `GET|POST /api/v1/requests`, `GET /api/v1/requests/{id}`, `POST /api/v1/requests/{id}/votes`, `GET|POST /api/v1/requests/{id}/comments`, `POST /api/v1/account/building`, `POST /api/v1/account/referral`. The `car-image-sdk` skill covers calling them from code; the CLI equivalents are `car-image vin …`, `car-image 3d …`, `car-image request …` and `car-image about …`.
 
 ## Getting the size right
 
@@ -56,7 +60,9 @@ Without MCP tools connected, the same operations are REST endpoints — `GET /ap
 | `background` | `transparent` (default), `white`, `black`, hex as `rrggbb`, `#rrggbb`, `rgb` or `#rgb` | The surface cannot show transparency or wants a flat color. A solid background flattens PNG and WebP too; `jpg` cannot be transparent and defaults to white. |
 | `format` | `png` (default), `webp`, `jpg`, `auto` | `auto` negotiates WebP or PNG from each client's `Accept` header (`Vary: Accept`); a signed URL created with `auto` negotiates on every load. |
 
-A 16:9 hero: `width: 1024, height: 576, trim: true, padding: 6`. A thumbnail on a grey card: `size: "thumb", background: "#f4f4f4"`. The same vehicle, view and color is one render however it is sized, so different boxes of the same car stay fast.
+A 16:9 hero: `width: 1024, height: 576, trim: true, padding: 6`. A thumbnail on a grey card: `size: "thumb", background: "#f4f4f4"`. A brand color the presets do not have: `color: "#1a2b3c"` (responses echo `#1a2b3c`; a hex equal to a preset swatch is that preset). The same vehicle, view and color is one render however it is sized, so different boxes of the same car stay fast.
+
+Name the vehicle once, then reuse its id: `search_vehicles`, `resolve_vehicle` and `decode_vin` all return a stable `veh_…` id, and `vehicle: "veh_…"` in place of `make`, `model` and `year` cannot be misspelled and never changes. Every echoed vehicle object opens with `vehicle_id`.
 
 ## Authentication
 
@@ -82,10 +88,10 @@ Every JSON failure is an RFC 9457 `application/problem+json` document with `deta
 
 | Status | Meaning | Do |
 | --- | --- | --- |
-| 400 | Invalid parameter | Views, colors, `fit` and `format` are fixed enums; `padding` needs `trim`; `jpg` cannot be `transparent`; dimensions stop at 1024. Fix the value with `list_image_options` or `resolve_vehicle`. |
+| 400 | Invalid parameter | Views, `fit` and `format` are fixed enums; `color` is a preset name or a hex; `vehicle` cannot be sent with make, model or year; `padding` needs `trim`; `jpg` cannot be `transparent`; dimensions stop at 1024. Fix the value with `list_image_options` or `resolve_vehicle`. |
 | 401 | Missing or invalid key | Ask the user to log in or set `CAR_IMAGE_API_KEY`. Never guess a key. |
 | 402 | Out of credits | **Stop and ask the human** to top up at [the dashboard](https://carimage.dev/dashboard?ref=plugin#billing) or with `car-image billing`. Never buy credits on your own. |
-| 404 | Vehicle not in the catalog | Search for the canonical make/model/year. If it is really missing, offer to file it with `request_vehicle` — the team adds requested vehicles and emails the user when it is live. Do not invent vehicles or substitute a different one without saying so. |
+| 404 | Vehicle not in the catalog, or an unknown vehicle id | Search for the canonical make/model/year (or decode the VIN). If it is really missing, offer to file it with `request_vehicle` — the team adds requested vehicles and emails the user when it is live. Do not invent vehicles or substitute a different one without saying so. |
 | 429 | Rate limited | Wait `Retry-After` seconds, retry once. Never hammer. |
 | 502/503 | Render or upstream failure | Credits are refunded. Retry once later; report with the `request_id`. |
 
@@ -95,5 +101,6 @@ The full table, including every `type` URI, is in [references/errors.md](referen
 
 - Buy credits, change a plan, or touch billing. A `402` is a question for the human, not a purchase to make.
 - Render a large batch the user did not ask for. Confirm the count and the cost first.
+- Create a 3D model without saying it costs 1,000 credits and confirming.
 - Put the API key anywhere a browser, a repository or a log can see it.
 - Claim an image is a photograph of a specific vehicle.

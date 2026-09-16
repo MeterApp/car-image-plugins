@@ -2,9 +2,9 @@
 
 Studio-quality, transparent-background renders of any vehicle, wherever your agent works. One repository, native packaging for each client, plus the vendor-neutral [Open Plugins](https://agent-plugins.org) manifest.
 
-Any make, model and year from **1990 to 2027** — 1,599 makes and 44,254 models from the open [`@meterapp/vehicle-db`](https://github.com/MeterApp/vehicle-db) catalog. Six camera views, fifteen colors, PNG/WebP/JPG up to 1024 px, delivered at any width × height (`fit` contain, cover or inside), transparent or on a solid background, optionally trimmed to the car.
+Any make, model and year from **1990 to 2027** — 1,599 makes and 44,254 models from the open [`@meterapp/vehicle-db`](https://github.com/MeterApp/vehicle-db) catalog. Six camera views, any paint color (15 named presets or any hex), PNG/WebP/JPG up to 1024 px, delivered at any width × height (`fit` contain, cover or inside), transparent or on a solid background, optionally trimmed to the car. Plus free VIN decoding, stable vehicle ids, and textured 3D models (GLB, USDZ, FBX) of any vehicle in any paint.
 
-**1 credit per image · $1 = 1,000 credits · 100 free credits · no subscription.**
+**1 credit per image · 1,000 credits per 3D model · VIN decoding free · $1 = 1,000 credits · 100 free credits · no subscription.**
 
 ## Install
 
@@ -40,17 +40,18 @@ Get one with `npx @meterapp/car-image login` (browser device flow) or at [the da
 
 ## What you get
 
-Five skills and the hosted MCP server.
+Six skills and the hosted MCP server.
 
 | Skill | Job |
 | --- | --- |
 | `car-image` | Fetch a render; costs, auth, which call to make, error handling |
 | `car-image-urls` | Signed delivery URLs for pages, emails and documents — no key in the browser |
-| `vehicle-catalog` | Free text → exact make, model and year; search, disambiguation, offline lookups |
+| `vehicle-catalog` | Free text or a VIN → exact make, model and year and its stable id; search, disambiguation, offline lookups |
+| `car-3d` | 3D models (GLB, USDZ, FBX) of any vehicle in any paint: cost, waiting, webhooks, embedding |
 | `car-image-sdk` | The TypeScript SDK, the CLI, and plain REST |
 | `car-image-mcp` | Connecting over MCP and fixing it when tools do not appear |
 
-The hosted MCP server at `https://carimage.dev/api/mcp` exposes eight core tools: `get_car_image`, `create_car_image_urls`, `search_vehicles`, `resolve_vehicle`, `list_image_options`, `get_account`, `rate_image` and `describe_api`. Only the first two cost credits. This plugin connects to `https://carimage.dev/api/mcp?toolset=all`, which adds the free request-board tools `list_requests`, `request_vehicle`, `request_feature`, `get_request`, `upvote_request` and `comment_on_request`, and `share_building` / `share_referral` for telling the team about yourself (private) — sixteen tools in all, because the skills teach them. Missing a vehicle? The agent can file it, and you get an email when it is live.
+The hosted MCP server at `https://carimage.dev/api/mcp` exposes eleven core tools: `get_car_image`, `create_car_image_urls`, `search_vehicles`, `resolve_vehicle`, `decode_vin`, `create_3d_model`, `get_3d_model`, `list_image_options`, `get_account`, `rate_image` and `describe_api`. `get_car_image` and `create_car_image_urls` cost 1 credit; `create_3d_model` costs 1,000; the rest are free. This plugin connects to `https://carimage.dev/api/mcp?toolset=all`, which adds the free request-board tools `list_requests`, `request_vehicle`, `request_feature`, `get_request`, `upvote_request` and `comment_on_request`, and `share_building` / `share_referral` for telling the team about yourself (private) — nineteen tools in all, because the skills teach them. Missing a vehicle? The agent can file it, and you get an email when it is live.
 
 ## Authentication
 
@@ -67,7 +68,7 @@ The key is sent as a header, never in a URL. Keep it out of committed config fil
 - A `402` (out of credits) is a question for a human. Agents never buy credits on their own.
 - Renders are generated product visuals, not OEM photography. Never claim a specific trim or an individual listed vehicle is depicted exactly.
 - A signed delivery URL is unguessable, not access-controlled. Treat it as public for its lifetime.
-- Confirm the count and the cost before a batch the user did not size.
+- Confirm the count and the cost before a batch the user did not size, and before any 3D model (1,000 credits each).
 
 ## Development
 

@@ -28,8 +28,10 @@ nested plugin directory, which is why one repository serves all four channels.
   same `version`, and `CHANGELOG.md` gains a `## <version> ` heading in the same
   commit. `scripts/validate_repo.py` fails otherwise.
 - **Product facts do not drift.** 1 credit per image, $1 = 1,000 credits, 100
-  free credits, no subscription; 6 views, 15 colors, PNG/WebP/JPG up to 1024 px.
-  Prices and credit values change only with a human decision.
+  free credits, no subscription; 6 views, any paint color (15 named presets or
+  any hex), PNG/WebP/JPG up to 1024 px; stable vehicle ids (`veh_…`); VIN
+  decoding free; a 3D model 1,000 credits, charged at creation. Prices and
+  credit values change only with a human decision.
 - **Every `carimage.dev` link carries `?ref=`.** npm and GitHub strip referrers
   and terminals never had one, so an untagged link is permanently
   unattributable. The bare origin, `/api/*` and the machine-readable files
@@ -43,7 +45,8 @@ nested plugin directory, which is why one repository serves all four channels.
   least 120 characters.
 - **`agents/openai.yaml` stays in sync with its skill.** Declare the MCP
   dependency only for skills that actually call MCP tools (`car-image`,
-  `car-image-urls`, `vehicle-catalog`); the SDK and setup skills must not.
+  `car-image-urls`, `vehicle-catalog`, `car-3d`); the SDK and setup skills must
+  not.
 - **No key, ever.** Manifests reference `${CAR_IMAGE_API_KEY}`; nothing here
   contains a literal key, and no example puts one in a URL or in browser code.
 

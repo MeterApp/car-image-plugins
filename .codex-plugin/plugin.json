@@ -1,7 +1,7 @@
 {
   "name": "car-image",
-  "version": "1.3.0",
-  "description": "Studio-quality, transparent-background vehicle images for any project. Render any make, model and year in 6 camera views and 15 colors, or mint signed URLs a browser can load without a key.",
+  "version": "1.4.0",
+  "description": "Studio-quality, transparent-background vehicle images for any project. Render any make, model and year in 6 camera views and any paint color, mint signed URLs a browser can load without a key, decode VINs for free, or build a 3D model of any vehicle.",
   "author": {
     "name": "Meter",
     "email": "hello@meterapp.co",
@@ -25,7 +25,7 @@
   "interface": {
     "displayName": "Car Image API",
     "shortDescription": "Transparent-background car images for any project",
-    "longDescription": "Drop a real vehicle into whatever you are building. Ask for any make, model and year from 1990 to 2027 and get a studio-quality render on a transparent background, in six camera views and fifteen colors. For web pages and emails, mint signed URLs that load without exposing your API key. One credit per image, $1 buys 1,000, and every account starts with 100 free.",
+    "longDescription": "Drop a real vehicle into whatever you are building. Ask for any make, model and year from 1990 to 2027 and get a studio-quality render on a transparent background, in six camera views and any paint color. For web pages and emails, mint signed URLs that load without exposing your API key. Decode a VIN for free, or turn the same car into a textured 3D model (GLB, USDZ, FBX) for 1,000 credits. One credit per image, $1 buys 1,000, and every account starts with 100 free.",
     "developerName": "Meter",
     "category": "Productivity",
     "capabilities": [
@@ -36,7 +36,9 @@
     "defaultPrompt": [
       "Add a red 2024 Porsche 911 side view to the hero section.",
       "Build a comparison page with front-3/4 renders of the 2023 Toyota RAV4, Honda CR-V and Mazda CX-5.",
-      "How many credits do I have left, and what does a batch of 40 images cost?"
+      "How many credits do I have left, and what does a batch of 40 images cost?",
+      "Decode VIN 1HGCM82633A004352 and show me the car in a dark navy paint.",
+      "Make a 3D model of a 2025 Toyota Camry in red and embed it with model-viewer."
     ],
     "brandColor": "#CE3600",
     "composerIcon": "./assets/logo.svg",

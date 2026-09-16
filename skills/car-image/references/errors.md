@@ -19,8 +19,8 @@ Only a `200` that delivers an image or mints signed URLs costs credits. Every er
 
 | Status | Cause | Action |
 | --- | --- | --- |
-| 400 | Unknown or repeated query parameter, `make` and `brand` together, a color outside the 15 presets, a dimension above 1024, an unknown `fit` or `format`, an unparseable `background`, `background=transparent` with `jpg`, `padding` without `trim` or above 50, a malformed `Idempotency-Key`, malformed JSON, an empty `query`. | Fix it and retry once. Retrying unchanged always fails. Batch problems carry `index` for the offending item; `list_image_options` lists every valid value, including the fit modes, background vocabulary and padding ceiling. |
-| 404 | The make/model/year is not in the catalog, `mode=cached` asked for a variant never rendered, or feedback referenced a request that delivered no image. | Search the catalog for the canonical slugs (`vehicle-catalog` skill). Do not retry unchanged, and do not silently substitute a different vehicle. |
+| 400 | Unknown or repeated query parameter, `make` and `brand` together, `vehicle` (an id) together with make, model or year, a `color` that is neither one of the 15 presets nor a hex, a dimension above 1024, an unknown `fit` or `format`, an unparseable `background`, `background=transparent` with `jpg`, `padding` without `trim` or above 50, a malformed `Idempotency-Key`, malformed JSON, an empty `query`, a VIN that is not 5–17 characters of A–Z (no I, O, Q), 0–9 and `*`, a `webhook_url` that is not public HTTPS. | Fix it and retry once. Retrying unchanged always fails. Batch problems carry `index` for the offending item; `list_image_options` lists every valid value, including the fit modes, background vocabulary, padding ceiling and the vehicle-id format. |
+| 404 | The make/model/year is not in the catalog, no vehicle has that id, a VIN pattern is unknown to NHTSA (`VIN not recognized`), no 3D request of the user's has that id, `mode=cached` asked for a variant never rendered, or feedback referenced a request that delivered no image. | Search the catalog for the canonical slugs or decode the VIN (`vehicle-catalog` skill). Do not retry unchanged, and do not silently substitute a different vehicle. |
 | 413 | Body too large: 64 KiB for `POST /api/v1/image-urls`, 8 KiB for feedback, 4 KiB for resolve. | Split into batches of at most 50 images. |
 | 422 | The `Idempotency-Key` on `POST /api/v1/image-urls` was already used, within the last 24 hours, for a different body. | Send a new key for a new request, or the identical body to replay the earlier response. Nothing was charged. |
 
@@ -29,7 +29,7 @@ Only a `200` that delivers an image or mints signed URLs costs credits. Every er
 | Status | Cause | Action |
 | --- | --- | --- |
 | 401 | No usable credential — missing, malformed or revoked key (`WWW-Authenticate: Bearer error="invalid_token"`). | Ask the user to run `npx @meterapp/car-image login` or set `CAR_IMAGE_API_KEY`. Never guess a key, and never move a key into a URL. |
-| 402 | Out of credits. The problem carries `balance` and `required_credits`. | **Stop.** Report the balance and what the job needs, then let the human decide. A hosted Stripe page exists, but only a human completes a purchase. Never buy credits autonomously. |
+| 402 | Out of credits. The problem carries `balance` and `required_credits` (1 for an image, 1,000 for a 3D model). | **Stop.** Report the balance and what the job needs, then let the human decide. A hosted Stripe page exists, but only a human completes a purchase. Never buy credits autonomously. |
 | 403 | The key lacks the required scope (`required_scope`: `images:read`, `account:read`, `billing:write`), or a delivery URL is expired/invalid, or the key that created it was revoked. | Create a correctly scoped key or a fresh URL. Scope changes are the user's call. |
 | 410 | A use-capped delivery URL (`max_uses > 0`) has been loaded its maximum number of times. | Create a new URL. Unlimited URLs (`max_uses: 0`) never return 410. |
 
@@ -37,11 +37,11 @@ Only a `200` that delivers an image or mints signed URLs costs credits. Every er
 
 | Status | Cause | Action |
 | --- | --- | --- |
-| 409 | A `POST /api/v1/image-urls` with the same `Idempotency-Key` is still being processed. | Wait the seconds in `Retry-After`, then repeat the identical request: you receive the first request's response, marked `Idempotent-Replayed: true`, and pay nothing more. |
+| 409 | A `POST /api/v1/image-urls` or `POST /api/v1/3d` with the same `Idempotency-Key` is still being processed; or `3D model not ready`: a file of a 3D model was asked for before its `status` reached `ready`. | Wait the seconds in `Retry-After`, then repeat the identical request (you receive the first request's response, marked `Idempotent-Replayed: true`, and pay nothing more), or poll `get_3d_model` until it is ready. |
 | 429 | Rate limited — 120 requests per minute per key by default. `RateLimit-Limit`, `RateLimit-Remaining` and `RateLimit-Reset` are on every authenticated response. | Wait the integer seconds in `Retry-After`, then retry with exponential backoff and jitter. Never hammer. |
 | 500 | Unexpected server failure. Nothing was charged. | Retry once with backoff. Include the `request_id` when reporting. |
-| 502 | The render failed. The credit was refunded. | Check the `code` extension member first — see below. |
-| 503 | A dependency is temporarily unavailable. | Honor `Retry-After`. For a delivery URL, a 503 means the URL was not consumed; just retry it. |
+| 502 | The render failed (the credit was refunded), or `VIN decoder unavailable` (nothing charged). | Check the `code` extension member first — see below. For a VIN, retry later. |
+| 503 | A dependency is temporarily unavailable; or, on `POST /api/v1/3d`, `3D generation at capacity` (`"code": "model_3d_at_capacity"`, `retry_after_seconds`) or `3D models unavailable` — nothing charged, images unaffected. | Honor `Retry-After`. For a delivery URL, a 503 means the URL was not consumed; just retry it. For 3D, tell the user when it resumes; do not loop. |
 
 ### The two kinds of 502
 
