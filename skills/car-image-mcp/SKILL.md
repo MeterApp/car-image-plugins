@@ -86,7 +86,7 @@ Most hosts expand `${CAR_IMAGE_API_KEY}` from the environment. **If yours does n
 | `rate_image` | free |
 | `describe_api` | free |
 
-Only the first two cost credits. Both take `fit`, `background`, `trim` and `padding` alongside width and height, so an agent can ask for exactly the box a layout needs; `create_car_image_urls` also honors `renew` and `renew_days`. `resolve_vehicle` reports its confidence as `high`, `medium` or `low`.
+Only the first two cost credits. Both take `fit`, `background`, `trim` and `padding` alongside width and height, so an agent can ask for exactly the box a layout needs, and `format` accepts `auto` (a signed URL negotiates WebP or PNG per viewer; an inline `get_car_image` delivers PNG for it). `create_car_image_urls` also honors `renew` and `renew_days`, and takes `idempotency_key`: pass one whenever the call might be repeated, because a retry with the same key and arguments replays the first result (`idempotent_replayed: true`) instead of billing again. `resolve_vehicle` reports its confidence as `high`, `medium` or `low`.
 
 ### Request board — eight more with `?toolset=all` or `--toolset all`
 
