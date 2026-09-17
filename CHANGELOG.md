@@ -1,5 +1,25 @@
 # Changelog
 
+## 1.6.0 — 2026-09-17
+
+Plans: the license and a monthly allowance, with credits as the meter.
+
+- **Plans.** Car Image API is sold as a plan that carries the commercial license to the renders while it is active: Free ($0; 100 credits once at signup; evaluation and personal projects; up to 100 distinct vehicles a month), Pro ($29/month or $290/year; 25,000 credits a month; 2,500 distinct vehicles a month), Business ($99/month or $990/year; 150,000 credits a month; 15,000 vehicles; 600 requests a minute per key) and Enterprise (custom; no vehicle cap; export or self-hosting by written agreement). Beyond the allowance every paid plan pays $1 per 1,000 credits; purchased credits never expire, included credits reset monthly. Every image is still 1 credit, cached or generated, and a 3D model is still 1,000 once per vehicle and color. `car-image`, `car-image-sdk`, the README and `AGENTS.md` state the plans wherever they quoted the price.
+- **New answers to know.** `402` with `code: "plan_vehicle_limit"` (`Plan limit reached`: the request named more new distinct vehicles than the plan's monthly cap allows; `plan`, `vehicles_this_month`, `vehicles_per_month`, `requested`), `403` `account_suspended` and `origin_not_allowed` (a signed URL loaded from a site the key's allowed origins do not list), `429` `account_rate_limited` (the per-account limit across every key) and `account_generation_cap` (the account used its plan's share of today's render budget; cached images keep serving, resets at midnight UTC). `car-image`, `car-image-mcp`, `car-image-sdk` and `car-image-urls` say what to do with each; rate limits are per plan (120 a minute per key on Free and Pro, 600 on Business, 1,200 on Enterprise).
+- **Agents never touch a plan.** A `402` of either kind is a question for the human; no skill lets an agent subscribe to, change or cancel a plan, the same rule as buying credits.
+- `car-image`: the description no longer offers datasets as a use case; the license does not allow building one.
+- `car-image-sdk`: SDK 1.7.0 (`PublicPlan`, `AccountPlanInfo`, `pricing.plans` on `options()`, `data.plan` on `account()`) and CLI 1.6.0 (`car-image options` prints the plans).
+
+## 1.5.0 — 2026-09-17
+
+3D models: own it once, host it anywhere.
+
+- **Own it once.** `create_3d_model` charges 1,000 credits for a vehicle and color the account does not own yet, and nothing for one it already holds a live request for (`billing.already_owned: true`, `credits_charged: 0`), whatever spelling or recipe. `car-3d`, `car-image` and `car-image-sdk` say so wherever they quote the price, so an agent no longer treats a re-order as a second purchase.
+- **Hosting.** New core tool `publish_3d_model` (free; `unpublish: true` takes it down) and `publish: true` on `create_3d_model`: `data.public` carries an unguessable `m3d_` id, key-free URLs for the web GLB, the USDZ and the poster on Car Image's CDN, and `embed.html`, a `<script src="https://carimage.dev/embed/3d.js" async>` tag plus `<car-3d model="m3d_…">` to paste into any page. `car-3d` teaches when to publish instead of downloading, the element's attributes (`view`, `spin`, `backdrop`, `ar`, `static`, `no-zoom`, `alt`) and the plain `<model-viewer>` alternative on `GET /api/v1/3d/public/{public_id}`.
+- **`glb_web`.** A fifth file kind: the GLB rebuilt for browsers (meshopt, WebP textures, about a tenth of the bytes); what a published model serves.
+- `car-image-mcp`: the core toolset is twelve tools, twenty with `?toolset=all`; the tables and the verification steps say so.
+- `car-image-sdk`: SDK 1.6.0 (`publish3dModel`, `unpublish3dModel`, `create3dModel({ publish })`, `Model3dPublic`, `glb_web`) and CLI 1.5.0 (`3d publish <id> [--unpublish]`, `3d create --publish`, `--format glb_web`).
+
 ## 1.4.0 — 2026-09-16
 
 Any paint, stable vehicle ids, VIN decoding and 3D models.

@@ -33,7 +33,7 @@ Zero runtime dependencies. `apiKey` and `baseUrl` fall back to `CAR_IMAGE_API_KE
 
 `ImageParams` takes the vehicle (`make`, `model`, `year`, or `vehicle: "veh_…"`, a stable id), `view`, `color` (a preset name or any hex such as `"#1a2b3c"`), and the sizing options: `size` (`thumb|small|medium|large`) or `width`/`height` (1–1024; both together return exactly that box), `fit` (`contain` default, `cover`, `inside`), `background` (`transparent` default, `white`, `black` or hex), `trim` with `padding` (0–50 %), and `format` (`png`, `webp`, `jpg`, `auto`). The `car-image` skill explains when to use which.
 
-Beyond images (SDK 1.4.0): `client.decodeVin(vin, { year? })` decodes a VIN for free and returns the catalog `vehicle` with its id; `client.vehicle(id)` looks an id up; `client.create3dModel({ make, model, year | vehicle, color?, webhookUrl?, webhookSecret? })` starts a 3D model (1,000 credits, charged at creation), `client.get3dModel(id)` polls it, `client.list3dModels({ limit? })` lists them and `client.download3dModel(id, "glb" | "usdz" | "fbx" | "thumbnail")` follows the signed redirect and returns the bytes. The `car-3d` skill covers the lifecycle and the price.
+Beyond images (SDK 1.6.0): `client.decodeVin(vin, { year? })` decodes a VIN for free and returns the catalog `vehicle` with its id; `client.vehicle(id)` looks an id up; `client.create3dModel({ make, model, year | vehicle }, { color?, webhookUrl?, webhookSecret?, publish? })` starts a 3D model (1,000 credits, charged at creation; free once the account owns that vehicle and color, `billing.already_owned`), `client.get3dModel(id)` polls it, `client.list3dModels({ limit? })` lists them, `client.download3dModel(id, "glb" | "glb_web" | "usdz" | "fbx" | "thumbnail")` follows the signed redirect and returns the bytes, and `client.publish3dModel(id)` / `client.unpublish3dModel(id)` host a model at key-free URLs with a two-line `<car-3d>` embed (`data.public`). The `car-3d` skill covers the lifecycle, the price and the embed.
 
 ## The CLI in one line
 
@@ -75,17 +75,17 @@ try {
 - Check `get_account` / `client.account()` before a large job.
 - Print progress and a running credit count in bulk scripts.
 - Make bulk scripts resumable — skip files that already exist on disk, so a crash at item 400 does not re-bill the first 399.
-- Never write a retry loop around a `402`.
+- Never write a retry loop around a `402`. A `402` with `code: "plan_vehicle_limit"` is not a balance problem: the job named more new distinct vehicles than the plan allows this month (`plan`, `vehicles_this_month`, `vehicles_per_month`, `requested` on the problem); report it and stop.
 
 **Batch what can be batched.** `createImageUrls` takes up to 50 images in one call. Fifty separate calls cost the same credits but waste time and rate limit.
 
 **Retries of a paid `POST` are already safe.** `createImageUrls` sends an `Idempotency-Key` (`sdk_<uuid>`) with every call, so the SDK's own retry after a dropped connection replays the first response instead of minting and billing again. When the retry may come from another process — a job queue, a cron, a rebuilt page — pass `{ idempotencyKey }` yourself (1–255 characters of letters, digits, `.` `_` `:` `-`): the server replays the same key with the same body for 24 hours (`Idempotent-Replayed: true`), answers `422` to the same key with a different body, and `409` with `Retry-After` while the first request is still running. Over plain REST, set the header on `POST /api/v1/image-urls`.
 
-**Respect the rate limit.** 120 requests per minute per key by default. In a bulk job, run a small concurrency (4-8) rather than firing everything at once, and let the SDK's backoff handle `429`.
+**Respect the rate limit.** 120 requests per minute per key on Free and Pro, 600 on Business, 1,200 on Enterprise, plus a per-account limit across every key (`code: "account_rate_limited"` on the 429). In a bulk job, run a small concurrency (4-8) rather than firing everything at once, and let the SDK's backoff handle `429`.
 
 **Cache on identity.** The same make/model/year/view/color/size is the same image. Key your cache on those — or better, on the stable `vehicle_id` every response echoes — not on a URL, and you will stop paying for renders you already have.
 
-**A 3D model is 1,000 credits.** `create3dModel` charges at creation, so guard it the way you would a purchase: check `client.account()`, dedupe on the vehicle id and color, keep the request `id` so a rerun polls `get3dModel` instead of creating again, and let the SDK's `Idempotency-Key` cover a dropped connection. Poll every 10–15 seconds; a faster loop only sees the same answer.
+**A 3D model is 1,000 credits, once.** `create3dModel` charges at creation for a vehicle and color the account does not own yet, so guard it the way you would a purchase: check `client.account()`, keep the request `id` so a rerun polls `get3dModel` instead of creating again, and let the SDK's `Idempotency-Key` cover a dropped connection. A vehicle and color the account already owns is free to order again (`billing.already_owned`), so a re-run is never a second bill. Poll every 10–15 seconds; a faster loop only sees the same answer. For a web page, pass `publish: true` (or call `publish3dModel`) and put `data.public.embed.html` in the page: the files are hosted by Car Image and no key is needed.
 
 ## A bulk download that behaves
 

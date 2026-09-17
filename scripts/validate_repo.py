@@ -21,7 +21,7 @@ ERRORS: list[str] = []
 PLUGIN_NAME = "car-image"
 MARKETPLACE_NAME = "meterapp"
 MCP_URL = "https://carimage.dev/api/mcp"
-# The hosted server exposes the eleven core tools by default. The skills teach
+# The hosted server exposes the twelve core tools by default. The skills teach
 # the request board too (request_vehicle, upvote_request, ...), so the plugin
 # connects with the full toolset; without the query those tools do not exist
 # for the agent and the skills would name tools the host cannot see.
@@ -216,9 +216,10 @@ FORBIDDEN = {
     "carimage.dev/legal": "a legal page that does not exist",
 }
 # Every published carimage.dev link needs ?ref= for attribution, except the bare
-# origin (callers concatenate it), the API itself, and machine-readable files.
+# origin (callers concatenate it), the API itself, the embed script a browser
+# loads (/embed/…, never a click) and machine-readable files.
 REF_EXEMPT = re.compile(
-    rf"{re.escape(ORIGIN)}(?:/(?:api/|openapi\.json|errors\.md|agents\.md|llms(?:-full)?\.txt|install\.sh)|[\s\"'`)\],]|$)"
+    rf"{re.escape(ORIGIN)}(?:/(?:api/|embed/|openapi\.json|errors\.md|agents\.md|llms(?:-full)?\.txt|install\.sh)|[\s\"'`)\],]|$)"
 )
 
 for path in sorted(ROOT.rglob("*")):

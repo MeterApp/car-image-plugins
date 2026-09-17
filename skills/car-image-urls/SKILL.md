@@ -130,7 +130,7 @@ Transparent PNG sits on any background, which is what you want in a document. Fo
 `expires_at` comes back with every URL. Whatever stores the URL must store that too.
 
 - Re-mint before expiry, not after a user reports a broken image.
-- A `403` on a delivery URL means expired, invalid, or the key that created it was revoked. A `410` means a use-capped URL hit its cap. Both are fixed by minting a fresh URL, not by retrying the old one. A `402` means a renewable URL entered a new window the account could not pay for; add credits and the same URL resumes.
+- A `403` on a delivery URL means expired, invalid, the key that created it was revoked, or `code: "origin_not_allowed"`: the page loading it is on a site the issuing key's allowed origins (set on the key in the dashboard) do not list; loads without a `Referer` or `Origin`, such as email clients, pass. A `410` means a use-capped URL hit its cap. Both are fixed by minting a fresh URL, not by retrying the old one. A `402` means a renewable URL entered a new window the account could not pay for; add credits and the same URL resumes.
 - If you hand a user a URL in chat, tell them when it expires.
 
 ## Do not

@@ -1,6 +1,6 @@
 {
   "name": "car-image",
-  "version": "1.4.0",
+  "version": "1.6.0",
   "description": "Studio-quality, transparent-background vehicle images for any project. Render any make, model and year in 6 camera views and any paint color, mint signed URLs a browser can load without a key, decode VINs for free, or build a 3D model of any vehicle.",
   "author": {
     "name": "Meter",

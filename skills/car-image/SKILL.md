@@ -1,6 +1,6 @@
 ---
 name: car-image
-description: Fetch studio-quality, transparent-background images of real vehicles (any make, model and year from 1990-2027) for product pages, listings, dealer tools, comparison sites, emails, decks and datasets. Covers the Car Image API by Meter — authentication, the per-image credit cost, which call to make, and how to handle 402 and 429. Use for any request involving a picture of a car, truck, motorcycle or other vehicle; do not use for embedding URLs in a browser or document (car-image-urls), catalog lookups (vehicle-catalog), SDK and CLI code (car-image-sdk), or connection setup (car-image-mcp).
+description: Fetch studio-quality, transparent-background images of real vehicles (any make, model and year from 1990-2027) for product pages, listings, dealer tools, comparison sites, emails and decks. Covers the Car Image API by Meter — authentication, the per-image credit cost, which call to make, and how to handle 402 and 429. Use for any request involving a picture of a car, truck, motorcycle or other vehicle; do not use for embedding URLs in a browser or document (car-image-urls), catalog lookups (vehicle-catalog), SDK and CLI code (car-image-sdk), or connection setup (car-image-mcp).
 ---
 
 # Car Image API
@@ -19,9 +19,9 @@ Base URL `https://carimage.dev`. Docs: [`/docs`](https://carimage.dev/docs?ref=p
 
 - Every delivered image costs **exactly 1 credit**, whether it was generated or served from cache.
 - A signed delivery URL costs **1 credit when created**. Loading it is free until it expires.
-- **$1 = 1,000 credits.** Every account starts with **100 free credits**. There is no subscription.
+- **A plan carries the license and a monthly credit allowance.** Free: $0, **100 credits once at signup** (no card), evaluation and personal projects, up to 100 distinct vehicles a month. Pro: $29/month, 25,000 credits a month, commercial license while the plan is active, 2,500 distinct vehicles a month. Business: $99/month, 150,000 credits a month, 15,000 vehicles. Enterprise: custom, no cap. Beyond the allowance every paid plan pays **$1 per 1,000 credits**; purchased credits never expire, included credits reset monthly. `get_account` reports the plan in force as `data.plan`.
 - Catalog search, resolve, VIN decoding, vehicle lookups by id, options, account, feedback and the request board (vehicle and feature requests) are **free**.
-- A **3D model costs 1,000 credits ($1.00)**, charged at creation; polling and downloads are free. Confirm before creating one (the `car-3d` skill).
+- A **3D model costs 1,000 credits ($1.00)**, charged at creation and never again for a vehicle and color the account already owns; polling, downloads and publishing (hosting it as a key-free embed) are free. Confirm before creating one (the `car-3d` skill).
 
 Twenty images cost 20 credits (2¢). Tell the user the number before rendering a batch they did not explicitly size, and call `get_account` first when the batch is large.
 
@@ -33,7 +33,8 @@ Twenty images cost 20 credits (2¢). Tell the user the number before rendering a
 | A URL a browser, email or document can load | `create_car_image_urls` → see the `car-image-urls` skill |
 | Free text like "red 2024 porsche 911 side view" | `resolve_vehicle` first → see the `vehicle-catalog` skill; its `params.vehicle_id` is what to render |
 | A VIN, full or partial | `decode_vin` (free) → year, make, model, trim, engine and the catalog `vehicle.id` to render; see the `vehicle-catalog` skill |
-| A 3D model (GLB, USDZ, FBX) of a vehicle | `create_3d_model` (1,000 credits) then `get_3d_model` (free) → see the `car-3d` skill |
+| A 3D model (GLB, USDZ, FBX) of a vehicle | `create_3d_model` (1,000 credits; free once owned) then `get_3d_model` (free) → see the `car-3d` skill |
+| A 3D model on a web page, with no key in the page | `create_3d_model` with `publish: true`, or `publish_3d_model` (free) → paste `public.embed.html`; see the `car-3d` skill |
 | To confirm a vehicle exists, or list a make's models | `search_vehicles` (free; returns a vehicle id per year) |
 | Valid views, colors, sizes, formats, pricing | `list_image_options` (free) |
 | Credits remaining before a batch | `get_account` (free) |
@@ -43,9 +44,9 @@ Twenty images cost 20 credits (2¢). Tell the user the number before rendering a
 | To see what others have asked for, or upvote it | `list_requests`, `get_request`, `upvote_request`, `comment_on_request` (free; listing needs no key) |
 | To tell the team who you are, privately | `share_building` (what the user is building), `share_referral` (how they found the API) — only the Car Image team reads these |
 
-The rows from `request_vehicle` down exist only when the server was connected with `?toolset=all` (the plugin does this) or `car-image mcp --toolset all`; a bare `https://carimage.dev/api/mcp` exposes the eleven core tools above them. The `car-image-mcp` skill explains both.
+The rows from `request_vehicle` down exist only when the server was connected with `?toolset=all` (the plugin does this) or `car-image mcp --toolset all`; a bare `https://carimage.dev/api/mcp` exposes the twelve core tools above them. The `car-image-mcp` skill explains both.
 
-Without MCP tools connected, the same operations are REST endpoints — `GET /api/v1/images/car`, `POST /api/v1/image-urls`, `POST /api/v1/images/resolve`, `GET /api/v1/vin/{vin}`, `POST /api/v1/3d`, `GET /api/v1/3d/{id}`, `GET /api/v1/3d/{id}/files/{kind}`, `GET /api/v1/vehicles`, `GET /api/v1/vehicles/{id}`, `GET /api/v1/images/options`, `GET /api/v1/account`, `POST /api/v1/feedback`, `GET|POST /api/v1/requests`, `GET /api/v1/requests/{id}`, `POST /api/v1/requests/{id}/votes`, `GET|POST /api/v1/requests/{id}/comments`, `POST /api/v1/account/building`, `POST /api/v1/account/referral`. The `car-image-sdk` skill covers calling them from code; the CLI equivalents are `car-image vin …`, `car-image 3d …`, `car-image request …` and `car-image about …`.
+Without MCP tools connected, the same operations are REST endpoints — `GET /api/v1/images/car`, `POST /api/v1/image-urls`, `POST /api/v1/images/resolve`, `GET /api/v1/vin/{vin}`, `POST /api/v1/3d`, `GET /api/v1/3d/{id}`, `GET /api/v1/3d/{id}/files/{kind}`, `POST|DELETE /api/v1/3d/{id}/publish`, `GET /api/v1/3d/public/{public_id}` (no key), `GET /api/v1/vehicles`, `GET /api/v1/vehicles/{id}`, `GET /api/v1/images/options`, `GET /api/v1/account`, `POST /api/v1/feedback`, `GET|POST /api/v1/requests`, `GET /api/v1/requests/{id}`, `POST /api/v1/requests/{id}/votes`, `GET|POST /api/v1/requests/{id}/comments`, `POST /api/v1/account/building`, `POST /api/v1/account/referral`. The `car-image-sdk` skill covers calling them from code; the CLI equivalents are `car-image vin …`, `car-image 3d …`, `car-image request …` and `car-image about …`.
 
 ## Getting the size right
 
@@ -90,16 +91,16 @@ Every JSON failure is an RFC 9457 `application/problem+json` document with `deta
 | --- | --- | --- |
 | 400 | Invalid parameter | Views, `fit` and `format` are fixed enums; `color` is a preset name or a hex; `vehicle` cannot be sent with make, model or year; `padding` needs `trim`; `jpg` cannot be `transparent`; dimensions stop at 1024. Fix the value with `list_image_options` or `resolve_vehicle`. |
 | 401 | Missing or invalid key | Ask the user to log in or set `CAR_IMAGE_API_KEY`. Never guess a key. |
-| 402 | Out of credits | **Stop and ask the human** to top up at [the dashboard](https://carimage.dev/dashboard?ref=plugin#billing) or with `car-image billing`. Never buy credits on your own. |
+| 402 | Out of credits, or `code: "plan_vehicle_limit"` (the request named more new distinct vehicles than the plan's monthly cap allows; `plan`, `vehicles_this_month`, `vehicles_per_month`, `requested`) | **Stop and ask the human** to top up at [the dashboard](https://carimage.dev/dashboard?ref=plugin#billing) or with `car-image billing`, or, for a plan limit, tell them the plan and the cap. Never buy credits or change a plan on your own. |
 | 404 | Vehicle not in the catalog, or an unknown vehicle id | Search for the canonical make/model/year (or decode the VIN). If it is really missing, offer to file it with `request_vehicle` — the team adds requested vehicles and emails the user when it is live. Do not invent vehicles or substitute a different one without saying so. |
-| 429 | Rate limited | Wait `Retry-After` seconds, retry once. Never hammer. |
+| 429 | Rate limited (per key, or per account with `code: "account_rate_limited"`), or `code: "account_generation_cap"` (the account used its plan's share of today's render budget; cached images keep serving) | Wait `Retry-After` seconds, retry once. Never hammer; a generation cap resets at midnight UTC (`reset_at`), so do not retry cold renders before then. |
 | 502/503 | Render or upstream failure | Credits are refunded. Retry once later; report with the `request_id`. |
 
 The full table, including every `type` URI, is in [references/errors.md](references/errors.md).
 
 ## Never do these on your own
 
-- Buy credits, change a plan, or touch billing. A `402` is a question for the human, not a purchase to make.
+- Buy credits, or subscribe to, change or cancel a plan, or touch billing. A `402` of either kind is a question for the human, not a purchase to make.
 - Render a large batch the user did not ask for. Confirm the count and the cost first.
 - Create a 3D model without saying it costs 1,000 credits and confirming.
 - Put the API key anywhere a browser, a repository or a log can see it.

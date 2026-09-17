@@ -10,7 +10,7 @@ Two servers expose the same tools. Prefer the hosted one — there is nothing to
 - **Hosted (recommended):** `https://carimage.dev/api/mcp`, Streamable HTTP, with `Authorization: Bearer $CAR_IMAGE_API_KEY`
 - **Local stdio:** `npx @meterapp/car-image mcp`, reads `CAR_IMAGE_API_KEY` or the key stored by `car-image login`
 
-Both come in two toolsets. The default, `core`, is the eleven tools an agent needs to find, render, embed, decode and model a car. Appending `?toolset=all` to the hosted URL — or passing `--toolset all` to `car-image mcp` — adds the eight request-board tools, nineteen in total. Fewer tools cost the agent less context and make the right one easier to pick, so opt in only when the agent should also file vehicle and feature requests.
+Both come in two toolsets. The default, `core`, is the twelve tools an agent needs to find, render, embed, decode, model and publish a car. Appending `?toolset=all` to the hosted URL — or passing `--toolset all` to `car-image mcp` — adds the eight request-board tools, twenty in total. Fewer tools cost the agent less context and make the right one easier to pick, so opt in only when the agent should also file vehicle and feature requests.
 
 If you installed the `car-image` plugin, the hosted server is already configured with `?toolset=all` (the skills teach the request tools) — skip to [Verifying](#verifying).
 
@@ -73,7 +73,7 @@ Most hosts expand `${CAR_IMAGE_API_KEY}` from the environment. **If yours does n
 
 ## The tools
 
-### Core — every connection has these eleven
+### Core — every connection has these twelve
 
 | Tool | Costs |
 | --- | --- |
@@ -82,14 +82,15 @@ Most hosts expand `${CAR_IMAGE_API_KEY}` from the environment. **If yours does n
 | `search_vehicles` | free |
 | `resolve_vehicle` | free |
 | `decode_vin` | free |
-| `create_3d_model` | 1,000 credits |
+| `create_3d_model` | 1,000 credits; free once the account owns the vehicle and color |
 | `get_3d_model` | free |
+| `publish_3d_model` | free |
 | `list_image_options` | free |
 | `get_account` | free |
 | `rate_image` | free |
 | `describe_api` | free |
 
-Three cost credits. `get_car_image` and `create_car_image_urls` take `vehicle` (a stable `veh_…` id) in place of make, model and year, `color` as a preset or any hex, and `fit`, `background`, `trim` and `padding` alongside width and height, so an agent can ask for exactly the box a layout needs, and `format` accepts `auto` (a signed URL negotiates WebP or PNG per viewer; an inline `get_car_image` delivers PNG for it). `create_car_image_urls` also honors `renew` and `renew_days`, and takes `idempotency_key`: pass one whenever the call might be repeated, because a retry with the same key and arguments replays the first result (`idempotent_replayed: true`) instead of billing again. `resolve_vehicle` reports its confidence as `high`, `medium` or `low` and returns the vehicle id. `decode_vin` turns a full or partial VIN into the catalog vehicle. `create_3d_model` is 1,000 credits at creation and `get_3d_model` polls it (the `car-3d` skill).
+Three cost credits. `get_car_image` and `create_car_image_urls` take `vehicle` (a stable `veh_…` id) in place of make, model and year, `color` as a preset or any hex, and `fit`, `background`, `trim` and `padding` alongside width and height, so an agent can ask for exactly the box a layout needs, and `format` accepts `auto` (a signed URL negotiates WebP or PNG per viewer; an inline `get_car_image` delivers PNG for it). `create_car_image_urls` also honors `renew` and `renew_days`, and takes `idempotency_key`: pass one whenever the call might be repeated, because a retry with the same key and arguments replays the first result (`idempotent_replayed: true`) instead of billing again. `resolve_vehicle` reports its confidence as `high`, `medium` or `low` and returns the vehicle id. `decode_vin` turns a full or partial VIN into the catalog vehicle. `create_3d_model` is 1,000 credits at creation, free for a vehicle and color the account already owns (`billing.already_owned`), and takes `publish`; `get_3d_model` polls it and returns `public` once published; `publish_3d_model` hosts a model at key-free URLs with a two-line `<car-3d>` embed, or takes it down with `unpublish: true` (the `car-3d` skill).
 
 ### Request board — eight more with `?toolset=all` or `--toolset all`
 
@@ -108,7 +109,7 @@ The request tools file, browse and upvote vehicle and feature requests; `share_b
 
 ## Verifying
 
-Ask the host to list tools (`/mcp` in Claude Code and Codex). With the bare hosted URL or a plain `car-image mcp` you should see **eleven** tools under `car-image`; with `?toolset=all` (what the plugin ships) or `--toolset all`, **nineteen**. Eleven where you expected nineteen is not a fault — the URL simply has no `?toolset=all`.
+Ask the host to list tools (`/mcp` in Claude Code and Codex). With the bare hosted URL or a plain `car-image mcp` you should see **twelve** tools under `car-image`; with `?toolset=all` (what the plugin ships) or `--toolset all`, **twenty**. Twelve where you expected twenty is not a fault — the URL simply has no `?toolset=all`.
 
 A free end-to-end check that spends nothing:
 
@@ -128,7 +129,7 @@ curl -sS -X POST https://carimage.dev/api/mcp \
   -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
 ```
 
-That returns the eleven core tools, or tells you exactly what is wrong. Use `"https://carimage.dev/api/mcp?toolset=all"` as the URL to see all nineteen. `car-image doctor` tests the REST endpoints the same way.
+That returns the twelve core tools, or tells you exactly what is wrong. Use `"https://carimage.dev/api/mcp?toolset=all"` as the URL to see all twenty. `car-image doctor` tests the REST endpoints the same way.
 
 ## When it does not work
 
@@ -140,13 +141,13 @@ That returns the eleven core tools, or tells you exactly what is wrong. Use `"ht
 
 **`400 Unknown toolset`.** The query value must be `core` or `all`; anything else is rejected before any tool is listed.
 
-**Tools appear but every call fails with 402.** The account is out of credits (a 3D model needs 1,000 at once, so it is the usual cause). Report the balance and let the human top up; never buy credits automatically.
+**Tools appear but every call fails with 402.** The account is out of credits (a 3D model needs 1,000 at once, so it is the usual cause), or the problem carries `code: "plan_vehicle_limit"` and the request named more new distinct vehicles than the plan allows this month (Free 100, Pro 2,500, Business 15,000). Report the balance, or the plan and the cap, and let the human decide; never buy credits or change a plan automatically.
 
 **Calls fail with 403.** The key lacks `images:read`. Create a correctly scoped key.
 
 **Everything is slow the first time.** The first render of a given make/model/year/view/color takes a few seconds; after that it is cached and instant. This is expected, not a connection problem.
 
-**A tool returns 429.** The default limit is 120 requests per minute per key. Wait the `Retry-After` seconds. If a batch job triggers this repeatedly, lower its concurrency.
+**A tool returns 429.** The per-key limit is 120 requests per minute on Free and Pro, 600 on Business and 1,200 on Enterprise, and every account also has a limit across all its keys (`code: "account_rate_limited"`). Wait the `Retry-After` seconds. If a batch job triggers this repeatedly, lower its concurrency. A 429 with `code: "account_generation_cap"` is different: the account has used its plan's share of today's render budget, cached images keep serving, and new renders resume at midnight UTC.
 
 ## Keeping the key safe
 

@@ -27,11 +27,15 @@ nested plugin directory, which is why one repository serves all four channels.
 - **Manifest versions move together.** All four `plugin.json` files carry the
   same `version`, and `CHANGELOG.md` gains a `## <version> ` heading in the same
   commit. `scripts/validate_repo.py` fails otherwise.
-- **Product facts do not drift.** 1 credit per image, $1 = 1,000 credits, 100
-  free credits, no subscription; 6 views, any paint color (15 named presets or
-  any hex), PNG/WebP/JPG up to 1024 px; stable vehicle ids (`veh_…`); VIN
-  decoding free; a 3D model 1,000 credits, charged at creation. Prices and
-  credit values change only with a human decision.
+- **Product facts do not drift.** 1 credit per image; a plan carries the
+  license and a monthly credit allowance (Free: 100 credits once at signup,
+  evaluation and personal projects; Pro $29/month: 25,000 credits a month and a
+  commercial license while active; Business $99/month: 150,000; Enterprise:
+  custom), $1 per 1,000 credits beyond the allowance, purchased credits never
+  expire; 6 views, any paint color (15 named presets or any hex), PNG/WebP/JPG
+  up to 1024 px; stable vehicle ids (`veh_…`); VIN decoding free; a 3D model
+  1,000 credits, charged at creation. Prices, plans, allowances and credit
+  values change only with a human decision.
 - **Every `carimage.dev` link carries `?ref=`.** npm and GitHub strip referrers
   and terminals never had one, so an untagged link is permanently
   unattributable. The bare origin, `/api/*` and the machine-readable files
