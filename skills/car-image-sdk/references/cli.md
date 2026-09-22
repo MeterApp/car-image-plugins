@@ -28,7 +28,7 @@ car-image logout
 | `resolve <free text…>` | Free text → parameters (with the vehicle id), candidates, confidence (`high`, `medium` or `low`), and a ready-to-run `car-image get …`. Free. |
 | `search <query…> [--limit] [--year]` | Fuzzy catalog search, with a vehicle id per model year. Free, no key required. |
 | `vin <VIN> [--year] [--json]` | Decodes a full or partial VIN (`*` for unknown positions): year, make, model, trim, engine, every vPIC attribute, the catalog vehicle id and a ready-to-run `car-image get --vehicle …`. Free. |
-| `3d create --make --model --year [--color] [--vehicle] [--webhook-url] [--webhook-secret] [--publish] [--wait] [--out <dir>] [--json]` | Requests a 3D model (1,000 credits, charged at creation, free for a vehicle and color you already own; an `Idempotency-Key` is sent). `--publish` hosts it at once and prints the embed. `--wait` polls until ready or failed; with `--out` it then downloads GLB, USDZ, FBX and the thumbnail into the directory. |
+| `3d create --make --model --year [--color] [--vehicle] [--webhook-url] [--webhook-secret] [--publish] [--wait] [--out <dir>] [--json]` | Requests a 3D model (100 credits, charged at creation, free for a vehicle and color you already own; an `Idempotency-Key` is sent). `--publish` hosts it at once and prints the embed. `--wait` polls until ready or failed; with `--out` it then downloads GLB, USDZ, FBX and the thumbnail into the directory. |
 | `3d get <id> [--wait] [--json]` | Status, progress and file URLs of a 3D request; `--wait` blocks until it settles. Free. |
 | `3d download <id> [--format glb\|glb_web\|usdz\|fbx\|thumbnail] [--out <file>]` | Downloads one file of a ready model (default `glb`; `glb_web` is the browser build), following the signed redirect. Free. |
 | `3d publish <id> [--unpublish] [--json]` | Key-free URLs and a two-line `<car-3d>` embed hosted by Car Image, printed ready to paste; `--unpublish` takes them down. Free. |
@@ -63,12 +63,12 @@ A batch file is an array (or `{"images": [...]}`) of 1–50 entries such as `{ "
 car-image vin 1HGCM82633A004352 --json | jq .data.vehicle.id      # -> "veh_3qfyk22gfhsx3", free
 car-image get --vehicle veh_3qfyk22gfhsx3 --view front-3-4 --color "#1a2b3c" --out accord.png
 
-car-image 3d create --make Toyota --model Camry --year 2025 --color red --wait --out ./camry   # 1,000 credits, then downloads every file
+car-image 3d create --make Toyota --model Camry --year 2025 --color red --wait --out ./camry   # 100 credits, then downloads every file
 car-image 3d get <id> --json | jq .data.status                      # queued | processing | ready | failed
 car-image 3d download <id> --format usdz --out camry.usdz
 ```
 
-`3d create` charges 1,000 credits the moment it is accepted, cached or not, unless the account already owns that vehicle in that color (then it is free), so a script should keep the returned `id` and rerun `3d get <id> --wait` rather than creating again. The first model of a vehicle takes 3–5 minutes; another color of the same vehicle 1–2 minutes.
+`3d create` charges 100 credits the moment it is accepted, cached or not, unless the account already owns that vehicle in that color (then it is free), so a script should keep the returned `id` and rerun `3d get <id> --wait` rather than creating again. The first model of a vehicle takes 3–5 minutes; another color of the same vehicle 1–2 minutes.
 
 `url` sends an `Idempotency-Key` on every call — generated, or `--idempotency-key <key>` (1–255 characters of letters, digits, `.` `_` `:` `-`). The same key with the same request within 24 hours replays the first response (`Idempotent-Replayed: true`) instead of billing again; a different request under the same key is a `422`, and a retry that overtakes the first request still running is a `409` with `Retry-After`. Choose the key yourself when a job queue or a rerun may repeat the command.
 

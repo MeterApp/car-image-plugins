@@ -7,7 +7,7 @@ description: Turn a vague vehicle reference ("that blue BMW wagon", "a mid-2000s
 
 Renders are addressed by **make, model, year** — or by the one **vehicle id** that stands for the three. Getting them right before you render matters, because a render of the wrong car still costs a credit, and a 3D model of the wrong car costs a thousand.
 
-The catalog is the open [`@meterapp/vehicle-db`](https://github.com/MeterApp/vehicle-db) — 1,599 makes and 44,254 models across model years 1990-2027, built from public sources (NHTSA vPIC, UK DfT/DVLA, NZTA, Malaysia JPJ and others). It covers cars, motorcycles, trucks, buses, MPVs and more, internationally — not just the US market.
+The catalog is the open [`@meterapp/vehicle-db`](https://github.com/MeterApp/vehicle-db) — 1,603 makes and 44,320 models across model years 1990-2027, built from public sources (NHTSA vPIC, UK DfT/DVLA, NZTA, Malaysia JPJ and others). It covers cars, motorcycles, trucks, buses, MPVs and more, internationally — not just the US market.
 
 All the lookups below are **free**. Use them liberally.
 

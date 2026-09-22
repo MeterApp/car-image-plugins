@@ -29,7 +29,7 @@ Only a `200` that delivers an image or mints signed URLs costs credits. Every er
 | Status | Cause | Action |
 | --- | --- | --- |
 | 401 | No usable credential — missing, malformed or revoked key (`WWW-Authenticate: Bearer error="invalid_token"`). | Ask the user to run `npx @meterapp/car-image login` or set `CAR_IMAGE_API_KEY`. Never guess a key, and never move a key into a URL. |
-| 402 | Out of credits. The problem carries `balance` and `required_credits` (1 for an image, 1,000 for a 3D model). | **Stop.** Report the balance and what the job needs, then let the human decide. A hosted Stripe page exists, but only a human completes a purchase. Never buy credits autonomously. |
+| 402 | Out of credits. The problem carries `balance` and `required_credits` (1 for an image, 100 for a 3D model). | **Stop.** Report the balance and what the job needs, then let the human decide. A hosted Stripe page exists, but only a human completes a purchase. Never buy credits autonomously. |
 | 403 | The key lacks the required scope (`required_scope`: `images:read`, `account:read`, `billing:write`), or a delivery URL is expired/invalid, or the key that created it was revoked. | Create a correctly scoped key or a fresh URL. Scope changes are the user's call. |
 | 410 | A use-capped delivery URL (`max_uses > 0`) has been loaded its maximum number of times. | Create a new URL. Unlimited URLs (`max_uses: 0`) never return 410. |
 

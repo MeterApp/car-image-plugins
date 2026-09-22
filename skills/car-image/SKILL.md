@@ -5,23 +5,23 @@ description: Fetch studio-quality, transparent-background images of real vehicle
 
 # Car Image API
 
-Studio-quality, transparent-background renders of any vehicle in the open [`@meterapp/vehicle-db`](https://github.com/MeterApp/vehicle-db) catalog — 1,599 makes, 44,254 models, model years 1990-2027.
+Studio-quality, transparent-background renders of any vehicle in the open [`@meterapp/vehicle-db`](https://github.com/MeterApp/vehicle-db) catalog — 1,603 makes, 44,320 models, model years 1990-2027.
 
-- **Views:** `front`, `front-3-4`, `side`, `side-right`, `rear`, `rear-3-4`
+- **Views:** eight, in order around the car: `front`, `front-3-4` (the hero, the default), `side`, `rear-3-4`, `rear`, `rear-3-4-right`, `side-right`, `front-3-4-right`. `front-3-4`, `side` and `rear-3-4` show the car's left side with the nose pointing left; each `-right` twin shows its right side with the nose pointing right, so pick the one that faces into your layout
 - **Colors:** any paint. The 15 presets `white black gray silver blue red green brown beige tan orange yellow gold burgundy purple`, or any hex (`"#1a2b3c"` in JSON, `color=1a2b3c` in a URL); a custom paint costs the same 1 credit as a preset
 - **Vehicle ids:** every make, model and year has a stable id such as `veh_395yw8tn73ff8`; pass it as `vehicle` in place of make, model and year (both together is a 400)
 - **Formats:** `png` (transparent), `webp`, `jpg`, or `auto` (WebP or PNG negotiated from `Accept`), up to 1024 px
 - **Sizing:** `size=thumb|small|medium|large` (256/512/768/1024), or `width`/`height` 1–1024 — both together return exactly that box, placed by `fit=contain|cover|inside`; `trim` crops to the car first; `background` flattens onto a solid color. See [Getting the size right](#getting-the-size-right).
 
-Base URL `https://carimage.dev`. Docs: [`/docs`](https://carimage.dev/docs?ref=plugin), [`/agents.md`](https://carimage.dev/agents.md), [`/openapi.json`](https://carimage.dev/openapi.json). Beyond images, the same API decodes VINs for free (`decode_vin`) and builds 3D models (`create_3d_model`, 1,000 credits; the `car-3d` skill).
+Base URL `https://carimage.dev`. Docs: [`/docs`](https://carimage.dev/docs?ref=plugin), [`/agents.md`](https://carimage.dev/agents.md), [`/openapi.json`](https://carimage.dev/openapi.json). Beyond images, the same API decodes VINs for free (`decode_vin`) and builds 3D models (`create_3d_model`, 100 credits; the `car-3d` skill).
 
 ## What an image costs — say this before a big batch
 
 - Every delivered image costs **exactly 1 credit**, whether it was generated or served from cache.
 - A signed delivery URL costs **1 credit when created**. Loading it is free until it expires.
-- **A plan carries the license and a monthly credit allowance.** Free: $0, **100 credits once at signup** (no card), evaluation and personal projects, up to 100 distinct vehicles a month. Pro: $29/month, 25,000 credits a month, commercial license while the plan is active, 2,500 distinct vehicles a month. Business: $99/month, 150,000 credits a month, 15,000 vehicles. Enterprise: custom, no cap. Beyond the allowance every paid plan pays **$1 per 1,000 credits**; purchased credits never expire, included credits reset monthly. `get_account` reports the plan in force as `data.plan`.
+- **A plan carries the license and a monthly credit allowance.** Free: $0, **100 credits once at signup** (no card), evaluation and personal projects, up to 100 distinct vehicles a month. Pro: $29/month, 25,000 credits a month, commercial license while the plan is active, 2,500 distinct vehicles a month. Business: $99/month, 150,000 credits a month, 15,000 vehicles. Enterprise: custom, no cap. Beyond the allowance every paid plan pays **$1 per 100 credits**; purchased credits never expire, included credits reset monthly. `get_account` reports the plan in force as `data.plan`.
 - Catalog search, resolve, VIN decoding, vehicle lookups by id, options, account, feedback and the request board (vehicle and feature requests) are **free**.
-- A **3D model costs 1,000 credits ($1.00)**, charged at creation and never again for a vehicle and color the account already owns; polling, downloads and publishing (hosting it as a key-free embed) are free. Confirm before creating one (the `car-3d` skill).
+- A **3D model costs 100 credits ($1.00)**, charged at creation and never again for a vehicle and color the account already owns; polling, downloads and publishing (hosting it as a key-free embed) are free. Confirm before creating one (the `car-3d` skill).
 
 Twenty images cost 20 credits (2¢). Tell the user the number before rendering a batch they did not explicitly size, and call `get_account` first when the batch is large.
 
@@ -33,7 +33,7 @@ Twenty images cost 20 credits (2¢). Tell the user the number before rendering a
 | A URL a browser, email or document can load | `create_car_image_urls` → see the `car-image-urls` skill |
 | Free text like "red 2024 porsche 911 side view" | `resolve_vehicle` first → see the `vehicle-catalog` skill; its `params.vehicle_id` is what to render |
 | A VIN, full or partial | `decode_vin` (free) → year, make, model, trim, engine and the catalog `vehicle.id` to render; see the `vehicle-catalog` skill |
-| A 3D model (GLB, USDZ, FBX) of a vehicle | `create_3d_model` (1,000 credits; free once owned) then `get_3d_model` (free) → see the `car-3d` skill |
+| A 3D model (GLB, USDZ, FBX) of a vehicle | `create_3d_model` (100 credits; free once owned) then `get_3d_model` (free) → see the `car-3d` skill |
 | A 3D model on a web page, with no key in the page | `create_3d_model` with `publish: true`, or `publish_3d_model` (free) → paste `public.embed.html`; see the `car-3d` skill |
 | To confirm a vehicle exists, or list a make's models | `search_vehicles` (free; returns a vehicle id per year) |
 | Valid views, colors, sizes, formats, pricing | `list_image_options` (free) |
@@ -102,6 +102,6 @@ The full table, including every `type` URI, is in [references/errors.md](referen
 
 - Buy credits, or subscribe to, change or cancel a plan, or touch billing. A `402` of either kind is a question for the human, not a purchase to make.
 - Render a large batch the user did not ask for. Confirm the count and the cost first.
-- Create a 3D model without saying it costs 1,000 credits and confirming.
+- Create a 3D model without saying it costs 100 credits and confirming.
 - Put the API key anywhere a browser, a repository or a log can see it.
 - Claim an image is a photograph of a specific vehicle.

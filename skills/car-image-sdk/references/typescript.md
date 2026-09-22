@@ -31,7 +31,7 @@ Construct it once per process, at module scope. It holds no connection state, so
 | `vehicles(filter?, options?)` | Years, or makes for a year, or models for a year and make (with ids) | free |
 | `vehicle(id, options?)` | One catalog vehicle by its stable `veh_…` id: make, model, year, every year, image paths | free |
 | `decodeVin(vin, { year? }?, options?)` | `data.valid`, `errors`, `year`, `make`, `model`, `trim`, `engine`, `attributes` (every vPIC variable) and `vehicle` (`{ id, make, model, year, image_path }` or null); full or partial VINs | free |
-| `create3dModel({ make, model, year \| vehicle }, { color?, webhookUrl?, webhookSecret?, publish?, idempotencyKey? }?)` | `data` (the 3D request: `id`, `status`, `progress`, `files` once ready, `public` once published) and `billing` (`already_owned` when the account already had the vehicle and color: free); an `Idempotency-Key` is sent unless given | 1,000 credits at creation |
+| `create3dModel({ make, model, year \| vehicle }, { color?, webhookUrl?, webhookSecret?, publish?, idempotencyKey? }?)` | `data` (the 3D request: `id`, `status`, `progress`, `files` once ready, `public` once published) and `billing` (`already_owned` when the account already had the vehicle and color: free); an `Idempotency-Key` is sent unless given | 100 credits at creation |
 | `get3dModel(id, options?)` | The same request, refreshed; poll every 10–15 s until `status` is `ready` or `failed` | free |
 | `list3dModels({ limit? }?, options?)` | Recent 3D requests, newest first, plus `pricing.credits_per_model` | free |
 | `download3dModel(id, "glb" \| "glb_web" \| "usdz" \| "fbx" \| "thumbnail", options?)` | The file's bytes (follows the one-hour signed redirect) with `contentType` | free |

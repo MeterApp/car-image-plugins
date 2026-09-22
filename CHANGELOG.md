@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.7.0 — 2026-09-22
+
+Eight camera angles.
+
+- **Two new views.** `front-3-4-right` and `rear-3-4-right` mirror `front-3-4` and `rear-3-4`, so the views are eight and symmetric, in order around the car: `front`, `front-3-4`, `side`, `rear-3-4`, `rear`, `rear-3-4-right`, `side-right`, `front-3-4-right`. The three left-side angles face left and each `-right` twin faces right; `car-image` says to pick the one that faces into the layout. Same 1 credit, any paint, any size. `front-3-4-left` and `rear-3-4-left` are accepted as aliases, and `resolve_vehicle` reads "front 3/4 right" and "passenger side rear three-quarter".
+- `car-3d`: the `<car-3d>` element's `view` takes the same eight names at the image's own yaw; its presets used to open current models from behind.
+- `car-image-sdk`: SDK 1.8.0 (`VIEWS`) and CLI 1.7.0 (`--view`, listed in `car-image get --help`).
+
+## 1.6.1 — 2026-09-19
+
+Repricing: $1 buys 100 credits, a 3D model costs 100.
+
+- **A credit is $0.01.** $1 buys 100 credits instead of 1,000, on packs, auto-reload and every plan's overage; packs keep their dollar ladder ($5, $10, $25, $100) and now carry 500, 1,000, 2,500 and 10,000 credits. Purchased credits still never expire and included credits still reset with the plan's month.
+- **A 3D model is 100 credits.** `create_3d_model` charges 100 instead of 1,000, so it still costs $1.00 at the new rate, still once per vehicle and color, and is still free for one the account already owns (`billing.already_owned`). Every image is still 1 credit; VIN decoding, the catalog, polling, downloads and publishing stay free.
+- Plan prices and allowances are unchanged (Free 100 credits at signup, Pro $29/month with 25,000, Business $99/month with 150,000). `car-image`, `car-3d`, `car-image-mcp`, `car-image-sdk`, the README and `AGENTS.md` restate the new figures wherever they quote a price; SDK 1.7.1 and CLI 1.6.1 carry the constants.
+
 ## 1.6.0 — 2026-09-17
 
 Plans: the license and a monthly allowance, with credits as the meter.

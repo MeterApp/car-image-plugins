@@ -82,7 +82,7 @@ Most hosts expand `${CAR_IMAGE_API_KEY}` from the environment. **If yours does n
 | `search_vehicles` | free |
 | `resolve_vehicle` | free |
 | `decode_vin` | free |
-| `create_3d_model` | 1,000 credits; free once the account owns the vehicle and color |
+| `create_3d_model` | 100 credits; free once the account owns the vehicle and color |
 | `get_3d_model` | free |
 | `publish_3d_model` | free |
 | `list_image_options` | free |
@@ -90,7 +90,7 @@ Most hosts expand `${CAR_IMAGE_API_KEY}` from the environment. **If yours does n
 | `rate_image` | free |
 | `describe_api` | free |
 
-Three cost credits. `get_car_image` and `create_car_image_urls` take `vehicle` (a stable `veh_…` id) in place of make, model and year, `color` as a preset or any hex, and `fit`, `background`, `trim` and `padding` alongside width and height, so an agent can ask for exactly the box a layout needs, and `format` accepts `auto` (a signed URL negotiates WebP or PNG per viewer; an inline `get_car_image` delivers PNG for it). `create_car_image_urls` also honors `renew` and `renew_days`, and takes `idempotency_key`: pass one whenever the call might be repeated, because a retry with the same key and arguments replays the first result (`idempotent_replayed: true`) instead of billing again. `resolve_vehicle` reports its confidence as `high`, `medium` or `low` and returns the vehicle id. `decode_vin` turns a full or partial VIN into the catalog vehicle. `create_3d_model` is 1,000 credits at creation, free for a vehicle and color the account already owns (`billing.already_owned`), and takes `publish`; `get_3d_model` polls it and returns `public` once published; `publish_3d_model` hosts a model at key-free URLs with a two-line `<car-3d>` embed, or takes it down with `unpublish: true` (the `car-3d` skill).
+Three cost credits. `get_car_image` and `create_car_image_urls` take `vehicle` (a stable `veh_…` id) in place of make, model and year, `color` as a preset or any hex, and `fit`, `background`, `trim` and `padding` alongside width and height, so an agent can ask for exactly the box a layout needs, and `format` accepts `auto` (a signed URL negotiates WebP or PNG per viewer; an inline `get_car_image` delivers PNG for it). `create_car_image_urls` also honors `renew` and `renew_days`, and takes `idempotency_key`: pass one whenever the call might be repeated, because a retry with the same key and arguments replays the first result (`idempotent_replayed: true`) instead of billing again. `resolve_vehicle` reports its confidence as `high`, `medium` or `low` and returns the vehicle id. `decode_vin` turns a full or partial VIN into the catalog vehicle. `create_3d_model` is 100 credits at creation, free for a vehicle and color the account already owns (`billing.already_owned`), and takes `publish`; `get_3d_model` polls it and returns `public` once published; `publish_3d_model` hosts a model at key-free URLs with a two-line `<car-3d>` embed, or takes it down with `unpublish: true` (the `car-3d` skill).
 
 ### Request board — eight more with `?toolset=all` or `--toolset all`
 
@@ -141,7 +141,7 @@ That returns the twelve core tools, or tells you exactly what is wrong. Use `"ht
 
 **`400 Unknown toolset`.** The query value must be `core` or `all`; anything else is rejected before any tool is listed.
 
-**Tools appear but every call fails with 402.** The account is out of credits (a 3D model needs 1,000 at once, so it is the usual cause), or the problem carries `code: "plan_vehicle_limit"` and the request named more new distinct vehicles than the plan allows this month (Free 100, Pro 2,500, Business 15,000). Report the balance, or the plan and the cap, and let the human decide; never buy credits or change a plan automatically.
+**Tools appear but every call fails with 402.** The account is out of credits (a 3D model needs 100 at once, so it is the usual cause), or the problem carries `code: "plan_vehicle_limit"` and the request named more new distinct vehicles than the plan allows this month (Free 100, Pro 2,500, Business 15,000). Report the balance, or the plan and the cap, and let the human decide; never buy credits or change a plan automatically.
 
 **Calls fail with 403.** The key lacks `images:read`. Create a correctly scoped key.
 

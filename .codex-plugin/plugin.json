@@ -1,7 +1,7 @@
 {
   "name": "car-image",
-  "version": "1.6.0",
-  "description": "Studio-quality, transparent-background vehicle images for any project. Render any make, model and year in 6 camera views and any paint color, mint signed URLs a browser can load without a key, decode VINs for free, or build a 3D model of any vehicle.",
+  "version": "1.7.0",
+  "description": "Studio-quality, transparent-background vehicle images for any project. Render any make, model and year in 8 camera views and any paint color, mint signed URLs a browser can load without a key, decode VINs for free, or build a 3D model of any vehicle.",
   "author": {
     "name": "Meter",
     "email": "hello@meterapp.co",
@@ -25,7 +25,7 @@
   "interface": {
     "displayName": "Car Image API",
     "shortDescription": "Transparent-background car images for any project",
-    "longDescription": "Drop a real vehicle into whatever you are building. Ask for any make, model and year from 1990 to 2027 and get a studio-quality render on a transparent background, in six camera views and any paint color. For web pages and emails, mint signed URLs that load without exposing your API key. Decode a VIN for free, or turn the same car into a textured 3D model (GLB, USDZ, FBX) for 1,000 credits. One credit per image, $1 buys 1,000, and every account starts with 100 free.",
+    "longDescription": "Drop a real vehicle into whatever you are building. Ask for any make, model and year from 1990 to 2027 and get a studio-quality render on a transparent background, in eight camera views and any paint color. For web pages and emails, mint signed URLs that load without exposing your API key. Decode a VIN for free, or turn the same car into a textured 3D model (GLB, USDZ, FBX) for 100 credits. One credit per image, $1 buys 100, and every account starts with 100 free.",
     "developerName": "Meter",
     "category": "Productivity",
     "capabilities": [
