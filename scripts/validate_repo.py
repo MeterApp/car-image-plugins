@@ -129,15 +129,16 @@ expected = {
 if server != expected:
     error(f".mcp.json must configure the hosted server exactly as {expected}, got {server}")
 
-# The setup skill documents both toolsets; a skill that still promises
-# "nineteen tools" on the bare URL sends users to a server with eleven.
+# The setup skill documents both toolsets; a skill that promises all twenty
+# tools on the bare URL sends users to a server with twelve. The pattern is the
+# wording earlier releases used for that promise.
 mcp_skill = ROOT / "skills" / "car-image-mcp" / "SKILL.md"
 if mcp_skill.is_file():
     mcp_text = mcp_skill.read_text(encoding="utf-8")
     if "?toolset=all" not in mcp_text or "--toolset all" not in mcp_text:
         error("car-image-mcp: must explain ?toolset=all (hosted) and --toolset all (stdio)")
     if re.search(r"same (sixteen|nineteen) tools", mcp_text):
-        error("car-image-mcp: the bare hosted URL exposes eleven core tools, not nineteen")
+        error("car-image-mcp: the bare hosted URL exposes twelve core tools, not twenty")
 
 # --- skills ----------------------------------------------------------------
 

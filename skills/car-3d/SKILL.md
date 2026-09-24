@@ -15,14 +15,14 @@ With MCP connected the tools are `create_3d_model`, `get_3d_model` and `publish_
 - **Free once owned.** An account that already holds a live request for a vehicle in a color owns it: ordering it again creates a new request for nothing (`billing.credits_charged: 0`, `billing.already_owned: true`), whatever spelling, whether the model is ready or still being made, and even after Car Image rebuilds models with a better recipe. So a re-order is never a second bill; only a failed model (refunded, not owned) makes the next attempt a charged one.
 - Polling, listing, downloads, webhook deliveries, **publishing and every load of a published model are free**.
 - A model that **fails is refunded** in full. A `503` at capacity charges nothing.
-- A request is a thousand times an image: **tell the user the price and confirm before calling `create_3d_model`** for a vehicle and color the account does not own yet, and call `get_account` first when the balance may be short. Never retry a `402`.
+- A request is a hundred times an image: **tell the user the price and confirm before calling `create_3d_model`** for a vehicle and color the account does not own yet, and call `get_account` first when the balance may be short. Never retry a `402`.
 
 ## How long it takes
 
 | Case | Wall time | Why |
 | --- | --- | --- |
-| First model of a vehicle | **5–7 minutes** | The four source views are rendered, the mesh is built (`stage: geometry`) and textured (`texture`). |
-| Another color of the same vehicle | **1–2 minutes** | The mesh already exists; only the texture is repainted. |
+| First model of a vehicle | **10–20 minutes** | The four source views are rendered and waited for (`stage: views`), the mesh is built and finished (`geometry`) and the color composed (`texture`). |
+| Another color of the same vehicle | **1–2 minutes** | The finished mesh already exists; only the paint changes. |
 | Someone already asked for this vehicle in this color | immediate | `200` with `status: "ready"` and the files; charged unless the account already owns it. |
 
 Say this before the user waits. Do not present a model as instant.
@@ -51,7 +51,7 @@ Resolve free text first (`vehicle-catalog` skill): a model of the wrong car cost
     "id": "0c5e0b2a-…", "object": "3d_model",
     "status": "processing", "progress": 35, "stage": "geometry",
     "vehicle": { "id": "veh_errc87t1jgata", "make": "toyota", "model": "camry", "year": 2025 },
-    "color": "red", "generator": "meshy-7",
+    "color": "red", "generator": "meshy-7.1",
     "files": null, "polycount": null, "error": null,
     "estimated_seconds_remaining": 170, "webhook": null,
     "public": { "id": "m3d_7f2k9q4hxn2b5c8d", "url": "https://carimage.dev/api/v1/3d/public/m3d_7f2k9q4hxn2b5c8d", "files": null, "embed": { "script": "https://carimage.dev/embed/3d.js", "html": "<script src=\"https://carimage.dev/embed/3d.js\" async></script>\n<car-3d model=\"m3d_7f2k9q4hxn2b5c8d\"></car-3d>" }, "published_at": "…" },
@@ -111,9 +111,9 @@ For an app, a game engine, Blender or a pipeline, download instead. `GET /api/v1
 
 | File | Content type | Typical size | Use |
 | --- | --- | --- | --- |
-| `glb` | `model/gltf-binary` | about 15 MB | The original: three.js, Blender, Unity, Unreal, further processing |
-| `glb_web` | `model/gltf-binary` | about 1.5 MB | The browser build (meshopt, WebP textures): any web viewer, when you host it yourself |
-| `usdz` | `model/vnd.usdz+zip` | about 16 MB | iOS AR Quick Look, visionOS |
+| `glb` | `model/gltf-binary` | about 100 MB | The original, unremeshed (about three million triangles, 4k textures): three.js, Blender, Unity, Unreal, further processing |
+| `glb_web` | `model/gltf-binary` | about 25 MB | The browser build (meshopt, WebP textures): any web viewer, when you host it yourself |
+| `usdz` | `model/vnd.usdz+zip` | about 100 MB | iOS AR Quick Look, visionOS |
 | `fbx` | `application/octet-stream` | similar to the GLB | Maya, 3ds Max, older pipelines |
 | `thumbnail` | `image/png` | a few hundred KB | A transparent still for posters and lists |
 

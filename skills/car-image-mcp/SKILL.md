@@ -1,6 +1,6 @@
 ---
 name: car-image-mcp
-description: Connect an agent or IDE to the Car Image API over MCP, and fix it when the tools do not appear. Covers the hosted HTTP server and the local stdio alternative, where the CAR_IMAGE_API_KEY goes in Claude Code, Codex, Cursor, Claude Desktop and generic MCP hosts, what each of the eleven core tools costs (images, signed URLs, catalog, VIN decoding, 3D models) and which eight more ?toolset=all adds, and how to diagnose a 401, a missing server or an empty tool list. Use for setup, configuration and connection troubleshooting; do not use for calling the API from code (car-image-sdk) or for image workflows once the tools already work (car-image).
+description: Connect an agent or IDE to the Car Image API over MCP, and fix it when the tools do not appear. Covers the hosted HTTP server and the local stdio alternative, where the CAR_IMAGE_API_KEY goes in Claude Code, Codex, Cursor, Claude Desktop and generic MCP hosts, what each of the twelve core tools costs (images, signed URLs, catalog, VIN decoding, 3D models) and which eight more ?toolset=all adds, and how to diagnose a 401, a missing server or an empty tool list. Use for setup, configuration and connection troubleshooting; do not use for calling the API from code (car-image-sdk) or for image workflows once the tools already work (car-image).
 ---
 
 # Connecting over MCP
@@ -137,7 +137,7 @@ That returns the twelve core tools, or tells you exactly what is wrong. Use `"ht
 
 **Server listed, zero tools, or a connection error.** Almost always authentication. Run the `curl` above: a `401` problem document means the key is missing, malformed or revoked. Check that `CAR_IMAGE_API_KEY` is exported in the environment the *host* was launched from — a key in `~/.zshrc` is invisible to a GUI app started from the Dock. Log in again with `car-image login` if in doubt.
 
-**Eleven tools, but no `request_vehicle`, `list_requests` or `share_building`.** The connection is on the core toolset, which is working as designed. Change the URL to `https://carimage.dev/api/mcp?toolset=all` (or add `--toolset all` to the stdio command) and restart the host.
+**Twelve tools, but no `request_vehicle`, `list_requests` or `share_building`.** The connection is on the core toolset, which is working as designed. Change the URL to `https://carimage.dev/api/mcp?toolset=all` (or add `--toolset all` to the stdio command) and restart the host.
 
 **`400 Unknown toolset`.** The query value must be `core` or `all`; anything else is rejected before any tool is listed.
 

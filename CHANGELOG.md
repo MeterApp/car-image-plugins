@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.7.2 — 2026-09-24
+
+The 3D models are built differently.
+
+- `car-3d`: a model is now an unremeshed mesh of about three million triangles with 4k textures and a normal map (`generator: "meshy-7.1"`), so the GLB and USDZ are about 100 MB and the browser build about 25 MB; the first model of a vehicle takes ten to twenty minutes, because its source views are rendered and waited for before the mesh is built, and another color one to two. The public JSON carries `front_theta`, the camera angle the car's front is at, which the `<car-3d>` element reads for its presets.
+
+## 1.7.1 — 2026-09-23
+
+Tool counts.
+
+- `car-image-mcp`: the description said "eleven core tools" and the troubleshooting entry for a connection without the request-board tools began "Eleven tools". Both say twelve, the size of the core toolset since `publish_3d_model` joined it in 1.5.0; `?toolset=all` is still twenty.
+
 ## 1.7.0 — 2026-09-22
 
 Eight camera angles.

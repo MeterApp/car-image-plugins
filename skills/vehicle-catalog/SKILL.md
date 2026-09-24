@@ -5,7 +5,7 @@ description: Turn a vague vehicle reference ("that blue BMW wagon", "a mid-2000s
 
 # Finding the right vehicle
 
-Renders are addressed by **make, model, year** — or by the one **vehicle id** that stands for the three. Getting them right before you render matters, because a render of the wrong car still costs a credit, and a 3D model of the wrong car costs a thousand.
+Renders are addressed by **make, model, year** — or by the one **vehicle id** that stands for the three. Getting them right before you render matters, because a render of the wrong car still costs a credit, and a 3D model of the wrong car costs a hundred.
 
 The catalog is the open [`@meterapp/vehicle-db`](https://github.com/MeterApp/vehicle-db) — 1,603 makes and 44,320 models across model years 1990-2027, built from public sources (NHTSA vPIC, UK DfT/DVLA, NZTA, Malaysia JPJ and others). It covers cars, motorcycles, trucks, buses, MPVs and more, internationally — not just the US market.
 
@@ -62,9 +62,9 @@ Use it to:
 - **Confirm a vehicle exists** before spending a credit.
 - **List a make's models** — search the make, read the models back.
 - **Find valid years** — the response tells you which model years exist, so you never request one that does not, and hands you the id of each.
-- **Recover from a 404** — if a render returned 404, search for the canonical spelling.
+- **Recover from a 404** — read its `suggestions` first (real catalog vehicles, closest first, with ids); search only when they are empty.
 
-The catalog's spelling wins. If a user says "Mercedes", the catalog may hold "Mercedes-Benz"; if they say "VW", it may be "Volkswagen". Pass the canonical name back to the render call.
+The catalog's spelling wins, and the render endpoints read the common alternatives themselves (`/docs/vehicles#matching`): nicknames (`Mercedes`, `VW`, `Chevy`), other separators (`cx5`, `landrover`), word order and language (`Série 3`, `Classe A`, `q6-e-tron-sportback`), same-body names (`rx-350`, `camry-hybrid`, `740`), engine and trim words (`tucson-n-line-s-t-gdi-hev-auto`, `x3-xdrive30d`), badges (`c300`, `760`) and typos (`elentra`, `porshe`). The response header `X-Vehicle-Match` says whether the spelling was literal (`exact`) or which rule interpreted it (`prefix`, `separator`, `family`, `words`, `alias`, `trim`, `badge`, `fuzzy`); `vehicle_id` / `X-Vehicle-Id` names the vehicle served. Body styles, performance derivatives and electric twins are never substituted, and neither is a model year the catalog does not carry: those answer `404` with `suggestions`, real catalog vehicles with ids you can retry with (`vehicle: <id>`) or show to the human. When a render's `X-Vehicle-Match` is not `exact`, say in one line which vehicle was served.
 
 ## Disambiguating like a human would
 
