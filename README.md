@@ -2,7 +2,7 @@
 
 Studio-quality, transparent-background renders of any vehicle, wherever your agent works. One repository, native packaging for each client, plus the vendor-neutral [Open Plugins](https://agent-plugins.org) manifest.
 
-Any make, model and year from **1990 to 2027** — 1,603 makes and 44,320 models from the open [`@meterapp/vehicle-db`](https://github.com/MeterApp/vehicle-db) catalog. Eight camera views, any paint color (15 named presets or any hex), PNG/WebP/JPG up to 1024 px, delivered at any width × height (`fit` contain, cover or inside), transparent or on a solid background, optionally trimmed to the car. Plus free VIN decoding, stable vehicle ids, and textured 3D models (GLB, USDZ, FBX) of any vehicle in any paint.
+Any make, model and year from **1990 to 2027** — 1,607 makes and 46,120 models from the open [`@meterapp/vehicle-db`](https://github.com/MeterApp/vehicle-db) catalog. Eight camera views, any paint color (15 named presets or any hex), PNG/WebP/JPG up to 1024 px, delivered at any width × height (`fit` contain, cover or inside), transparent or on a solid background, optionally trimmed to the car. Plus free VIN decoding, stable vehicle ids, and textured 3D models (GLB, USDZ, FBX) of any vehicle in any paint.
 
 **1 credit per image · 100 credits per 3D model, once per vehicle and color, hosted for free · VIN decoding free · Free 100 credits at signup · Pro $29/mo 25,000 credits a month · Business $99/mo 150,000 · $1 per 100 credits beyond the allowance, purchased credits never expire.**
 
@@ -78,12 +78,14 @@ claude plugin validate . --strict
 codex plugin marketplace add . --json
 ```
 
-This repository is published from the Car Image API source. Please open an issue here, or write to [hello@meterapp.co](mailto:hello@meterapp.co), rather than sending a pull request — changes are overwritten on the next release.
+This repository is published from the Car Image API source. Please open an issue here, or write to [support@carimage.dev](mailto:support@carimage.dev), rather than sending a pull request — changes are overwritten on the next release.
 
 ## Links
 
-[Docs](https://carimage.dev/docs?ref=plugin) · [Install guide](https://carimage.dev/install?ref=plugin) · [agents.md](https://carimage.dev/agents.md) · [openapi.json](https://carimage.dev/openapi.json) · [Error reference](https://carimage.dev/errors.md) · [hello@meterapp.co](mailto:hello@meterapp.co)
+[Docs](https://carimage.dev/docs?ref=plugin) · [Install guide](https://carimage.dev/install?ref=plugin) · [agents.md](https://carimage.dev/agents.md) · [openapi.json](https://carimage.dev/openapi.json) · [Error reference](https://carimage.dev/errors.md) · [support@carimage.dev](mailto:support@carimage.dev)
 
 ## License
 
 MIT
+
+The MCP configuration sends `X-CarImage-Integration: plugin` for usage attribution. This declares the integration; it contains no user identity, prompt, or conversation text. The calling host may separately identify itself through MCP client information.

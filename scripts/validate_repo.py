@@ -124,7 +124,7 @@ server = load_json(".mcp.json").get("mcpServers", {}).get(PLUGIN_NAME, {})
 expected = {
     "type": "http",
     "url": PLUGIN_MCP_URL,
-    "headers": {"Authorization": "Bearer ${CAR_IMAGE_API_KEY}"},
+    "headers": {"Authorization": "Bearer ${CAR_IMAGE_API_KEY}", "X-CarImage-Integration": "plugin"},
 }
 if server != expected:
     error(f".mcp.json must configure the hosted server exactly as {expected}, got {server}")

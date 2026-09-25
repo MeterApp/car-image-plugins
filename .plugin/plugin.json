@@ -1,11 +1,11 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "car-image",
-  "version": "1.7.2",
+  "version": "1.7.4",
   "description": "Studio-quality, transparent-background vehicle images for any project. Render any make, model and year in 8 camera views and any paint color, mint signed URLs a browser can load without a key, decode VINs for free, or build a 3D model of any vehicle.",
   "author": {
     "name": "Meter",
-    "email": "hello@meterapp.co",
+    "email": "support@carimage.dev",
     "url": "https://meterapp.co"
   },
   "homepage": "https://carimage.dev/docs?ref=plugin",

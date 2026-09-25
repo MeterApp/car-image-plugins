@@ -1,10 +1,21 @@
 # Changelog
 
+## 1.7.4 — 2026-09-25
+
+- Identify plugin requests with the declared `X-CarImage-Integration: plugin` header for usage attribution. It contains no user or conversation content.
+
+## 1.7.3 — 2026-09-24
+
+VIN errors.
+
+- `vehicle-catalog` and the `car-image` error reference: a `404` `VIN not recognized` goes back to the user (re-check the VIN, above all the first three characters, the maker code, or decode a partial VIN with `*` and a `year`), never to another decode. NHTSA's data covers vehicles made for the US market, so a correctly typed VIN from another market is a `404` too: find that car by name. The error reference used to send every `404`, this one included, to the catalog search or to `decode_vin`.
+- Both MCP servers now append the same step to a `decode_vin` error (SDK 1.10.0, CLI 1.7.5), and a `400`'s detail no longer repeats `Invalid VIN`.
+
 ## 1.7.2 — 2026-09-24
 
 The 3D models are built differently.
 
-- `car-3d`: a model is now an unremeshed mesh of about three million triangles with 4k textures and a normal map (`generator: "meshy-7.1"`), so the GLB and USDZ are about 100 MB and the browser build about 25 MB; the first model of a vehicle takes ten to twenty minutes, because its source views are rendered and waited for before the mesh is built, and another color one to two. The public JSON carries `front_theta`, the camera angle the car's front is at, which the `<car-3d>` element reads for its presets.
+- `car-3d`: a model is now an unremeshed mesh of about three million triangles with 4k textures and a normal map (`generator: "meshy-7.1"`), so the GLB is about 100 MB and the browser build about 30 MB, while the USDZ and FBX (about 25 MB) are converted from a decimated build of about 300,000 triangles with the same textures; the first model of a vehicle takes ten to twenty minutes, because its source views are rendered and waited for before the mesh is built, and another color one to two. The public JSON carries `front_theta`, the camera angle the car's front is at, which the `<car-3d>` element reads for its presets.
 
 ## 1.7.1 — 2026-09-23
 

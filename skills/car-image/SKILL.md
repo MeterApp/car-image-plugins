@@ -5,7 +5,7 @@ description: Fetch studio-quality, transparent-background images of real vehicle
 
 # Car Image API
 
-Studio-quality, transparent-background renders of any vehicle in the open [`@meterapp/vehicle-db`](https://github.com/MeterApp/vehicle-db) catalog — 1,603 makes, 44,320 models, model years 1990-2027.
+Studio-quality, transparent-background renders of any vehicle in the open [`@meterapp/vehicle-db`](https://github.com/MeterApp/vehicle-db) catalog — 1,607 makes, 46,120 models, model years 1990-2027.
 
 - **Views:** eight, in order around the car: `front`, `front-3-4` (the hero, the default), `side`, `rear-3-4`, `rear`, `rear-3-4-right`, `side-right`, `front-3-4-right`. `front-3-4`, `side` and `rear-3-4` show the car's left side with the nose pointing left; each `-right` twin shows its right side with the nose pointing right, so pick the one that faces into your layout
 - **Colors:** any paint. The 15 presets `white black gray silver blue red green brown beige tan orange yellow gold burgundy purple`, or any hex (`"#1a2b3c"` in JSON, `color=1a2b3c` in a URL); a custom paint costs the same 1 credit as a preset
@@ -19,7 +19,7 @@ Base URL `https://carimage.dev`. Docs: [`/docs`](https://carimage.dev/docs?ref=p
 
 - Every delivered image costs **exactly 1 credit**, whether it was generated or served from cache.
 - A signed delivery URL costs **1 credit when created**. Loading it is free until it expires.
-- **A plan carries the license and a monthly credit allowance.** Free: $0, **100 credits once at signup** (no card), evaluation and personal projects, up to 100 distinct vehicles a month. Pro: $29/month, 25,000 credits a month, commercial license while the plan is active, 2,500 distinct vehicles a month. Business: $99/month, 150,000 credits a month, 15,000 vehicles. Enterprise: custom, no cap. Beyond the allowance every paid plan pays **$1 per 100 credits**; purchased credits never expire, included credits reset monthly. `get_account` reports the plan in force as `data.plan`.
+- **A plan carries the license and a monthly credit allowance.** Free: $0, **100 credits once at signup** (no card), evaluation and personal projects, up to 100 distinct vehicles a month. Pro: $29/month, 25,000 credits a month, commercial license while the plan is active, 2,500 distinct vehicles a month. Business: $99/month, 150,000 credits a month, 15,000 vehicles. Enterprise: custom, no cap. Every account, including Free, can buy credits at **$1 per 100 credits**; purchased credits never expire, require no subscription, have no monthly purchase cap and are spent after subscription credits, included credits reset monthly. `get_account` reports the plan in force as `data.plan`.
 - Catalog search, resolve, VIN decoding, vehicle lookups by id, options, account, feedback and the request board (vehicle and feature requests) are **free**.
 - A **3D model costs 100 credits ($1.00)**, charged at creation and never again for a vehicle and color the account already owns; polling, downloads and publishing (hosting it as a key-free embed) are free. Confirm before creating one (the `car-3d` skill).
 

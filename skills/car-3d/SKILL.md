@@ -112,8 +112,8 @@ For an app, a game engine, Blender or a pipeline, download instead. `GET /api/v1
 | File | Content type | Typical size | Use |
 | --- | --- | --- | --- |
 | `glb` | `model/gltf-binary` | about 100 MB | The original, unremeshed (about three million triangles, 4k textures): three.js, Blender, Unity, Unreal, further processing |
-| `glb_web` | `model/gltf-binary` | about 25 MB | The browser build (meshopt, WebP textures): any web viewer, when you host it yourself |
-| `usdz` | `model/vnd.usdz+zip` | about 100 MB | iOS AR Quick Look, visionOS |
+| `glb_web` | `model/gltf-binary` | about 30 MB | The browser build (meshopt, WebP textures): any web viewer, when you host it yourself |
+| `usdz` | `model/vnd.usdz+zip` | about 25 MB | iOS AR Quick Look, visionOS; converted from a decimated build (about 300,000 triangles, the same 4k textures) |
 | `fbx` | `application/octet-stream` | similar to the GLB | Maya, 3ds Max, older pipelines |
 | `thumbnail` | `image/png` | a few hundred KB | A transparent still for posters and lists |
 

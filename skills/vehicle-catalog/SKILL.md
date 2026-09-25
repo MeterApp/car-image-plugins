@@ -7,7 +7,7 @@ description: Turn a vague vehicle reference ("that blue BMW wagon", "a mid-2000s
 
 Renders are addressed by **make, model, year** — or by the one **vehicle id** that stands for the three. Getting them right before you render matters, because a render of the wrong car still costs a credit, and a 3D model of the wrong car costs a hundred.
 
-The catalog is the open [`@meterapp/vehicle-db`](https://github.com/MeterApp/vehicle-db) — 1,603 makes and 44,320 models across model years 1990-2027, built from public sources (NHTSA vPIC, UK DfT/DVLA, NZTA, Malaysia JPJ and others). It covers cars, motorcycles, trucks, buses, MPVs and more, internationally — not just the US market.
+The catalog is the open [`@meterapp/vehicle-db`](https://github.com/MeterApp/vehicle-db) — 1,607 makes and 46,120 models across model years 1990-2027, built from public sources (NHTSA vPIC, UK DfT/DVLA, NZTA, Malaysia JPJ and others). It covers cars, motorcycles, trucks, buses, MPVs and more, internationally — not just the US market.
 
 All the lookups below are **free**. Use them liberally.
 
@@ -51,7 +51,7 @@ It reads the view and color out of the phrase too (a hex such as `#1a2b3c` is ke
 - `vehicle` is `null` when the decoded make and model are not in the catalog (a trailer, a commercial chassis). Say so and offer `request_vehicle`; the decoded fields (`attributes` carries every vPIC variable) are still worth showing.
 - The catalog keys on make, model and year: show the decoded `trim`, `body_class` and `engine` next to the image rather than claiming the render depicts them.
 - Pass `year` when you know it: the tenth VIN character encodes the year in a 30-year cycle, and a hint helps a partial VIN.
-- A `400` is not a VIN (length, an I, O or Q); a `404` is a pattern NHTSA does not know. Ask the user to check the characters rather than guessing.
+- A `400` is not a VIN (length, an I, O or Q); a `404` is a pattern NHTSA does not know, so decoding it again will not help. Ask the user to check the characters rather than guessing, above all the first three (the maker code), or decode what they are sure of as a partial VIN with `*` and a `year`. NHTSA's data covers vehicles made for the US market: find any other car by name with `resolve_vehicle` or `search_vehicles`.
 
 ## Searching and listing
 

@@ -31,7 +31,8 @@ nested plugin directory, which is why one repository serves all four channels.
   license and a monthly credit allowance (Free: 100 credits once at signup,
   evaluation and personal projects; Pro $29/month: 25,000 credits a month and a
   commercial license while active; Business $99/month: 150,000; Enterprise:
-  custom), $1 per 100 credits beyond the allowance, purchased credits never
+  custom), $1 per 100 credits on any plan (including Free), no subscription or monthly
+purchase cap; subscription credits are spent first, purchased credits never
   expire; 8 views, any paint color (15 named presets or any hex), PNG/WebP/JPG
   up to 1024 px; stable vehicle ids (`veh_…`); VIN decoding free; a 3D model
   100 credits, charged at creation. Prices, plans, allowances and credit
@@ -42,7 +43,7 @@ nested plugin directory, which is why one repository serves all four channels.
   (`openapi.json`, `agents.md`, `llms.txt`, `errors.md`, `install.sh`) are
   exempt — callers concatenate those. The validator enforces it.
 - **Never link the private server repository.** It 404s for everyone outside the
-  org. Link `/docs`, the open catalog, or `hello@meterapp.co`.
+  org. Link `/docs`, the open catalog, or `support@carimage.dev`.
 - **Skill frontmatter is `name` and `description` only**, the name matches the
   folder, and the description says both when to use the skill *and* when not to
   — that text is the only thing the model routes on. The validator requires at
