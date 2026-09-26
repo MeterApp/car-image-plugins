@@ -38,7 +38,7 @@ car-image logout
 | `feedback (--request-id ID \| --make … --year …) (--rating 1-5 \| --good \| --bad) [--reason]` | Rates a delivered image. Free. |
 | `doctor [--json] [--yes] [--no-image]` | Smoke-tests every endpoint with status, latency, cache state and fix hints. Exit 1 on any failure. |
 | `billing [--plan pro\|business [--yearly]] [--credits …] [--portal]` | Opens hosted Stripe Checkout for a plan or extra credits, or the billing portal. The CLI never touches card data; an agent runs it only when the human asked. |
-| `mcp [--toolset core\|all]` | Runs the stdio MCP server: `core` (default) is the twelve core tools (images, catalog, VIN, 3D, publishing), `all` adds the request board. |
+| `mcp [--toolset core\|all]` | Runs the stdio MCP server: `core` (default) is the sixteen core tools (images, catalog, VIN, 3D, publishing), `all` adds the request board. |
 | `agent-config [--host claude-code\|claude-desktop\|cursor\|chatgpt\|generic] [--remote] [--json]` | Prints ready-to-paste MCP configuration (core toolset, with the `?toolset=all` opt-in noted). |
 | `config path \| get <key> \| set <key> <value> \| list` | Keys: `autoUpdate`, `telemetry`, `baseUrl`. |
 

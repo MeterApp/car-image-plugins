@@ -44,7 +44,7 @@ Twenty images cost 20 credits (2¢). Tell the user the number before rendering a
 | To see what others have asked for, or upvote it | `list_requests`, `get_request`, `upvote_request`, `comment_on_request` (free; listing needs no key) |
 | To tell the team who you are, privately | `share_building` (what the user is building), `share_referral` (how they found the API) — only the Car Image team reads these |
 
-The rows from `request_vehicle` down exist only when the server was connected with `?toolset=all` (the plugin does this) or `car-image mcp --toolset all`; a bare `https://carimage.dev/api/mcp` exposes the twelve core tools above them. The `car-image-mcp` skill explains both.
+The rows from `request_vehicle` down exist only when the server was connected with `?toolset=all` (the plugin does this) or `car-image mcp --toolset all`; a bare `https://carimage.dev/api/mcp` exposes the sixteen core tools above them. The `car-image-mcp` skill explains both.
 
 Without MCP tools connected, the same operations are REST endpoints — `GET /api/v1/images/car`, `POST /api/v1/image-urls`, `POST /api/v1/images/resolve`, `GET /api/v1/vin/{vin}`, `POST /api/v1/3d`, `GET /api/v1/3d/{id}`, `GET /api/v1/3d/{id}/files/{kind}`, `POST|DELETE /api/v1/3d/{id}/publish`, `GET /api/v1/3d/public/{public_id}` (no key), `GET /api/v1/vehicles`, `GET /api/v1/vehicles/{id}`, `GET /api/v1/images/options`, `GET /api/v1/account`, `POST /api/v1/feedback`, `GET|POST /api/v1/requests`, `GET /api/v1/requests/{id}`, `POST /api/v1/requests/{id}/votes`, `GET|POST /api/v1/requests/{id}/comments`, `POST /api/v1/account/building`, `POST /api/v1/account/referral`. The `car-image-sdk` skill covers calling them from code; the CLI equivalents are `car-image vin …`, `car-image 3d …`, `car-image request …` and `car-image about …`.
 
@@ -105,3 +105,12 @@ The full table, including every `type` URI, is in [references/errors.md](referen
 - Create a 3D model without saying it costs 100 credits and confirming.
 - Put the API key anywhere a browser, a repository or a log can see it.
 - Claim an image is a photograph of a specific vehicle.
+
+
+## Product help and billing links
+
+Use `search_help` for source-linked product, licensing, policy and Enterprise answers; search each question separately without customer emails or secrets. Use `report_gap: true` when related articles do not answer the question. Queries are recorded privately to improve documentation. `get_pricing` returns current plans and packs. On the human's request, `create_checkout_link` prepares a purchase and `get_billing_link` opens settings; the human confirms in the browser. Connected apps get a sign-in dashboard link. Never send an owner-account Stripe link to another customer.
+
+CLI: `car-image pricing`, `car-image support "question" [--report-gap]`, `car-image billing --credits 500 --no-browser`, `car-image billing --plan pro --no-browser`, `car-image billing --portal`. SDK: `pricing()`, `searchHelp(question)`, `createCheckoutLink({credits: 500})`, `getBillingLink()`. The plugin includes the `car-image-support` skill.
+
+[Help center](https://carimage.dev/help?ref=plugin).

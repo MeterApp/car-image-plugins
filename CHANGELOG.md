@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.8.0 — 2026-09-26
+
+- Add product support, source-linked help, live pricing and browser-confirmed billing links.
+- Add car-image-support skill and private missing-context reporting; sixteen core tools and twenty-four with toolset=all.
+
 ## 1.7.4 — 2026-09-25
 
 - Identify plugin requests with the declared `X-CarImage-Integration: plugin` header for usage attribution. It contains no user or conversation content.

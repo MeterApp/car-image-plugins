@@ -40,7 +40,7 @@ Get one with `npx @meterapp/car-image login` (browser device flow) or at [the da
 
 ## What you get
 
-Six skills and the hosted MCP server.
+Seven skills and the hosted MCP server.
 
 | Skill | Job |
 | --- | --- |
@@ -49,9 +49,10 @@ Six skills and the hosted MCP server.
 | `vehicle-catalog` | Free text or a VIN → exact make, model and year and its stable id; search, disambiguation, offline lookups |
 | `car-3d` | 3D models (GLB, USDZ, FBX) of any vehicle in any paint: cost, owning it once, waiting, webhooks, publishing and the `<car-3d>` embed |
 | `car-image-sdk` | The TypeScript SDK, the CLI, and plain REST |
+| `car-image-support` | Source-linked product answers, pricing, missing-context reporting and hosted billing links |
 | `car-image-mcp` | Connecting over MCP and fixing it when tools do not appear |
 
-The hosted MCP server at `https://carimage.dev/api/mcp` exposes twelve core tools: `get_car_image`, `create_car_image_urls`, `search_vehicles`, `resolve_vehicle`, `decode_vin`, `create_3d_model`, `get_3d_model`, `publish_3d_model`, `list_image_options`, `get_account`, `rate_image` and `describe_api`. `get_car_image` and `create_car_image_urls` cost 1 credit; `create_3d_model` costs 100 (free once the account owns the vehicle and color); the rest are free. This plugin connects to `https://carimage.dev/api/mcp?toolset=all`, which adds the free request-board tools `list_requests`, `request_vehicle`, `request_feature`, `get_request`, `upvote_request` and `comment_on_request`, and `share_building` / `share_referral` for telling the team about yourself (private) — twenty tools in all, because the skills teach them. Missing a vehicle? The agent can file it, and you get an email when it is live.
+The hosted MCP server at `https://carimage.dev/api/mcp` exposes sixteen core tools: `get_car_image`, `create_car_image_urls`, `search_vehicles`, `resolve_vehicle`, `decode_vin`, `create_3d_model`, `get_3d_model`, `publish_3d_model`, `list_image_options`, `get_account`, `rate_image`, `describe_api`, `get_pricing`, `search_help`, `create_checkout_link` and `get_billing_link`. `get_car_image` and `create_car_image_urls` cost 1 credit; `create_3d_model` costs 100 (free once the account owns the vehicle and color); the rest are free. This plugin connects to `https://carimage.dev/api/mcp?toolset=all`, which adds the free request-board tools `list_requests`, `request_vehicle`, `request_feature`, `get_request`, `upvote_request` and `comment_on_request`, and `share_building` / `share_referral` for telling the team about yourself (private) — twenty-four tools in all, because the skills teach them. Missing a vehicle? The agent can file it, and you get an email when it is live.
 
 ## Authentication
 
@@ -89,3 +90,12 @@ This repository is published from the Car Image API source. Please open an issue
 MIT
 
 The MCP configuration sends `X-CarImage-Integration: plugin` for usage attribution. This declares the integration; it contains no user identity, prompt, or conversation text. The calling host may separately identify itself through MCP client information.
+
+
+## Product help and billing links
+
+Use `search_help` for source-linked product, licensing, policy and Enterprise answers; search each question separately without customer emails or secrets. Use `report_gap: true` when related articles do not answer the question. Queries are recorded privately to improve documentation. `get_pricing` returns current plans and packs. On the human's request, `create_checkout_link` prepares a purchase and `get_billing_link` opens settings; the human confirms in the browser. Connected apps get a sign-in dashboard link. Never send an owner-account Stripe link to another customer.
+
+CLI: `car-image pricing`, `car-image support "question" [--report-gap]`, `car-image billing --credits 500 --no-browser`, `car-image billing --plan pro --no-browser`, `car-image billing --portal`. SDK: `pricing()`, `searchHelp(question)`, `createCheckoutLink({credits: 500})`, `getBillingLink()`. The plugin includes the `car-image-support` skill.
+
+[Help center](https://carimage.dev/help?ref=plugin).

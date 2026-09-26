@@ -50,7 +50,7 @@ purchase cap; subscription credits are spent first, purchased credits never
   least 120 characters.
 - **`agents/openai.yaml` stays in sync with its skill.** Declare the MCP
   dependency only for skills that actually call MCP tools (`car-image`,
-  `car-image-urls`, `vehicle-catalog`, `car-3d`); the SDK and setup skills must
+  `car-image-urls`, `vehicle-catalog`, `car-3d`, `car-image-support`); the SDK and setup skills must
   not.
 - **No key, ever.** Manifests reference `${CAR_IMAGE_API_KEY}`; nothing here
   contains a literal key, and no example puts one in a URL or in browser code.
