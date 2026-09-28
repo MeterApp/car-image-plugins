@@ -75,7 +75,7 @@ try {
 - Check `get_account` / `client.account()` before a large job.
 - Print progress and a running credit count in bulk scripts.
 - Make bulk scripts resumable — skip files that already exist on disk, so a crash at item 400 does not re-bill the first 399.
-- Never write a retry loop around a `402`. A `402` with `code: "plan_vehicle_limit"` is not a balance problem: the job named more new distinct vehicles than the plan allows this month (`plan`, `vehicles_this_month`, `vehicles_per_month`, `requested` on the problem); report it and stop.
+- Never write a retry loop around a `402`. A `402` with `code: "plan_vehicle_limit"` is not a balance problem: the job named more new distinct vehicles than the plan allows this month (`scope`, `plan`, `vehicles_this_month`, `vehicles_per_month`, `requested` on the problem); report it and stop.
 
 **Batch what can be batched.** `createImageUrls` takes up to 50 images in one call. Fifty separate calls cost the same credits but waste time and rate limit.
 
@@ -139,3 +139,29 @@ curl --fail-with-body -H "Authorization: Bearer $CAR_IMAGE_API_KEY" \
 ```
 
 The query spells the vehicle as `make`, `model` and `year`, or as `vehicle=veh_…` (a stable id); the paint as `color=<preset>` or `color=1a2b3c` (bare hex; responses echo `#1a2b3c`); the dimensions `w` and `h` (1–1024), with `fit=contain|cover|inside` (default `contain`), `background=transparent|white|black|<hex>`, `trim=1` with `padding=0-50`, and `format=png|webp|jpg|auto` (`auto` answers with `Vary: Accept`). `GET /api/v1/vin/{vin}` decodes a VIN for free; `POST /api/v1/3d` (100 credits, send an `Idempotency-Key`), `GET /api/v1/3d/{id}` and `GET /api/v1/3d/{id}/files/{kind}` (a 302 to a one-hour signed URL; `curl -L`) are the 3D endpoints. Response headers carry `X-Credits-Charged`, `X-Credits-Remaining`, `X-Image-Source` (`cache` or `generated`), `X-Image-Width`, `X-Image-Height` and `X-Request-Id`. The machine-readable contract is [`/openapi.json`](https://carimage.dev/openapi.json); `car-image describe <operationId>` explains any endpoint from it.
+
+## Make logos
+
+Use MCP `get_make_logo({make: "toyota", width: 256, trim: true})` for an inline
+logo, or `car-image logo --make Toyota --width 256 --trim --out toyota-logo.png`
+to save it. Both accept the image transforms; MCP `format: "auto"` returns PNG.
+Each successful delivery costs 1 credit, including cache hits. There is no signed
+logo URL: download and host the file for a site. Do not use vehicle image URL
+or feedback tools for logos. On 402, stop and ask the human; never buy credits.
+
+`GET /api/v1/images/logo?make=toyota` returns a prompt-generated catalog make logo.
+Requires `images:read`; 1 credit per delivered logo, including cache hits. Failed
+delivery is refunded. The first request generates a transparent master; later
+requests share it. Supports `size=thumb|small|medium|large`, `w`/`h` (1–1024),
+`fit=contain|cover|inside`, `background=transparent|white|black|hex`, `trim=1`,
+`padding=0..50` with trim, and `format=png|webp|jpg|auto`. Returns image bytes and
+the same billing/dimension/source headers as car images. No signed URL or 304
+mode, model, year, view, paint color or custom prompt. Unknown makes return 404.
+Cold renders share the existing account and service capacity limits; logos do
+not count as distinct vehicles. SDK: `client.getMakeLogo({make: "toyota", width: 256})`.
+Generated logos can be inaccurate; inspect them before use.
+
+Logos are third-party trademarks. They are served for referential display of the make they identify, no license is granted, and they sit outside every VehiclesDB indemnity — see the API terms.
+
+API terms: https://carimage.dev/terms?ref=plugin#logos
+Docs: https://carimage.dev/docs/logos?ref=plugin

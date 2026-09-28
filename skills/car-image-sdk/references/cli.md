@@ -38,7 +38,7 @@ car-image logout
 | `feedback (--request-id ID \| --make … --year …) (--rating 1-5 \| --good \| --bad) [--reason]` | Rates a delivered image. Free. |
 | `doctor [--json] [--yes] [--no-image]` | Smoke-tests every endpoint with status, latency, cache state and fix hints. Exit 1 on any failure. |
 | `billing [--plan pro\|business [--yearly]] [--credits …] [--portal]` | Opens hosted Stripe Checkout for a plan or extra credits, or the billing portal. The CLI never touches card data; an agent runs it only when the human asked. |
-| `mcp [--toolset core\|all]` | Runs the stdio MCP server: `core` (default) is the sixteen core tools (images, catalog, VIN, 3D, publishing), `all` adds the request board. |
+| `mcp [--toolset core\|all]` | Runs the stdio MCP server: `core` (default) is the seventeen core tools (images, catalog, VIN, 3D, publishing), `all` adds the request board. |
 | `agent-config [--host claude-code\|claude-desktop\|cursor\|chatgpt\|generic] [--remote] [--json]` | Prints ready-to-paste MCP configuration (core toolset, with the `?toolset=all` opt-in noted). |
 | `config path \| get <key> \| set <key> <value> \| list` | Keys: `autoUpdate`, `telemetry`, `baseUrl`. |
 
@@ -68,7 +68,7 @@ car-image 3d get <id> --json | jq .data.status                      # queued | p
 car-image 3d download <id> --format usdz --out camry.usdz
 ```
 
-`3d create` charges 100 credits the moment it is accepted, cached or not, unless the account already owns that vehicle in that color (then it is free), so a script should keep the returned `id` and rerun `3d get <id> --wait` rather than creating again. The first model of a vehicle takes 3–5 minutes; another color of the same vehicle 1–2 minutes.
+`3d create` charges 100 credits the moment it is accepted, cached or not, unless the account already owns that vehicle in that color (then it is free), so a script should keep the returned `id` and rerun `3d get <id> --wait` rather than creating again. The first model of a vehicle takes 10–20 minutes; another color of the same vehicle 1–2 minutes.
 
 `url` sends an `Idempotency-Key` on every call — generated, or `--idempotency-key <key>` (1–255 characters of letters, digits, `.` `_` `:` `-`). The same key with the same request within 24 hours replays the first response (`Idempotent-Replayed: true`) instead of billing again; a different request under the same key is a `422`, and a retry that overtakes the first request still running is a `409` with `Retry-After`. Choose the key yourself when a job queue or a rerun may repeat the command.
 
@@ -122,3 +122,19 @@ Put the key in the secret store, never in the workflow file. `car-image doctor -
 `car-image doctor` first. It tests health, options, catalog lookups, search, resolve, account, a signed-URL mint and redeem, and optionally a keyed image fetch, printing latency, cache state, credits and a fix hint for each failure.
 
 Errors print as `Title: detail`, a hint (`401 → car-image login`, `402 → car-image billing`, `429 → wait Retry-After`) and the `request_id`. Quote the `request_id` when reporting a problem; never paste the key.
+
+## Make logos
+
+Use MCP `get_make_logo({make: "toyota", width: 256, trim: true})` for an inline
+logo, or `car-image logo --make Toyota --width 256 --trim --out toyota-logo.png`
+to save it. Both accept the image transforms; MCP `format: "auto"` returns PNG.
+Each successful delivery costs 1 credit, including cache hits. There is no signed
+logo URL: download and host the file for a site. Do not use vehicle image URL
+or feedback tools for logos. On 402, stop and ask the human; never buy credits.
+
+SDK: `client.getMakeLogo({ make: "toyota", width: 256, trim: true })` returns bytes and billing metadata.
+
+Generated logos can be inaccurate; inspect before use. Logos are third-party trademarks,
+for referential display only; no license is granted and they sit outside every
+VehiclesDB indemnity. [Logo docs](https://carimage.dev/docs/logos?ref=plugin)
+· [API terms](https://carimage.dev/terms?ref=plugin#logos).

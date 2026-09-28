@@ -57,6 +57,8 @@ It reads the view and color out of the phrase too (a hex such as `#1a2b3c` is ke
 
 `search_vehicles` (REST: `GET /api/v1/vehicles?q=`) fuzzy-matches makes and models with typo tolerance and returns canonical names plus the years available for each, with a vehicle id per year (`ids`) and `id` when the query names a single year.
 
+Render and catalog lookups also accept vehicle-db's reviewed aliases (`maccane` → `macan`, `prado` → `land-cruiser-prado`) after local matching misses. BMW petrol badges preserve an explicit body (`430-gran-coupe` → `430i-gran-coupe`). These require one catalog model in the requested make/year and report `X-Vehicle-Match: alias`; ambiguous or unverified results stay 404s. A search result's rank alone is not permission to substitute it.
+
 Use it to:
 
 - **Confirm a vehicle exists** before spending a credit.

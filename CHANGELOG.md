@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.10.0 — 2026-09-28
+
+- Add get_make_logo to both MCP toolsets and car-image logo to the CLI references.
+- Synchronize tool inventories, SDK examples and logo licensing guidance.
+
+## 1.9.0 — 2026-09-28
+
+- Document the prompt-generated make logo REST API and SDK method: one credit per delivery, with trademark and indemnity exclusions.
+
 ## 1.8.0 — 2026-09-26
 
 - Add product support, source-linked help, live pricing and browser-confirmed billing links.

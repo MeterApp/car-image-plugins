@@ -1,6 +1,6 @@
 ---
 name: car-image
-description: Fetch studio-quality, transparent-background images of real vehicles (any make, model and year from 1990-2027) for product pages, listings, dealer tools, comparison sites, emails and decks. Covers the Car Image API by Meter — authentication, the per-image credit cost, which call to make, and how to handle 402 and 429. Use for any request involving a picture of a car, truck, motorcycle or other vehicle; do not use for embedding URLs in a browser or document (car-image-urls), catalog lookups (vehicle-catalog), SDK and CLI code (car-image-sdk), or connection setup (car-image-mcp).
+description: Fetch catalog make logos with get_make_logo, or fetch studio-quality, transparent-background images of real vehicles (any make, model and year from 1990-2027) for product pages, listings, dealer tools, comparison sites, emails and decks. Covers the Car Image API by Meter — authentication, the per-image credit cost, which call to make, and how to handle 402 and 429. Use for any request involving a picture of a car, truck, motorcycle or other vehicle; do not use for embedding URLs in a browser or document (car-image-urls), catalog lookups (vehicle-catalog), SDK and CLI code (car-image-sdk), or connection setup (car-image-mcp).
 ---
 
 # Car Image API
@@ -23,12 +23,16 @@ Base URL `https://carimage.dev`. Docs: [`/docs`](https://carimage.dev/docs?ref=p
 - Catalog search, resolve, VIN decoding, vehicle lookups by id, options, account, feedback and the request board (vehicle and feature requests) are **free**.
 - A **3D model costs 100 credits ($1.00)**, charged at creation and never again for a vehicle and color the account already owns; polling, downloads and publishing (hosting it as a key-free embed) are free. Confirm before creating one (the `car-3d` skill).
 
-Twenty images cost 20 credits (2¢). Tell the user the number before rendering a batch they did not explicitly size, and call `get_account` first when the batch is large.
+Twenty images cost 20 credits (20¢). Tell the user the number before rendering a batch they did not explicitly size, and call `get_account` first when the batch is large.
 
 ## Pick the right call
 
 | You need | Use |
 | --- | --- |
+| A catalog make logo | `get_make_logo` (1 credit) — inline image; make and transforms only; no trademark license |
+| API reference | `describe_api` (free) |
+| Current prices or product help | `get_pricing`, `search_help` (free) → see `car-image-support` |
+| Human-requested checkout or billing settings | `create_checkout_link`, `get_billing_link` (free links; human confirms in browser) |
 | Image bytes in a script, backend or notebook | `get_car_image` — returns the image inline plus `credits_charged`, `credits_remaining`, `source` (`cache`/`generated`), `request_id` |
 | A URL a browser, email or document can load | `create_car_image_urls` → see the `car-image-urls` skill |
 | Free text like "red 2024 porsche 911 side view" | `resolve_vehicle` first → see the `vehicle-catalog` skill; its `params.vehicle_id` is what to render |
@@ -44,7 +48,7 @@ Twenty images cost 20 credits (2¢). Tell the user the number before rendering a
 | To see what others have asked for, or upvote it | `list_requests`, `get_request`, `upvote_request`, `comment_on_request` (free; listing needs no key) |
 | To tell the team who you are, privately | `share_building` (what the user is building), `share_referral` (how they found the API) — only the Car Image team reads these |
 
-The rows from `request_vehicle` down exist only when the server was connected with `?toolset=all` (the plugin does this) or `car-image mcp --toolset all`; a bare `https://carimage.dev/api/mcp` exposes the sixteen core tools above them. The `car-image-mcp` skill explains both.
+The rows from `request_vehicle` down exist only when the server was connected with `?toolset=all` (the plugin does this) or `car-image mcp --toolset all`; a bare `https://carimage.dev/api/mcp` exposes the seventeen core tools above them. The `car-image-mcp` skill explains both.
 
 Without MCP tools connected, the same operations are REST endpoints — `GET /api/v1/images/car`, `POST /api/v1/image-urls`, `POST /api/v1/images/resolve`, `GET /api/v1/vin/{vin}`, `POST /api/v1/3d`, `GET /api/v1/3d/{id}`, `GET /api/v1/3d/{id}/files/{kind}`, `POST|DELETE /api/v1/3d/{id}/publish`, `GET /api/v1/3d/public/{public_id}` (no key), `GET /api/v1/vehicles`, `GET /api/v1/vehicles/{id}`, `GET /api/v1/images/options`, `GET /api/v1/account`, `POST /api/v1/feedback`, `GET|POST /api/v1/requests`, `GET /api/v1/requests/{id}`, `POST /api/v1/requests/{id}/votes`, `GET|POST /api/v1/requests/{id}/comments`, `POST /api/v1/account/building`, `POST /api/v1/account/referral`. The `car-image-sdk` skill covers calling them from code; the CLI equivalents are `car-image vin …`, `car-image 3d …`, `car-image request …` and `car-image about …`.
 
@@ -91,7 +95,7 @@ Every JSON failure is an RFC 9457 `application/problem+json` document with `deta
 | --- | --- | --- |
 | 400 | Invalid parameter | Views, `fit` and `format` are fixed enums; `color` is a preset name or a hex; `vehicle` cannot be sent with make, model or year; `padding` needs `trim`; `jpg` cannot be `transparent`; dimensions stop at 1024. Fix the value with `list_image_options` or `resolve_vehicle`. |
 | 401 | Missing or invalid key | Ask the user to log in or set `CAR_IMAGE_API_KEY`. Never guess a key. |
-| 402 | Out of credits, or `code: "plan_vehicle_limit"` (the request named more new distinct vehicles than the plan's monthly cap allows; `plan`, `vehicles_this_month`, `vehicles_per_month`, `requested`) | **Stop and ask the human** to top up at [the dashboard](https://carimage.dev/dashboard?ref=plugin#billing) or with `car-image billing`, or, for a plan limit, tell them the plan and the cap. Never buy credits or change a plan on your own. |
+| 402 | Out of credits, or `code: "plan_vehicle_limit"` (the request named more new distinct vehicles than the plan's monthly cap allows; `scope`, `plan`, `vehicles_this_month`, `vehicles_per_month`, `requested`) | **Stop and ask the human** to top up at [the dashboard](https://carimage.dev/dashboard?ref=plugin#billing) or with `car-image billing`, or, for a plan limit, tell them the plan and the cap. Never buy credits or change a plan on your own. |
 | 404 | Vehicle not in the catalog, or an unknown vehicle id | Read the problem's `suggestions` (up to five real catalog vehicles with ids, closest first: the same vehicle in its nearest year, the make's models sharing a word) and retry with `vehicle: <id>` when one is plainly the car, or show them to the user; search for the canonical make/model/year (or decode the VIN) only when they are empty. If it is really missing, offer to file it with `request_vehicle` — the team adds requested vehicles and emails the user when it is live. Do not invent vehicles or substitute a different one without saying so. |
 | 429 | Rate limited (per key, or per account with `code: "account_rate_limited"`), or `code: "account_generation_cap"` (the account used its plan's share of today's render budget; cached images keep serving) | Wait `Retry-After` seconds, retry once. Never hammer; a generation cap resets at midnight UTC (`reset_at`), so do not retry cold renders before then. |
 | 502/503 | Render or upstream failure | Credits are refunded. Retry once later; report with the `request_id`. |
@@ -114,3 +118,29 @@ Use `search_help` for source-linked product, licensing, policy and Enterprise an
 CLI: `car-image pricing`, `car-image support "question" [--report-gap]`, `car-image billing --credits 500 --no-browser`, `car-image billing --plan pro --no-browser`, `car-image billing --portal`. SDK: `pricing()`, `searchHelp(question)`, `createCheckoutLink({credits: 500})`, `getBillingLink()`. The plugin includes the `car-image-support` skill.
 
 [Help center](https://carimage.dev/help?ref=plugin).
+
+## Make logos
+
+Use MCP `get_make_logo({make: "toyota", width: 256, trim: true})` for an inline
+logo, or `car-image logo --make Toyota --width 256 --trim --out toyota-logo.png`
+to save it. Both accept the image transforms; MCP `format: "auto"` returns PNG.
+Each successful delivery costs 1 credit, including cache hits. There is no signed
+logo URL: download and host the file for a site. Do not use vehicle image URL
+or feedback tools for logos. On 402, stop and ask the human; never buy credits.
+
+`GET /api/v1/images/logo?make=toyota` returns a prompt-generated catalog make logo.
+Requires `images:read`; 1 credit per delivered logo, including cache hits. Failed
+delivery is refunded. The first request generates a transparent master; later
+requests share it. Supports `size=thumb|small|medium|large`, `w`/`h` (1–1024),
+`fit=contain|cover|inside`, `background=transparent|white|black|hex`, `trim=1`,
+`padding=0..50` with trim, and `format=png|webp|jpg|auto`. Returns image bytes and
+the same billing/dimension/source headers as car images. No signed URL or 304
+mode, model, year, view, paint color or custom prompt. Unknown makes return 404.
+Cold renders share the existing account and service capacity limits; logos do
+not count as distinct vehicles. SDK: `client.getMakeLogo({make: "toyota", width: 256})`.
+Generated logos can be inaccurate; inspect them before use.
+
+Logos are third-party trademarks. They are served for referential display of the make they identify, no license is granted, and they sit outside every VehiclesDB indemnity — see the API terms.
+
+API terms: https://carimage.dev/terms?ref=plugin#logos
+Docs: https://carimage.dev/docs/logos?ref=plugin

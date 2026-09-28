@@ -105,4 +105,20 @@ The SDK is `fetch`-based with no Node built-ins, so it runs unchanged on Vercel 
 
 `@meterapp/car-image-sdk/mcp` exports the shared tool definitions used by both the hosted and the stdio MCP servers — names, descriptions, JSON schemas and annotations. Import them if you are building your own agent surface and want the tool contracts to match the official ones exactly.
 
-Tools come in two sets: `MCP_TOOLSETS.core` (`DEFAULT_MCP_TOOLSET`, `"core"`) is the sixteen core tools (images, signed URLs, catalog, `decode_vin`, `create_3d_model`, `get_3d_model`, `publish_3d_model`) and `MCP_TOOLSETS.all` adds the eight request-board tools; `McpToolset` is the type, `isMcpToolset(value)` validates a name from a URL or flag, and `mcpInstructions(toolset)` returns the server instructions for either set. The hosted server serves `core` at `https://carimage.dev/api/mcp` and `all` at `https://carimage.dev/api/mcp?toolset=all`; the stdio server takes `car-image mcp --toolset all`.
+Tools come in two sets: `MCP_TOOLSETS.core` (`DEFAULT_MCP_TOOLSET`, `"core"`) is the seventeen core tools (images, signed URLs, catalog, `decode_vin`, `create_3d_model`, `get_3d_model`, `publish_3d_model`) and `MCP_TOOLSETS.all` adds the eight request-board tools; `McpToolset` is the type, `isMcpToolset(value)` validates a name from a URL or flag, and `mcpInstructions(toolset)` returns the server instructions for either set. The hosted server serves `core` at `https://carimage.dev/api/mcp` and `all` at `https://carimage.dev/api/mcp?toolset=all`; the stdio server takes `car-image mcp --toolset all`.
+
+## Make logos
+
+Use MCP `get_make_logo({make: "toyota", width: 256, trim: true})` for an inline
+logo, or `car-image logo --make Toyota --width 256 --trim --out toyota-logo.png`
+to save it. Both accept the image transforms; MCP `format: "auto"` returns PNG.
+Each successful delivery costs 1 credit, including cache hits. There is no signed
+logo URL: download and host the file for a site. Do not use vehicle image URL
+or feedback tools for logos. On 402, stop and ask the human; never buy credits.
+
+SDK: `client.getMakeLogo({ make: "toyota", width: 256, trim: true })` returns bytes and billing metadata.
+
+Generated logos can be inaccurate; inspect before use. Logos are third-party trademarks,
+for referential display only; no license is granted and they sit outside every
+VehiclesDB indemnity. [Logo docs](https://carimage.dev/docs/logos?ref=plugin)
+· [API terms](https://carimage.dev/terms?ref=plugin#logos).

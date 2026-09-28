@@ -1,7 +1,7 @@
 interface:
   display_name: "Car Image API"
-  short_description: "Transparent-background vehicle renders"
-  default_prompt: "Use $car-image to fetch a studio-quality render of a specific vehicle."
+  short_description: "Vehicle renders and catalog make logos"
+  default_prompt: "Use $car-image to fetch a studio-quality render of a specific vehicle or a catalog make logo."
 dependencies:
   tools:
     - type: "mcp"

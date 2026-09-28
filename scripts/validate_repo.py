@@ -21,7 +21,7 @@ ERRORS: list[str] = []
 PLUGIN_NAME = "car-image"
 MARKETPLACE_NAME = "meterapp"
 MCP_URL = "https://carimage.dev/api/mcp"
-# The hosted server exposes the sixteen core tools by default. The skills teach
+# The hosted server exposes the seventeen core tools by default. The skills teach
 # the request board too (request_vehicle, upvote_request, ...), so the plugin
 # connects with the full toolset; without the query those tools do not exist
 # for the agent and the skills would name tools the host cannot see.
@@ -129,8 +129,8 @@ expected = {
 if server != expected:
     error(f".mcp.json must configure the hosted server exactly as {expected}, got {server}")
 
-# The setup skill documents both toolsets; a skill that promises all twenty-four
-# tools on the bare URL sends users to a server with twelve. The pattern is the
+# The setup skill documents both toolsets; a skill that promises all twenty-five
+# tools on the bare URL sends users to a server with only the core set. The pattern is the
 # wording earlier releases used for that promise.
 mcp_skill = ROOT / "skills" / "car-image-mcp" / "SKILL.md"
 if mcp_skill.is_file():
@@ -138,7 +138,7 @@ if mcp_skill.is_file():
     if "?toolset=all" not in mcp_text or "--toolset all" not in mcp_text:
         error("car-image-mcp: must explain ?toolset=all (hosted) and --toolset all (stdio)")
     if re.search(r"same (sixteen|nineteen) tools", mcp_text):
-        error("car-image-mcp: the bare hosted URL exposes sixteen core tools, not twenty")
+        error("car-image-mcp: the bare hosted URL exposes the core toolset, not all tools")
 
 # --- skills ----------------------------------------------------------------
 

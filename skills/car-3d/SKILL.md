@@ -5,7 +5,7 @@ description: Get a textured 3D model (GLB, USDZ, FBX and a thumbnail) of any rea
 
 # 3D models of real vehicles
 
-`POST /api/v1/3d` turns any catalog vehicle, in any paint, into a textured 3D model: **GLB, USDZ, FBX, a thumbnail and `glb_web`**, a browser build of the GLB a tenth the size. Models are built from the same renders the image API serves, so a model matches the pictures the user already shows, and every color of a vehicle is one mesh with a different texture.
+`POST /api/v1/3d` turns any catalog vehicle, in any paint, into a textured 3D model: **GLB, USDZ, FBX, a thumbnail and `glb_web`**, a smaller browser build of the GLB. Models are built from the same renders the image API serves, so a model matches the pictures the user already shows, and every color of a vehicle is one mesh with a different texture.
 
 With MCP connected the tools are `create_3d_model`, `get_3d_model` and `publish_3d_model`. Over REST: `POST /api/v1/3d`, `GET /api/v1/3d/{id}`, `GET /api/v1/3d/{id}/files/{kind}`, `GET /api/v1/3d?limit=`, `POST|DELETE /api/v1/3d/{id}/publish`, and the key-free `GET /api/v1/3d/public/{public_id}`. The CLI has `car-image 3d create|get|download|list|publish`; the SDK has `create3dModel`, `get3dModel`, `list3dModels`, `download3dModel`, `publish3dModel` and `unpublish3dModel`. Full reference: [`/docs/3d`](https://carimage.dev/docs/3d?ref=plugin).
 
