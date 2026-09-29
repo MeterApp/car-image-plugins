@@ -146,3 +146,5 @@ Logos are third-party trademarks. They are served for referential display of the
 
 API terms: https://carimage.dev/terms?ref=plugin#logos
 Docs: https://carimage.dev/docs/logos?ref=plugin
+
+Image validation errors include `parameter` and `retryable: false`. Correct the input before retrying. A vehicle 404 includes `code: "vehicle_not_found"`, a free catalog `search` path and `next_step`: skip that make/model/year across all colors and views until the input or catalog changes. Resolve each distinct vehicle once before expanding a batch; use the returned `vehicle` id. Suggestions require choosing the intended vehicle, never automatic substitution.

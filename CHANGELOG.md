@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.10.2 — 2026-09-29
+
+- Resolve each vehicle once before expanding views/colors, and skip unchanged catalog misses.
+- Document parameter-level image validation and non-retryable errors.
+
 ## 1.10.1 — 2026-09-29
 
 - Let the host sign in through OAuth without an API-key environment variable. Remove the static Authorization header that prevented Claude Code directory installs from offering sign-in; retain plugin attribution and all twenty-five tools.
