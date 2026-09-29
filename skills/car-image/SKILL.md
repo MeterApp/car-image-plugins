@@ -71,9 +71,11 @@ Name the vehicle once, then reuse its id: `search_vehicles`, `resolve_vehicle` a
 
 ## Authentication
 
-The key lives in the environment as `CAR_IMAGE_API_KEY` and looks like `cimg_…`. Send it as `Authorization: Bearer $CAR_IMAGE_API_KEY`.
+The plugin uses browser OAuth sign-in managed by the host. No API-key environment variable is required. In Claude Code, open `/mcp`, select the Car Image server and authenticate. If its tools already work, use that connection.
 
-**Never** put a key in a URL, in HTML, in client-side JavaScript, in a commit, in a log line, in a screenshot, in a config file that gets committed, or in a prompt. If the key is missing, tell the user to run `npx @meterapp/car-image login` (browser device flow, stored with mode `0600`) or create one at [the dashboard](https://carimage.dev/dashboard?ref=plugin). Do not guess or fabricate keys.
+For direct REST, SDK, CLI or an explicitly configured API-key MCP connection, the key lives in the environment as `CAR_IMAGE_API_KEY` and looks like `cimg_…`. Send it as `Authorization: Bearer $CAR_IMAGE_API_KEY`.
+
+**Never** put a key in a URL, in HTML, in client-side JavaScript, in a commit, in a log line, in a screenshot, in a config file that gets committed, or in a prompt. For an API-key connection, if the key is missing, tell the user to run `npx @meterapp/car-image login` (browser device flow, stored with mode `0600`) or create one at [the dashboard](https://carimage.dev/dashboard?ref=plugin). Do not guess or fabricate keys.
 
 Browser code must never hold the key. Mint signed URLs server-side instead — that is what `create_car_image_urls` is for.
 
@@ -94,7 +96,7 @@ Every JSON failure is an RFC 9457 `application/problem+json` document with `deta
 | Status | Meaning | Do |
 | --- | --- | --- |
 | 400 | Invalid parameter | Views, `fit` and `format` are fixed enums; `color` is a preset name or a hex; `vehicle` cannot be sent with make, model or year; `padding` needs `trim`; `jpg` cannot be `transparent`; dimensions stop at 1024. Fix the value with `list_image_options` or `resolve_vehicle`. |
-| 401 | Missing or invalid key | Ask the user to log in or set `CAR_IMAGE_API_KEY`. Never guess a key. |
+| 401 | Missing or invalid credential | For the plugin, ask the user to reconnect through the host’s MCP sign-in controls (`/mcp` in Claude Code). For an explicit API-key connection, log in or set `CAR_IMAGE_API_KEY`. Never guess a key. |
 | 402 | Out of credits, or `code: "plan_vehicle_limit"` (the request named more new distinct vehicles than the plan's monthly cap allows; `scope`, `plan`, `vehicles_this_month`, `vehicles_per_month`, `requested`) | **Stop and ask the human** to top up at [the dashboard](https://carimage.dev/dashboard?ref=plugin#billing) or with `car-image billing`, or, for a plan limit, tell them the plan and the cap. Never buy credits or change a plan on your own. |
 | 404 | Vehicle not in the catalog, or an unknown vehicle id | Read the problem's `suggestions` (up to five real catalog vehicles with ids, closest first: the same vehicle in its nearest year, the make's models sharing a word) and retry with `vehicle: <id>` when one is plainly the car, or show them to the user; search for the canonical make/model/year (or decode the VIN) only when they are empty. If it is really missing, offer to file it with `request_vehicle` — the team adds requested vehicles and emails the user when it is live. Do not invent vehicles or substitute a different one without saying so. |
 | 429 | Rate limited (per key, or per account with `code: "account_rate_limited"`), or `code: "account_generation_cap"` (the account used its plan's share of today's render budget; cached images keep serving) | Wait `Retry-After` seconds, retry once. Never hammer; a generation cap resets at midnight UTC (`reset_at`), so do not retry cold renders before then. |

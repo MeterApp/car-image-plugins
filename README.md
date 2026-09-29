@@ -28,13 +28,15 @@ codex plugin add car-image@meterapp
 npx skills add MeterApp/car-image-plugins
 ```
 
-### Then set your key
+### Then sign in
 
-```bash
-export CAR_IMAGE_API_KEY="cimg_…"
-```
+Start a new session and sign in to the Car Image MCP server when your host prompts you. In Claude Code, open `/mcp`, select the Car Image server, and authenticate in your browser. The plugin uses OAuth: no API key or environment variable is required. Codex and Cursor use their MCP connection controls to sign in.
 
-Get one with `npx @meterapp/car-image login` (browser device flow) or at [the dashboard](https://carimage.dev/dashboard?ref=plugin). Start a new session, then try:
+Updating from an older release? Update the plugin and restart the host before signing in. In Claude Code, run `/plugin marketplace update meterapp`, then `/plugin update car-image@meterapp`. For an Anthropic Directory install, use the marketplace shown for that install in `/plugin`.
+
+Skills-only installs do not configure an MCP connection; follow the `car-image-mcp` setup skill. For SDK, CLI or a host without OAuth, get a key with `npx @meterapp/car-image login` or at [the dashboard](https://carimage.dev/dashboard?ref=plugin) and follow the explicit API-key setup in that skill.
+
+Then try:
 
 > "Add a red 2024 Porsche 911 side view to the hero section."
 
@@ -58,11 +60,12 @@ The hosted MCP server at `https://carimage.dev/api/mcp` exposes seventeen core t
 
 | Surface | Credential |
 | --- | --- |
-| Hosted MCP (`/api/mcp`, or `/api/mcp?toolset=all` for the request board) | `Authorization: Bearer $CAR_IMAGE_API_KEY` |
+| Plugin / hosted MCP | Browser OAuth sign-in; the host stores and refreshes the token |
+| Manually configured MCP without OAuth | Explicit `Authorization: Bearer $CAR_IMAGE_API_KEY` header |
 | SDK and CLI | `CAR_IMAGE_API_KEY`, or the key stored by `car-image login` |
 | Browsers | **Never a key** — signed delivery URLs only |
 
-The key is sent as a header, never in a URL. Keep it out of committed config files; every manifest here reads `${CAR_IMAGE_API_KEY}` from the environment.
+The plugin config intentionally has no `Authorization` header: adding one disables OAuth fallback in Claude Code. For manual API-key connections, send the key as a header, never in a URL, and keep it out of committed config files.
 
 ## Safety model
 

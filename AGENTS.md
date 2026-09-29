@@ -16,7 +16,7 @@ agent-visible.
 | `.codex-plugin/plugin.json` | `codex plugin add car-image@meterapp` (also the directory listing) |
 | `.cursor-plugin/plugin.json` | Cursor |
 | `.plugin/plugin.json` | Open Plugins, and anything else that reads the portable schema |
-| `.mcp.json` | Every client — the hosted server plus the Bearer header |
+| `.mcp.json` | Every client — the hosted server with client-managed OAuth |
 | `skills/` | All of the above, and `npx skills add MeterApp/car-image-plugins` |
 
 The marketplace `source` is `"./"`: the repository *is* the plugin. There is no
@@ -52,8 +52,11 @@ purchase cap; subscription credits are spent first, purchased credits never
   dependency only for skills that actually call MCP tools (`car-image`,
   `car-image-urls`, `vehicle-catalog`, `car-3d`, `car-image-support`); the SDK and setup skills must
   not.
-- **No key, ever.** Manifests reference `${CAR_IMAGE_API_KEY}`; nothing here
-  contains a literal key, and no example puts one in a URL or in browser code.
+- **OAuth by default, no embedded credentials.** `.mcp.json` must not set an
+  `Authorization` header or require an environment variable: that disables
+  Claude Code OAuth sign-in on directory installs. The host manages tokens.
+  API-key setup is a separate, explicit option for manual MCP, SDK and CLI use;
+  nothing here contains a literal key or puts one in a URL or browser code.
 
 ## Safety
 

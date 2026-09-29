@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.10.1 — 2026-09-29
+
+- Let the host sign in through OAuth without an API-key environment variable. Remove the static Authorization header that prevented Claude Code directory installs from offering sign-in; retain plugin attribution and all twenty-five tools.
+- Update installation and authentication troubleshooting; keep manual API-key and local stdio setup available. Existing plugin users should update, restart their host, and sign in to the Car Image server.
+
 ## 1.10.0 — 2026-09-28
 
 - Add get_make_logo to both MCP toolsets and car-image logo to the CLI references.
