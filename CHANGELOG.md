@@ -1,5 +1,23 @@
 # Changelog
 
+## 1.11.4 — 2026-09-30
+
+- ChatGPT and Codex now show clickable image links and open the same signed URL in a browser when available, avoiding broken inline previews.
+- Claude retains inline images; website and document embeds are unchanged.
+- Reuse existing URLs without extra image charges; align both chat skills and their OpenAI prompts.
+
+## 1.11.3 — 2026-09-30
+
+- Both MCP servers read an argument a host sent as text as the type the tool advertises: `"true"` and `"false"` for a flag (`trim`, `renew`, `publish`), a number for a number, and the JSON of a list for `images`. A host that holds no typed schema for a tool (the Claude desktop app with a connector) sends every argument that way, and `create_car_image_urls`, the chat flow since 1.11.1, refused its `images` there: "expected array, received string". What the tools advertise is unchanged. SDK 1.15.0, CLI 1.9.4.
+- `car-image` and `car-image-mcp`: the `Input validation error` guidance says so, and keeps the workaround only for a `car-image mcp` server older than CLI 1.9.4.
+
+## 1.11.2 — 2026-09-30
+
+- `car-image`: what `resolve_vehicle` returns is spelled out (`extracted` is what the phrase said, so a `view` or `color` it leaves null is only the default in `params`, not the user's choice; up to five `candidates`). The chat call says what `ttl_seconds: 604800` and `max_uses: 0` mean and that `renew` is left out; the chat frame goes in the `images` entry, and an image with no sizing is a 1024 px square with the car in the middle. "Every angle" is looked up and then asked about before anything is rendered; a comparison's figures are the agent's own words, not catalog data.
+- `car-image`: the `Input validation error` row covers a host that sends every argument as text. Numbers are read either way; a refused `trim` or `renew` is left out; and when the `images` list itself is refused as text, the image comes from `get_car_image` instead of a second attempt that cannot succeed.
+- `car-image-mcp` and `car-3d`: the end-to-end check and the preview before a 3D model follow the chat flow of 1.11.1 (`create_car_image_urls`, the image in the reply) where they still named `get_car_image`.
+- On the server, the same day: `resolve_vehicle` and `search_vehicles` no longer read a make of several words, or a make followed only by filler, a family word or a kind of vehicle, as a model ("mercedes benz", "rolls royce", "smart car", "bmw series" had each resolved to a registry junk row), and an undated "Alfa Romeo Giulia" is the Giulia again.
+
 ## 1.11.1 — 2026-09-30
 
 - Show chat images with one signed URL call and inline Markdown in the final reply; reuse existing URLs and avoid duplicate charges for display. Explicit files use the bytes tool.

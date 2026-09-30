@@ -1,7 +1,7 @@
 interface:
   display_name: "Car Image URLs"
   short_description: "Embed car renders without leaking a key"
-  default_prompt: "Use $car-image-urls to show a vehicle image inline in chat or embed it in a page using a signed URL."
+  default_prompt: "Use $car-image-urls to share a signed vehicle image link in chat and open it in the browser if available, or embed it in a website or document."
 dependencies:
   tools:
     - type: "mcp"

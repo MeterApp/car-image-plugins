@@ -1,6 +1,6 @@
 ---
 name: car-image
-description: Show or fetch a studio-quality, transparent-background image of a real vehicle (any make, model and year from 1990-2027), in a conversation or for a product page, a listing, a comparison, an email or a deck, and fetch catalog make logos with get_make_logo. Every image takes two steps - look the vehicle up first (resolve_vehicle, search_vehicles or decode_vin, free, the vehicle-catalog skill), then show it by its vehicle id (create_car_image_urls and inline Markdown, 1 credit). Covers the Car Image API by Meter - the chat workflow, angles, paint, sizing, the per-image credit cost, and how to handle 402, 404 and 429. Use for any request involving a picture of a car, truck, motorcycle or other vehicle, including "show me a car" or "a random car"; do not use for embedding URLs in a browser or document (car-image-urls), SDK and CLI code (car-image-sdk), 3D models (car-3d), or connection setup (car-image-mcp).
+description: Show or fetch a studio-quality, transparent-background image of a real vehicle (any make, model and year from 1990-2027), in a conversation or for a product page, a listing, a comparison, an email or a deck, and fetch catalog make logos with get_make_logo. Every image takes two steps - look the vehicle up first (resolve_vehicle, search_vehicles or decode_vin, free, the vehicle-catalog skill), then show it by its vehicle id (create_car_image_urls, 1 credit; clickable links and browser viewing in ChatGPT/Codex, inline Markdown in Claude). Covers the Car Image API by Meter - the chat workflow, angles, paint, sizing, the per-image credit cost, and how to handle 402, 404 and 429. Use for any request involving a picture of a car, truck, motorcycle or other vehicle, including "show me a car" or "a random car"; do not use for embedding URLs in a browser or document (car-image-urls), SDK and CLI code (car-image-sdk), 3D models (car-3d), or connection setup (car-image-mcp).
 ---
 
 # Car Image API
@@ -11,10 +11,10 @@ Studio-quality, transparent-background renders of any vehicle in the open [`@met
 
 **1. Look the vehicle up (free).** Do this before every render, including for a car you know well and a car you picked yourself. If the `vehicle-catalog` skill is available, use it for this step: it covers ambiguity, VINs, years and what to do when nothing matches. The short version:
 
-- `resolve_vehicle({ query })` with the year, make and model, plus the view and paint if the user named them: `"red 2018 Mazda MX-5 Miata, side view"`. It returns `params.vehicle_id` with the `view` and `color` it read, `confidence` and `candidates`. Leave descriptions out of the phrase ("the electric one", "their sporty model"): it reads names, not descriptions. When the user gave no year, put one in and say which you chose.
+- `resolve_vehicle({ query })` with the year, make and model, plus the view and paint if the user named them: `"red 2018 Mazda MX-5 Miata, side view"`. It returns `params.vehicle_id` with a `view` and a `color`, `confidence` and up to five `candidates`. `extracted` is what the phrase itself said: where `extracted.view` or `extracted.color` is null, the value in `params` is only the default (`front-3-4`, `silver`), not something the user chose. Leave descriptions out of the phrase ("the electric one", "their sporty model"): it reads names, not descriptions. When the user gave no year, put one in and say which you chose.
 - `decode_vin({ vin, year? })` when the user gave a VIN; `search_vehicles({ query, year?, limit? })` to list a make's models or a model's years.
 
-**2. Show it by id (1 credit).** `create_car_image_urls` with one `images` entry containing `vehicle: "veh_…"`, `view` and `color`. Use `ttl_seconds: 604800`, `max_uses: 0` and renewal off unless requested for chat previews. Never retype the make, model and year once you hold the id. `view` defaults to `front-3-4` and `color` to `silver`: when the user named no paint, pick one that suits the car or leave the default, and say which it is.
+**2. Show it by id (1 credit).** `create_car_image_urls` with one `images` entry containing `vehicle: "veh_…"`, `view` and `color`. For a chat preview use `ttl_seconds: 604800` (the URL serves for seven days) and `max_uses: 0` (no limit on loads), and leave `renew` out unless the user asks for a link that outlives the week. Never retype the make, model and year once you hold the id. `view` defaults to `front-3-4` and `color` to `silver`: when the user named no paint, pick one that suits the car or leave the default, and say which it is.
 
 ```
 resolve_vehicle({ query: "red 2018 Mazda MX-5 Miata, side view" })
@@ -41,25 +41,29 @@ The rows are in order: the first one that fits decides. `candidates` lists the n
 
 ## In a conversation
 
-Paste each returned `data[].markdown` directly into the final answer, outside code fences. Older servers return only `url`: replace the example URL in `![year make model, view, color](https://example.com/signed-image.png)` with the exact returned URL. Include a short vehicle caption and expiry. A caption or download link alone does not show the image.
+In ChatGPT and Codex, show each exact returned `data[].url` as a normal clickable Markdown link, for example `[View the vehicle image](https://example.com/image.png)` with the returned URL substituted. Do not use Markdown image syntax or paste the tool's image `markdown` into these chats, even if generic tool text recommends it. Open that same URL with an available browser-opening tool, preferably in the in-app browser (for example, `open_in_codex` with a browser target). Retain the clickable link in the final reply whether opening succeeds or not. If no browser tool is available, just provide the link. Do not claim the browser opened unless the tool confirms it.
+
+In Claude, keep rendering inline: paste each returned `data[].markdown` outside code fences. If only `url` is returned, use `![year make model, view, color](https://example.com/image.png)` with the exact returned URL. Do not automatically open a browser. Other hosts may use inline images when supported, otherwise a clickable link.
+
+Include a short vehicle caption and expiry. Reuse unexpired URLs; do not download the image or make another paid image call to work around chat display. These host-specific rules apply to chat replies; website and document embeds still use image markup.
 
 Reuse an unexpired URL already in the conversation for the same image. Use `get_car_image` for explicit image-byte or file requests: its MCP attachment may be available to the model without appearing in the user's reply. Do not call it before minting a chat URL, or mint again to fix display; both cost credits. If the client cannot display images, link the existing URL and explain the limitation.
 
-- **Ask for a frame that suits a chat.** `width: 960, height: 600, trim: true, padding: 8, background: "#f4f4f4"` gives a wide image the car fills, on a light surface that reads in both light and dark themes. The dimensions and the padding are numbers and `trim` is a boolean. Without `trim` the car floats in the middle of a square; without a `background` a dark car can vanish on a dark theme. Keep the background transparent when the image is going onto a page.
+- **Ask for a frame that suits a chat**, in the `images` entry beside `vehicle`: `width: 960, height: 600, trim: true, padding: 8, background: "#f4f4f4"` gives a wide image the car fills, on a light surface that reads in both light and dark themes. The dimensions and the padding are numbers and `trim` is a boolean. With no sizing at all the image is a 1024 px square with the car floating in the middle; without a `background` a dark car can vanish on a dark theme. Keep the background transparent when the image is going onto a page.
 - **Default to the hero angle**, `front-3-4`, unless the user named one.
 - **Say what is shown**, in one or two lines: year, make, model, view and paint, and that it is a studio render of the model. Mention `credits_remaining` when it is under 10 or the user asks.
-- **Offer the next step**, once: another angle or paint, a side-by-side with another car, a link for a page or email (`car-image-urls`), a 3D model (`car-3d`).
+- **Offer the next step**, once: another angle or paint, the same view of another car to compare, a link for a page or email (`car-image-urls`), a 3D model (`car-3d`).
 - **When the user did not name a car** ("a random car", "surprise me", "a fun convertible"), choose one yourself: a specific year, make and model, and a paint. Look it up and render it like any other, and name your pick in the reply. Vary the pick from one request to the next.
 
 ### What people ask for
 
 | Request | Calls | Credits |
 | --- | --- | --- |
-| "Show me a 2024 Porsche 911" | lookup, `create_car_image_urls` → inline Markdown | 1 |
+| "Show me a 2024 Porsche 911" | lookup, `create_car_image_urls` → host-specific display above | 1 |
 | "Now from the side" / "in blue" | `create_car_image_urls` with the same `vehicle`, new `view` or `color` | 1 each |
-| "Show me every angle" | the same `vehicle`, all eight views | 8: say so and get a yes first, or offer front-3-4, side and rear-3-4 for 3 |
+| "Show me every angle" | the same `vehicle`, all eight views | 8. Look the car up, then ask before rendering anything: all eight for 8 credits, or front-3-4, side and rear-3-4 for 3 |
 | "What paint suits it?" | the same `vehicle` and `view`, one call per paint | 1 per paint: agree the shortlist first |
-| "Compare the RAV4 and the CR-V" | one lookup per car, then the same `view`, `color` and size for each | 1 per car |
+| "Compare the RAV4 and the CR-V" | one lookup per car, then the same `view`, `color` and size for each. The tools return images, not specifications: add the comparison in words yourself and say those figures are not from the catalog | 1 per car |
 | "What does my car look like?" with a VIN | `decode_vin`, then `create_car_image_urls` with `vehicle: vehicle.id` in its image; show the decoded trim and engine as text | 1 |
 | "How did the Civic change?" | one lookup per model year, the same `view` and `color` | 1 per year |
 | "The Toyota logo" | `get_make_logo` | 1 |
@@ -83,7 +87,7 @@ Twenty images cost 20 credits (20¢). Tell the user the number before rendering 
 
 | You need | Use |
 | --- | --- |
-| Show a vehicle in chat | `create_car_image_urls` once → paste `data[].markdown` in the reply |
+| Show a vehicle in chat | `create_car_image_urls` once → link and browser in ChatGPT/Codex; inline Markdown in Claude |
 | Which vehicle a request means, and its id | `resolve_vehicle` (free) first → see the `vehicle-catalog` skill; `params.vehicle_id` is what to render |
 | A VIN, full or partial | `decode_vin` (free) → year, make, model, trim, engine and the catalog `vehicle.id` to render; see the `vehicle-catalog` skill |
 | To list a make's models or a model's years | `search_vehicles` (free; returns a vehicle id per year) |
@@ -156,7 +160,7 @@ Every JSON failure is an RFC 9457 `application/problem+json` document with `deta
 
 | Status | Meaning | Do |
 | --- | --- | --- |
-| `Input validation error` | The tool refused an argument before the API saw it: a boolean sent as text, an unknown view or format, a value out of range. Nothing was charged. | Send the argument in its own type, or call again without it: `width` and `height` alone still give a wide frame. Do not abandon the render. |
+| `Input validation error` | The tool refused an argument before the API saw it: an unknown view or format, a value out of range, a vehicle id together with a make. Nothing was charged. | The message names the argument and the rule: fix that one and call again. The type is rarely the cause, because a host that sends arguments as text is read as it meant: `"true"` is the flag, `"960"` the number, and the JSON of `images` the list. Only a `car-image mcp` server older than CLI 1.9.4 refuses a flag or a list sent that way: leave `trim`, `padding` and `renew` out there, and when it refuses `images` itself use `get_car_image` with `vehicle`, `view`, `color`, `width` and `height`. Do not abandon the render. |
 | 400 | Invalid parameter (`parameter` names it, `retryable: false`) | Views, `fit` and `format` are fixed enums; `color` is a preset name or a hex; `vehicle` cannot be sent with make, model or year; `padding` needs `trim`; `jpg` cannot be `transparent`; dimensions stop at 1024. Fix the value with `list_image_options` or `resolve_vehicle`; sending it again unchanged always fails. |
 | 401 | Missing or invalid credential | For the plugin, ask the user to reconnect through the host’s MCP sign-in controls (`/mcp` in Claude Code). For an explicit API-key connection, log in or set `CAR_IMAGE_API_KEY`. Never guess a key. |
 | 402 | Out of credits, or `code: "plan_vehicle_limit"` (the request named more new distinct vehicles than the plan's monthly cap allows; `scope`, `plan`, `vehicles_this_month`, `vehicles_per_month`, `requested`) | **Stop and ask the human** to top up at [the dashboard](https://carimage.dev/dashboard?ref=plugin#billing) or with `car-image billing`, or, for a plan limit, tell them the plan and the cap. Never buy credits or change a plan on your own. |

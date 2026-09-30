@@ -1,6 +1,6 @@
 ---
 name: car-image-urls
-description: Show a vehicle image inline in chat or put it into a web page, React component, email, Markdown file, PDF or slide deck using signed delivery URLs, so the browser loads the image without ever holding an API key. Use whenever the output is HTML, JSX, Markdown, CSS, an email template, a document or a spreadsheet rather than bytes on disk; covers looking each vehicle up once and minting by its id, TTL and use caps, batching up to 50, inventory grids from a list of VINs, caching, alt text and expiry. Do not use for downloading bytes in a script (car-image), or for finding which vehicle to render (vehicle-catalog).
+description: Share a vehicle image in chat (clickable links and browser viewing in ChatGPT/Codex, inline images in Claude) or put it into a web page, React component, email, Markdown file, PDF or slide deck using signed delivery URLs, so the browser loads the image without ever holding an API key. Use whenever the output is HTML, JSX, Markdown, CSS, an email template, a document or a spreadsheet rather than bytes on disk; covers looking each vehicle up once and minting by its id, TTL and use caps, batching up to 50, inventory grids from a list of VINs, caching, alt text and expiry. Do not use for downloading bytes in a script (car-image), or for finding which vehicle to render (vehicle-catalog).
 ---
 
 # Signed delivery URLs
@@ -9,7 +9,13 @@ A signed URL is a key-free link to one rendered vehicle image. You mint it serve
 
 ## Chat replies
 
-For a chat image, resolve the vehicle first, then mint once with `ttl_seconds: 604800`, `max_uses: 0` and renewal off unless requested. Paste each returned `data[].markdown` directly into the final answer, outside code fences. If an older server omits `markdown`, use `![vehicle description](https://example.com/signed-image.png)` replacing the example URL with its exact returned `url`. Include expiry briefly. Reuse an unexpired URL for the same image; do not call `get_car_image` first or pay for another URL just to display it. On clients without inline images, link the existing URL instead. The `car-image` skill covers random-car selection and the chat workflow.
+For a chat image, resolve the vehicle first, then mint once with `ttl_seconds: 604800`, `max_uses: 0` and renewal off unless requested. The `car-image` skill covers random-car selection and the chat workflow.
+
+In ChatGPT and Codex, show each exact returned `data[].url` as a normal clickable Markdown link, for example `[View the vehicle image](https://example.com/image.png)` with the returned URL substituted. Do not use Markdown image syntax or paste the tool's image `markdown` into these chats, even if generic tool text recommends it. Open that same URL with an available browser-opening tool, preferably in the in-app browser (for example, `open_in_codex` with a browser target). Retain the clickable link in the final reply whether opening succeeds or not. If no browser tool is available, just provide the link. Do not claim the browser opened unless the tool confirms it.
+
+In Claude, keep rendering inline: paste each returned `data[].markdown` outside code fences. If only `url` is returned, use `![year make model, view, color](https://example.com/image.png)` with the exact returned URL. Do not automatically open a browser. Other hosts may use inline images when supported, otherwise a clickable link.
+
+Include a short vehicle caption and expiry. Reuse unexpired URLs; do not download the image or make another paid image call to work around chat display. These host-specific rules apply to chat replies; website and document embeds still use image markup.
 
 ## Why not just call the image endpoint from the page
 
@@ -171,7 +177,7 @@ Transparent PNG sits on any background, which is what you want in a document. Fo
 
 - Re-mint before expiry, not after a user reports a broken image.
 - A `403` on a delivery URL means expired, invalid, the key that created it was revoked, or `code: "origin_not_allowed"`: the page loading it is on a site the issuing key's allowed origins (set on the key in the dashboard) do not list; loads without a `Referer` or `Origin`, such as email clients, pass. A `410` means a use-capped URL hit its cap. Both are fixed by minting a fresh URL, not by retrying the old one. A `402` means a renewable URL entered a new window the account could not pay for; add credits and the same URL resumes.
-- If you show an image in chat, embed the returned Markdown and tell the user when it expires. A plain link is the fallback for clients that cannot render inline images; use the same URL without another paid call.
+- In chat, follow the host-specific display rules above and state expiry: ChatGPT/Codex gets a clickable link and browser opening when available; Claude keeps inline Markdown. Reuse the same URL without another paid call.
 
 ## Do not
 

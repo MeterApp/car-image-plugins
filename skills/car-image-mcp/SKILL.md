@@ -136,7 +136,7 @@ Then a real one, which costs 1 credit:
 
 > "Show me a red 2024 Porsche 911, front three-quarter."
 
-A working connection answers it in two calls, `resolve_vehicle` and then `get_car_image` with the vehicle id.
+A working connection answers it in two calls, `resolve_vehicle` and then `create_car_image_urls` with the vehicle id, and the image is in the reply.
 
 For an explicit API-key connection, from a terminal:
 
@@ -164,7 +164,7 @@ That returns the seventeen core tools, or tells you exactly what is wrong. Use `
 
 **Tools appear but every call fails with 402.** The account is out of credits (a 3D model needs 100 at once, so it is the usual cause), or the problem carries `code: "plan_vehicle_limit"` and the request named more new distinct vehicles than the plan allows this month (Free 100, Pro 2,500, Business 15,000). Report the balance, or the plan and the cap, and let the human decide; never buy credits or change a plan automatically.
 
-**A call fails with `Input validation error`.** The tool refused an argument before the API saw it, and nothing was charged. A host that holds no typed schema for a tool sends every argument as text: numbers sent that way (`width: "960"`) are understood, but a flag such as `trim` must be a real boolean. Call again with the argument in its own type, or without it.
+**A call fails with `Input validation error`.** The tool refused an argument before the API saw it, and nothing was charged. The message names the argument and the rule. A host that holds no typed schema for a tool sends every argument as text, and both servers read that as it was meant: `"960"` is the number, `"true"` the flag, and the JSON of `images` the list. A `car-image mcp` server older than CLI 1.9.4 refuses a flag or a list sent that way (`expected boolean, received string`; `expected array, received string`): update the CLI.
 
 **A vehicle the catalog has answers `404`.** The agent rendered by a name from memory. It should look the vehicle up first (`resolve_vehicle`) and render by the `vehicle` id; the `car-image` skill has the two steps.
 

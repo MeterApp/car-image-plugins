@@ -12,7 +12,7 @@ With MCP connected the tools are `create_3d_model`, `get_3d_model` and `publish_
 ## The order of work
 
 1. **Look the vehicle up** (free; the `vehicle-catalog` skill): `resolve_vehicle` for a name, `decode_vin` for a VIN. Keep the vehicle id. A model of the wrong car costs a hundred times an image of it, so this step is never skipped, and a lookup that is not `high` confidence in the year asked for goes back to the user first.
-2. **Say what it is and what it costs, and wait for a yes**: the year, make and model the lookup named, the paint, 100 credits ($1.00) unless the account already owns it, and ten to twenty minutes for a first model. A preview image of that vehicle in that paint (`get_car_image`, 1 credit) is a cheap way to agree on both before the larger charge.
+2. **Say what it is and what it costs, and wait for a yes**: the year, make and model the lookup named, the paint, 100 credits ($1.00) unless the account already owns it, and ten to twenty minutes for a first model. A preview image of that vehicle in that paint (1 credit; the `car-image` skill shows one in the reply) is a cheap way to agree on both before the larger charge.
 3. **Create it by id**: `create_3d_model({ vehicle: "veh_…", color, publish: true })`. Keep the request `id`.
 4. **Wait without hammering**, then hand over the files or the embed.
 

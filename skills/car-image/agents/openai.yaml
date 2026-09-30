@@ -1,7 +1,7 @@
 interface:
   display_name: "Car Image API"
   short_description: "Vehicle renders and catalog make logos"
-  default_prompt: "Use $car-image to look up a random vehicle and show its image inline in this chat."
+  default_prompt: "Use $car-image to look up a random vehicle, share a clickable image link and open it in the browser if available, without embedding it inline in chat."
 dependencies:
   tools:
     - type: "mcp"
