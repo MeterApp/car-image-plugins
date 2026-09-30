@@ -11,7 +11,7 @@ agent-visible.
 | Path | Consumed by |
 | --- | --- |
 | `.claude-plugin/marketplace.json` | `/plugin marketplace add MeterApp/car-image-plugins` |
-| `.claude-plugin/plugin.json` | `/plugin install car-image@meterapp` |
+| `.claude-plugin/plugin.json` | `/plugin install car-image@meterapp`; also the Anthropic Directory listing (privacy, terms and support URLs), the optional `api_key` option and Claude Code's copy of the MCP server, which replaces the `.mcp.json` entry of the same name |
 | `.agents/plugins/marketplace.json` | `codex plugin marketplace add MeterApp/car-image-plugins` |
 | `.codex-plugin/plugin.json` | `codex plugin add car-image@meterapp` (also the directory listing) |
 | `.cursor-plugin/plugin.json` | Cursor |
@@ -61,11 +61,25 @@ purchase cap; subscription credits are spent first, purchased credits never
   dependency only for skills that actually call MCP tools (`car-image`,
   `car-image-urls`, `vehicle-catalog`, `car-3d`, `car-image-support`); the SDK and setup skills must
   not.
-- **OAuth by default, no embedded credentials.** `.mcp.json` must not set an
-  `Authorization` header or require an environment variable: that disables
-  Claude Code OAuth sign-in on directory installs. The host manages tokens.
-  API-key setup is a separate, explicit option for manual MCP, SDK and CLI use;
-  nothing here contains a literal key or puts one in a URL or browser code.
+- **OAuth by default, no embedded credentials.** No MCP configuration here
+  sets an `Authorization` header or requires an environment variable: any
+  configured `Authorization` header disables Claude Code OAuth sign-in on
+  directory installs, whatever its value. The host manages tokens. The one key
+  the plugin takes is the optional, `sensitive` `api_key` in
+  `.claude-plugin/plugin.json`, which only Claude Code's copy of the server
+  sends, as `X-Api-Key: ${user_config.api_key}`; left empty it is an empty
+  header and OAuth applies. `.mcp.json`, which Codex and Cursor read too, stays
+  OAuth-only. Nothing here contains a literal key or puts one in a URL or
+  browser code.
+- **Nothing reads a credential from the user's machine, not even an example.**
+  The Anthropic Directory holds a plugin for review ("Uses a credential from
+  the user's machine") when a skill, the README or a config reads a key or
+  secret from environment variables or files and sends it on: `$VAR` in a
+  command, `process.env.X` in code, a CLI's config file. An agent uses the
+  connection the host authenticated; code for the user's own server leaves the
+  key to the deployment (`new CarImageClient()` finds it); REST examples are
+  HTTP requests with `cimg_…` standing for the key; a webhook secret is a
+  parameter. The validator enforces it.
 
 ## Safety
 
@@ -92,7 +106,10 @@ npx -y skills@latest add . --list
 ```
 
 CI runs all of these on every push, plus a scheduled check that the hosted MCP
-URL in `.mcp.json` still answers.
+URL in `.mcp.json` still answers. `claude plugin validate --strict` needs
+Claude Code 2.1.281 or later: earlier releases report the listing URLs in
+`plugin.json` (`privacyPolicyUrl`, `termsOfServiceUrl`, `supportUrl`) as
+unknown fields.
 
 ## Releasing
 

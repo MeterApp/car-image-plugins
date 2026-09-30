@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.12.1 — 2026-09-30
+
+- The README, `car-image` and `vehicle-catalog` quote the catalog the way the API renders it and carimage.dev/cars lists it: 1,595 makes and 41,838 models. They said 1,607 and 46,120, the database's own ids, which count a make or model that two sources spell differently (MOTO GUZZI, MOTO-GUZZI) twice.
+- The README and `vehicle-catalog` link the vehicle pages, one per make, model and model year, and the README gains the Cursor install steps the install page shows.
+
+## 1.12.0 — 2026-09-30
+
+- Claude Code: an optional **Car Image API key** in the plugin's options, for a machine without a browser or a shared service account. Claude Code asks for it when the plugin is enabled (later: `/plugin` → the Car Image plugin → **Configure options**), keeps it in the system's secure credential store and sends it only to the Car Image MCP server, as `X-Api-Key`. Left empty, sign-in works as before: the plugin still sets no `Authorization` header, so OAuth fallback stays on, a signed-in token wins when both are present, and a wrong saved key falls back to browser sign-in. Codex, Cursor and `.mcp.json` are unchanged.
+- Nothing in the plugin reads a credential from the machine it runs on any more, in instructions, examples or configuration. The Anthropic Directory held the plugin for review over that ("Uses a credential from the user's machine"): up to 1.10.0 the MCP configuration sent an environment variable, and the skills and the README still showed one read in commands and code. An agent now uses the connection the host authenticated and never handles a key; code for the user's own server leaves the key to the deployment's secrets (`new CarImageClient()`); REST examples are HTTP requests with `cimg_…` standing for the key; the webhook example takes its secret as a parameter; connection checks use free tool calls, or a request with no credential. The validator fails on a key read from an environment variable or a key file, and on any `Authorization` header in an MCP configuration.
+- `plugin.json` gives the directory listing a privacy policy, terms and support page (`privacyPolicyUrl`, `termsOfServiceUrl`, `supportUrl`), and the README says what the plugin sends and links the privacy policy.
+
 ## 1.11.4 — 2026-09-30
 
 - ChatGPT and Codex now show clickable image links and open the same signed URL in a browser when available, avoiding broken inline previews.

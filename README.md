@@ -2,7 +2,7 @@
 
 Studio-quality, transparent-background renders of any vehicle, wherever your agent works. One repository, native packaging for each client, plus the vendor-neutral [Open Plugins](https://agent-plugins.org) manifest.
 
-Any make, model and year from **1990 to 2027** — 1,607 makes and 46,120 models from the open [`@meterapp/vehicle-db`](https://github.com/MeterApp/vehicle-db) catalog. Eight camera views, any paint color (15 named presets or any hex), PNG/WebP/JPG up to 1024 px, delivered at any width × height (`fit` contain, cover or inside), transparent or on a solid background, optionally trimmed to the car. Plus free VIN decoding, stable vehicle ids, and textured 3D models (GLB, USDZ, FBX) of any vehicle in any paint.
+Any make, model and year from **1990 to 2027** — 1,595 makes and 41,838 models from the open [`@meterapp/vehicle-db`](https://github.com/MeterApp/vehicle-db) catalog, each make, model and year with its own page at [carimage.dev/cars](https://carimage.dev/cars?ref=plugin). Eight camera views, any paint color (15 named presets or any hex), PNG/WebP/JPG up to 1024 px, delivered at any width × height (`fit` contain, cover or inside), transparent or on a solid background, optionally trimmed to the car. Plus free VIN decoding, stable vehicle ids, and textured 3D models (GLB, USDZ, FBX) of any vehicle in any paint.
 
 **1 credit per image · 100 credits per 3D model, once per vehicle and color, hosted for free · VIN decoding free · Free 100 credits at signup · Pro $29/mo 25,000 credits a month · Business $99/mo 150,000 · $1 per 100 credits beyond the allowance, purchased credits never expire.**
 
@@ -25,6 +25,16 @@ codex plugin marketplace add MeterApp/car-image-plugins
 codex plugin add car-image@meterapp
 ```
 
+### Cursor
+
+```bash
+git clone https://github.com/MeterApp/car-image-plugins.git
+mkdir -p ~/.cursor/plugins/local
+ln -s "$(pwd)/car-image-plugins" ~/.cursor/plugins/local/car-image
+```
+
+Then reload Cursor.
+
 ### Skills only, any agent
 
 ```bash
@@ -35,9 +45,11 @@ npx skills add MeterApp/car-image-plugins
 
 Start a new session and sign in to the Car Image MCP server when your host prompts you. In Claude Code, open `/mcp`, select the Car Image server, and authenticate in your browser. The plugin uses OAuth: no API key or environment variable is required. Codex and Cursor use their MCP connection controls to sign in.
 
+On a machine without a browser, use an API key instead. Claude Code offers an optional **Car Image API key** field when you enable the plugin: leave it empty for browser sign-in, or paste a key from [the dashboard](https://carimage.dev/dashboard?ref=plugin). To set, change or clear it later, open `/plugin`, select the Car Image plugin, choose **Configure options**, then restart. Claude Code keeps the key in your system's secure credential store and sends it only to the Car Image MCP server.
+
 Updating from an older release? Update the plugin and restart the host before signing in. In Claude Code, run `/plugin marketplace update meterapp`, then `/plugin update car-image@meterapp`. For an Anthropic Directory install, use the marketplace shown for that install in `/plugin`.
 
-Skills-only installs do not configure an MCP connection; follow the `car-image-mcp` setup skill. For SDK, CLI or a host without OAuth, get a key with `npx @meterapp/car-image login` or at [the dashboard](https://carimage.dev/dashboard?ref=plugin) and follow the explicit API-key setup in that skill.
+Skills-only installs do not configure an MCP connection; follow the `car-image-mcp` setup skill. For SDK, CLI or a host without OAuth, get a key with `npx @meterapp/car-image login` or at [the dashboard](https://carimage.dev/dashboard?ref=plugin) and follow the API-key setup in that skill.
 
 Then try, in a chat:
 
@@ -70,13 +82,16 @@ The hosted MCP server at `https://carimage.dev/api/mcp` exposes seventeen core t
 | Surface | Credential |
 | --- | --- |
 | Plugin / hosted MCP | Browser OAuth sign-in; the host stores and refreshes the token |
-| Manually configured MCP without OAuth | Explicit `Authorization: Bearer $CAR_IMAGE_API_KEY` header |
-| SDK and CLI | `CAR_IMAGE_API_KEY`, or the key stored by `car-image login` |
+| Plugin in Claude Code, optionally | The API key you saved in the plugin's options, kept in your system's secure credential store and sent as `X-Api-Key` |
+| Manually configured MCP without OAuth | A key entered in that host's own MCP settings, sent as an `X-Api-Key` or `Authorization: Bearer` header |
+| SDK and CLI | A key your application keeps with its other secrets, or the one `car-image login` stores for the CLI |
 | Browsers | **Never a key** — signed delivery URLs only |
 
-The plugin config intentionally has no `Authorization` header: adding one disables OAuth fallback in Claude Code. For manual API-key connections, send the key as a header, never in a URL, and keep it out of committed config files.
+The plugin never sets an `Authorization` header: Claude Code turns off OAuth fallback when one is configured, so a saved key travels as `X-Api-Key`, and a signed-in token takes precedence when both are present. Nothing in the plugin reads a key from your environment variables or files. For manual API-key connections, send the key as a header, never in a URL, and keep it out of committed config files.
 
-The MCP configuration sends `X-CarImage-Integration: plugin` for usage attribution. This declares the integration; it contains no user identity, prompt, or conversation text. The calling host may separately identify itself through MCP client information.
+### What the plugin sends
+
+The plugin runs no local commands or hooks. Its MCP tools call one server, `https://carimage.dev/api/mcp`, with your sign-in token or the key you saved, and the arguments of each tool call. The MCP configuration also sends `X-CarImage-Integration: plugin` for usage attribution. This declares the integration; it contains no user identity, prompt, or conversation text. The calling host may separately identify itself through MCP client information. How Car Image handles this data is in the [privacy policy](https://carimage.dev/privacy?ref=plugin).
 
 ## Safety model
 
@@ -104,7 +119,7 @@ This repository is published from the Car Image API source. Please open an issue
 
 ## Links
 
-[Docs](https://carimage.dev/docs?ref=plugin) · [Install guide](https://carimage.dev/install?ref=plugin) · [agents.md](https://carimage.dev/agents.md) · [openapi.json](https://carimage.dev/openapi.json) · [Error reference](https://carimage.dev/errors.md) · [support@carimage.dev](mailto:support@carimage.dev)
+[Docs](https://carimage.dev/docs?ref=plugin) · [Vehicle pages](https://carimage.dev/cars?ref=plugin) · [Install guide](https://carimage.dev/install?ref=plugin) · [agents.md](https://carimage.dev/agents.md) · [openapi.json](https://carimage.dev/openapi.json) · [Error reference](https://carimage.dev/errors.md) · [Privacy policy](https://carimage.dev/privacy?ref=plugin) · [Terms](https://carimage.dev/terms?ref=plugin) · [support@carimage.dev](mailto:support@carimage.dev)
 
 ## License
 

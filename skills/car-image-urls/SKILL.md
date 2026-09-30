@@ -104,7 +104,7 @@ Store `renews_until` next to the URL. The story at https://carimage.dev/customer
 ```tsx
 import { CarImageClient } from "@meterapp/car-image-sdk";
 
-const client = new CarImageClient({ apiKey: process.env.CAR_IMAGE_API_KEY });
+const client = new CarImageClient(); // server only: the key stays in the deployment's secrets (car-image-sdk)
 
 export default async function Hero() {
   const { data } = await client.createImageUrls(
@@ -182,7 +182,7 @@ Transparent PNG sits on any background, which is what you want in a document. Fo
 ## Do not
 
 - Mint a URL for a vehicle you have not looked up. One `404` fails the whole batch before anything is charged; it carries `suggestions` (and, over REST, the `index` of the entry), so fix that entry and send the batch again.
-- Put `CAR_IMAGE_API_KEY` in client-side code, an `<img src>`, or a committed config file. Mint a signed URL instead.
+- Put an API key in client-side code, an `<img src>`, or a committed config file. Mint a signed URL instead.
 - Mint a URL per request or per render without caching — each one is a credit.
 - Treat a signed URL as private. It is unguessable, not access-controlled.
 - Present a render as a photograph of one specific listed vehicle. It represents the model.

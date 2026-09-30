@@ -11,13 +11,10 @@ npm install @meterapp/car-image-sdk
 ```ts
 import { CarImageClient } from "@meterapp/car-image-sdk";
 
-const client = new CarImageClient({
-  apiKey: process.env.CAR_IMAGE_API_KEY, // falls back to CAR_IMAGE_API_KEY on a server
-  baseUrl: process.env.CAR_IMAGE_API_URL, // falls back to CAR_IMAGE_API_URL, default https://carimage.dev
-});
+const client = new CarImageClient();
 ```
 
-Construct it once per process, at module scope. It holds no connection state, so a single instance is safe to share.
+On a server, `apiKey` comes from the deployment's `CAR_IMAGE_API_KEY` secret, set by whoever runs the deployment in its platform's secret settings or CI, and `baseUrl` from `CAR_IMAGE_API_URL`, otherwise `https://carimage.dev`. Pass `{ apiKey }` or `{ baseUrl }` to take them from anywhere else, such as a secret manager. Construct it once per process, at module scope. It holds no connection state, so a single instance is safe to share.
 
 ## Methods
 
@@ -69,7 +66,7 @@ Keep the client in a server-only module and hand the browser signed URLs.
 import "server-only";
 import { CarImageClient } from "@meterapp/car-image-sdk";
 
-export const carImage = new CarImageClient({ apiKey: process.env.CAR_IMAGE_API_KEY });
+export const carImage = new CarImageClient();
 ```
 
 ```ts
@@ -98,7 +95,7 @@ Cache the result keyed on the vehicle parameters. Without a cache, every request
 
 When the three strings come from free text rather than from a picker backed by the catalog, resolve them first (`carImage.resolve(...)`, free) and mint with `{ vehicle: data.params.vehicle_id, view: "side" }`: a name the catalog files differently is a `404` here, and the id is the better cache key.
 
-`CAR_IMAGE_API_KEY` belongs in your platform's environment variables — never in `NEXT_PUBLIC_*`, never in a committed `.env`, never in a client component.
+The key belongs in the platform's secret settings for the deployment, as `CAR_IMAGE_API_KEY` — never in `NEXT_PUBLIC_*`, never in a committed `.env`, never in a client component.
 
 ## Edge runtimes
 

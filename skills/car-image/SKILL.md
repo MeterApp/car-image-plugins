@@ -5,7 +5,7 @@ description: Show or fetch a studio-quality, transparent-background image of a r
 
 # Car Image API
 
-Studio-quality, transparent-background renders of any vehicle in the open [`@meterapp/vehicle-db`](https://github.com/MeterApp/vehicle-db) catalog — 1,607 makes, 46,120 models, model years 1990-2027. Eight camera views, any paint color, PNG/WebP/JPG up to 1024 px.
+Studio-quality, transparent-background renders of any vehicle in the open [`@meterapp/vehicle-db`](https://github.com/MeterApp/vehicle-db) catalog — 1,595 makes, 41,838 models, model years 1990-2027. Eight camera views, any paint color, PNG/WebP/JPG up to 1024 px.
 
 ## Two steps, every time
 
@@ -136,11 +136,11 @@ A 16:9 hero: `width: 1024, height: 576, trim: true, padding: 6`. A thumbnail on 
 
 ## Authentication
 
-The plugin uses browser OAuth sign-in managed by the host. No API-key environment variable is required. In Claude Code, open `/mcp`, select the Car Image server and authenticate. If its tools already work, use that connection.
+The plugin's MCP server is already authenticated: through browser OAuth sign-in managed by the host, or in Claude Code through an API key the user saved in the plugin's options (optional; kept in the system's secure credential store and sent only to the Car Image server). No API-key environment variable is required. If the tools work, use that connection; it is the only credential you need. If they ask for sign-in, tell the user to open `/mcp` in Claude Code, select the Car Image server and authenticate, or to save a key under `/plugin` → the Car Image plugin → **Configure options**.
 
-For direct REST, SDK, CLI or an explicitly configured API-key MCP connection, the key lives in the environment as `CAR_IMAGE_API_KEY` and looks like `cimg_…`. Send it as `Authorization: Bearer $CAR_IMAGE_API_KEY`.
+You never handle a key yourself: do not ask for one in the conversation, and do not read one from environment variables, `.env` files, shell profiles or a CLI's config to put in a command or a header. Code you write for the user's own application gets its key from that application's secret settings, which the user manages (the `car-image-sdk` skill). Keys look like `cimg_…`; a user without one runs `npx @meterapp/car-image login` (a browser device flow) or creates one at [the dashboard](https://carimage.dev/dashboard?ref=plugin).
 
-**Never** put a key in a URL, in HTML, in client-side JavaScript, in a commit, in a log line, in a screenshot, in a config file that gets committed, or in a prompt. For an API-key connection, if the key is missing, tell the user to run `npx @meterapp/car-image login` (browser device flow, stored with mode `0600`) or create one at [the dashboard](https://carimage.dev/dashboard?ref=plugin). Do not guess or fabricate keys.
+**Never** put a key in a URL, in HTML, in client-side JavaScript, in a commit, in a log line, in a screenshot, in a config file that gets committed, or in a prompt. Do not guess or fabricate keys.
 
 Browser code must never hold the key. Mint signed URLs server-side instead — that is what `create_car_image_urls` is for.
 
@@ -162,7 +162,7 @@ Every JSON failure is an RFC 9457 `application/problem+json` document with `deta
 | --- | --- | --- |
 | `Input validation error` | The tool refused an argument before the API saw it: an unknown view or format, a value out of range, a vehicle id together with a make. Nothing was charged. | The message names the argument and the rule: fix that one and call again. The type is rarely the cause, because a host that sends arguments as text is read as it meant: `"true"` is the flag, `"960"` the number, and the JSON of `images` the list. Only a `car-image mcp` server older than CLI 1.9.4 refuses a flag or a list sent that way: leave `trim`, `padding` and `renew` out there, and when it refuses `images` itself use `get_car_image` with `vehicle`, `view`, `color`, `width` and `height`. Do not abandon the render. |
 | 400 | Invalid parameter (`parameter` names it, `retryable: false`) | Views, `fit` and `format` are fixed enums; `color` is a preset name or a hex; `vehicle` cannot be sent with make, model or year; `padding` needs `trim`; `jpg` cannot be `transparent`; dimensions stop at 1024. Fix the value with `list_image_options` or `resolve_vehicle`; sending it again unchanged always fails. |
-| 401 | Missing or invalid credential | For the plugin, ask the user to reconnect through the host’s MCP sign-in controls (`/mcp` in Claude Code). For an explicit API-key connection, log in or set `CAR_IMAGE_API_KEY`. Never guess a key. |
+| 401 | Missing or invalid credential | For the plugin, ask the user to reconnect through the host’s MCP sign-in controls (`/mcp` in Claude Code), or to replace the key saved in the plugin's options. For code in their project, the application's key is missing or revoked: the user fixes it where the application keeps its secrets. Never guess a key. |
 | 402 | Out of credits, or `code: "plan_vehicle_limit"` (the request named more new distinct vehicles than the plan's monthly cap allows; `scope`, `plan`, `vehicles_this_month`, `vehicles_per_month`, `requested`) | **Stop and ask the human** to top up at [the dashboard](https://carimage.dev/dashboard?ref=plugin#billing) or with `car-image billing`, or, for a plan limit, tell them the plan and the cap. Never buy credits or change a plan on your own. |
 | 404 | Vehicle not in the catalog under that name (`code: "vehicle_not_found"`), or an unknown vehicle id | You rendered by name: look the vehicle up instead. Read the problem's `suggestions` first (up to five real catalog vehicles with ids, closest first) and retry with `vehicle: <id>` when one is plainly the car, or show them to the user; call `resolve_vehicle` when they are empty. Do not send the same name again in another view or color. If it is really missing, offer to file it with `request_vehicle`. Do not invent vehicles or substitute a different one without saying so. |
 | 429 | Rate limited (per key, or per account with `code: "account_rate_limited"`), or `code: "account_generation_cap"` (the account used its plan's share of today's render budget; cached images keep serving) | Wait `Retry-After` seconds, retry once. Never hammer; a generation cap resets at midnight UTC (`reset_at`), so do not retry cold renders before then. |

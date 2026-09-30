@@ -1,6 +1,6 @@
 ---
 name: car-image-mcp
-description: Connect an agent, IDE or chat app to the Car Image API over MCP, and fix it when the tools do not appear. Covers the hosted HTTP server and the local stdio alternative, browser OAuth sign-in for plugin installs and chat-app connectors, optional CAR_IMAGE_API_KEY setup for manual connections in Claude Code, Codex, Cursor, Claude Desktop and generic MCP hosts, what each of the seventeen core tools costs (images, make logos, signed URLs, catalog, VIN decoding, 3D models, help and billing links) and which eight more ?toolset=all adds, and how to diagnose a 401, a missing server or an empty tool list. Use for setup, configuration and connection troubleshooting; do not use for calling the API from code (car-image-sdk) or for image workflows once the tools already work (car-image).
+description: Connect an agent, IDE or chat app to the Car Image API over MCP, and fix it when the tools do not appear. Covers the hosted HTTP server and the local stdio alternative, browser OAuth sign-in for plugin installs and chat-app connectors, the optional API key saved in the plugin's options in Claude Code, API-key setup for manual connections in Codex, Cursor, Claude Desktop and generic MCP hosts, what each of the seventeen core tools costs (images, make logos, signed URLs, catalog, VIN decoding, 3D models, help and billing links) and which eight more ?toolset=all adds, and how to diagnose a 401, a missing server or an empty tool list. Use for setup, configuration and connection troubleshooting; do not use for calling the API from code (car-image-sdk) or for image workflows once the tools already work (car-image).
 ---
 
 # Connecting over MCP
@@ -8,7 +8,7 @@ description: Connect an agent, IDE or chat app to the Car Image API over MCP, an
 Two servers expose the same tools. Prefer the hosted one — there is nothing to install and nothing to keep up to date.
 
 - **Hosted (recommended):** `https://carimage.dev/api/mcp`, Streamable HTTP, with browser OAuth sign-in in supported hosts
-- **Local stdio:** `npx @meterapp/car-image mcp`, reads `CAR_IMAGE_API_KEY` or the key stored by `car-image login`
+- **Local stdio:** `npx @meterapp/car-image mcp`, which uses the key `car-image login` saved for the CLI
 
 Both come in two toolsets. The default, `core`, is the seventeen tools an agent needs to find, render, embed, decode, model and publish a car. Appending `?toolset=all` to the hosted URL — or passing `--toolset all` to `car-image mcp` — adds the eight request-board tools, twenty-five in total. Fewer tools cost the agent less context and make the right one easier to pick, so opt in only when the agent should also file vehicle and feature requests.
 
@@ -16,9 +16,11 @@ Both come in two toolsets. The default, `core`, is the seventeen tools an agent 
 
 The `car-image` plugin already configures the hosted server with `?toolset=all` (the skills teach the request tools). **No API key or environment variable is needed.** Start a new session and use the host’s MCP authentication controls. In Claude Code, open `/mcp`, select the Car Image server, and authenticate; complete Car Image sign-in and approve the connection in your browser. Codex and Cursor expose sign-in through their MCP connection controls. Then skip to [Verifying](#verifying).
 
-The plugin intentionally does not set an `Authorization` header. Claude Code treats a configured header as supplied credentials and disables OAuth fallback, including when `${CAR_IMAGE_API_KEY}` is unset. Do not add that header to fix a plugin sign-in problem.
+**Or save an API key (Claude Code, since plugin 1.12.0).** For a machine with no browser, or a shared service account, the plugin takes an optional **Car Image API key**. Claude Code asks for it when the plugin is enabled; to set, change or clear it later, open `/plugin`, select the Car Image plugin, choose **Configure options**, and restart. Recent Claude Code versions also take it from a terminal: `claude plugin configure car-image@meterapp --values-stdin` (for a directory install, use the plugin id `claude plugin list` shows), then type `{"api_key":"cimg_…"}` and end the input with Ctrl-D, which keeps the key out of shell history. Claude Code keeps the key in the system's secure credential store and sends it only to the Car Image server, as the `X-Api-Key` header; left empty, browser sign-in applies. The human enters the key there themselves. Never ask for it in the conversation, and never copy one from environment variables, `.env` files or another tool's config to fill it in.
 
-Upgrading from a release before 1.10.1? Update the plugin, restart the host, and sign in. If you also added a manual server with an API-key header, use the plugin-provided server for OAuth; the manual connection still needs its configured key.
+The plugin never sets an `Authorization` header. Claude Code treats a configured `Authorization` header as the whole credential and turns off OAuth fallback, whatever its value, so a saved key travels as `X-Api-Key` instead, and a signed-in token takes precedence when both are present. Do not add an `Authorization` header to fix a plugin sign-in problem.
+
+Upgrading from a release before 1.10.1? Update the plugin, restart the host, and sign in. If you also added a manual server with an API-key header, use the plugin-provided server; the manual connection still needs its configured key.
 
 ## Chat apps: add it as a connector
 
@@ -57,31 +59,18 @@ Sign in using the host’s MCP controls. Set `"url": "https://carimage.dev/api/m
 
 ## Optional API-key or local stdio setup
 
-For a host without OAuth, or an explicit API-key connection, get a key:
+For a host without OAuth, or an explicit API-key connection, the human gets a key: `npx @meterapp/car-image login` (a browser device flow; it prints the key once and saves it for the CLI) or [the dashboard](https://carimage.dev/dashboard?ref=plugin). Keys need the `images:read` scope.
 
-```bash
-npx @meterapp/car-image login     # browser device flow, prints the key once
-export CAR_IMAGE_API_KEY="cimg_…"
-```
+- **Claude Code:** save it in the plugin's options, as in [Plugin installs](#plugin-installs-sign-in-with-your-browser). No second server is needed.
+- **Another host:** the human enters the key in that host's own MCP settings, as an `X-Api-Key` header (or `Authorization: Bearer`, which some hosts then use instead of OAuth), wherever that host keeps secrets. `car-image agent-config --host claude-code|claude-desktop|cursor|chatgpt|generic` prints the configuration for each host. Never put the key in a project file that gets committed, in a URL or in a prompt, and do not add a key header to the plugin's `.mcp.json`.
 
-Or create one at [the dashboard](https://carimage.dev/dashboard?ref=plugin). Keys need the `images:read` scope. Keep the key in the host’s environment, never in a committed config file or prompt.
-
-A separate manual Claude Code connection:
-
-```bash
-claude mcp add --transport http car-image-key https://carimage.dev/api/mcp \
-  --header "Authorization: Bearer $CAR_IMAGE_API_KEY"
-```
-
-This connection uses the supplied key and will not offer OAuth. Other hosts can explicitly configure `"headers": { "Authorization": "Bearer ${CAR_IMAGE_API_KEY}" }` if they support environment expansion. Do not add this to the plugin’s `.mcp.json`.
-
-Local stdio instead (uses the CLI’s stored key after `car-image login`):
+Local stdio instead, using the key `car-image login` saved:
 
 ```bash
 claude mcp add car-image-local -- npx -y @meterapp/car-image mcp
 ```
 
-Append `--toolset all` after `mcp` for the request board. `CAR_IMAGE_API_KEY` can override the stored key. `car-image agent-config --host claude-code|claude-desktop|cursor|chatgpt|generic` prints manual configurations; API-key configurations require the key even though the plugin does not.
+Append `--toolset all` after `mcp` for the request board.
 
 ## The tools
 
@@ -136,19 +125,18 @@ Then a real one, which costs 1 credit:
 
 > "Show me a red 2024 Porsche 911, front three-quarter."
 
-A working connection answers it in two calls, `resolve_vehicle` and then `create_car_image_urls` with the vehicle id, and the image is in the reply.
+A working connection answers it in two calls, `resolve_vehicle` and then `create_car_image_urls` with the vehicle id, and the image is in the reply. `get_account` (free) says which account and plan the connection is using, whichever credential it holds.
 
-For an explicit API-key connection, from a terminal:
+To check that the server is reachable at all, with no credential, from a terminal:
 
 ```bash
-curl -sS -X POST https://carimage.dev/api/mcp \
-  -H "Authorization: Bearer $CAR_IMAGE_API_KEY" \
+curl -sS -i -X POST https://carimage.dev/api/mcp \
   -H "Content-Type: application/json" \
   -H "Accept: application/json, text/event-stream" \
   -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
 ```
 
-That returns the seventeen core tools, or tells you exactly what is wrong. Use `"https://carimage.dev/api/mcp?toolset=all"` as the URL to see all twenty-five. `car-image doctor` tests the REST endpoints the same way.
+A `401` with `WWW-Authenticate: Bearer realm="Car Image API", resource_metadata="…"` is the healthy answer: the server is up and asking for sign-in. Anything `5xx`, or no answer, is an outage. `car-image doctor` tests the REST endpoints with the key the CLI saved.
 
 ## When it does not work
 
@@ -156,7 +144,9 @@ That returns the seventeen core tools, or tells you exactly what is wrong. Use `
 
 **Plugin needs authentication, zero tools, or a connection error.** Open the host’s MCP controls and sign in again. In Claude Code, use `/mcp`. If it says the configured Authorization header was rejected, update the plugin and restart: releases before 1.10.1 required an environment key and prevented OAuth fallback. Check that you selected the plugin server rather than an older manually configured server.
 
-**Explicit API-key connection returns 401.** Run the `curl` above. Check that `CAR_IMAGE_API_KEY` is exported in the environment the host was launched from — a key in `~/.zshrc` is invisible to a GUI app started from the Dock. Log in again with `car-image login` if needed. An unauthenticated 401 with `WWW-Authenticate: Bearer … resource_metadata="…"` is the normal start of OAuth, not by itself a failed sign-in.
+**A key is saved in the plugin's options, and Claude Code still asks for sign-in.** The server refused the key (mistyped, or revoked in the dashboard) and Claude Code fell back to browser sign-in, which is working as designed. Save a current key under `/plugin` → the Car Image plugin → **Configure options**, or clear the field and sign in, then restart.
+
+**A manual API-key connection in another host returns 401.** Check the key in that host's MCP settings; the host must be restarted after it changes. Create a new key in the dashboard if the old one was revoked. An unauthenticated 401 with `WWW-Authenticate: Bearer … resource_metadata="…"` is the normal start of OAuth, not by itself a failed sign-in.
 
 **Seventeen tools, but no `request_vehicle`, `list_requests` or `share_building`.** The connection is on the core toolset, which is working as designed. Change the URL to `https://carimage.dev/api/mcp?toolset=all` (or add `--toolset all` to the stdio command) and restart the host.
 
@@ -176,7 +166,8 @@ That returns the seventeen core tools, or tells you exactly what is wrong. Use `
 
 ## Keeping the key safe
 
-- Never commit a config file containing a literal key. Use `${CAR_IMAGE_API_KEY}` or the stdio server.
+- A key lives in one of three places: the plugin's options (Claude Code keeps it in the system's secure credential store), the host's own secret storage, or the CLI's login. Never in a config file that gets committed.
+- An agent never handles the key. It uses the connection the host already authenticated, and it does not read a key out of environment variables, `.env` files, shell profiles or another tool's config to pass along.
 - Never print the key, paste it into a chat, or include it in a screenshot or a bug report. Quote the `request_id` instead.
 - A key that has leaked should be revoked in the dashboard and replaced. Revoking also invalidates the signed delivery URLs that key created.
 

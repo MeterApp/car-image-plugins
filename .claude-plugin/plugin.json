@@ -2,7 +2,7 @@
   "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "car-image",
   "displayName": "Car Image API",
-  "version": "1.11.4",
+  "version": "1.12.1",
   "description": "Studio-quality, transparent-background vehicle images for any project. Render any make, model and year in 8 camera views and any paint color, mint signed URLs a browser can load without a key, fetch catalog make logos, decode VINs for free, or build a 3D model of any vehicle.",
   "author": {
     "name": "Meter",
@@ -12,6 +12,9 @@
   "homepage": "https://carimage.dev/docs?ref=plugin",
   "repository": "https://github.com/MeterApp/car-image-plugins",
   "license": "MIT",
+  "privacyPolicyUrl": "https://carimage.dev/privacy?ref=plugin",
+  "termsOfServiceUrl": "https://carimage.dev/terms?ref=plugin",
+  "supportUrl": "https://carimage.dev/docs?ref=plugin",
   "keywords": [
     "car",
     "vehicle",
@@ -21,5 +24,24 @@
     "mcp",
     "png",
     "transparent"
-  ]
+  ],
+  "userConfig": {
+    "api_key": {
+      "type": "string",
+      "title": "Car Image API key (optional)",
+      "description": "Leave empty to sign in with your browser (/mcp). Or paste a cimg_… key from https://carimage.dev/dashboard?ref=plugin for a machine without a browser: Claude Code keeps it in your system's secure credential store and sends it only to the Car Image MCP server, in the X-Api-Key header.",
+      "sensitive": true,
+      "default": ""
+    }
+  },
+  "mcpServers": {
+    "car-image": {
+      "type": "http",
+      "url": "https://carimage.dev/api/mcp?toolset=all",
+      "headers": {
+        "X-CarImage-Integration": "plugin",
+        "X-Api-Key": "${user_config.api_key}"
+      }
+    }
+  }
 }

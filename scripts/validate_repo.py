@@ -118,10 +118,28 @@ agents_plugins = agents_marketplace.get("plugins", [])
 if len(agents_plugins) != 1 or agents_plugins[0].get("name") != PLUGIN_NAME:
     error(f".agents/plugins/marketplace.json must list exactly one plugin named {PLUGIN_NAME}")
 
+# --- directory listing -----------------------------------------------------
+
+# The Anthropic Directory reads these from the Claude manifest and warns when the
+# privacy policy is missing. They name the same pages as the Codex listing.
+codex_interface = manifests["codex"].get("interface", {})
+LISTING_URLS = {
+    "privacyPolicyUrl": ("privacyPolicyURL", f"{ORIGIN}/privacy?ref=plugin"),
+    "termsOfServiceUrl": ("termsOfServiceURL", f"{ORIGIN}/terms?ref=plugin"),
+    "supportUrl": ("supportURL", None),
+}
+for field, (codex_field, required) in LISTING_URLS.items():
+    value = manifests["claude"].get(field)
+    if not value or (required and value != required):
+        error(f"claude manifest {field} must be {required or 'set'}, got {value!r}")
+    elif value != codex_interface.get(codex_field):
+        error(f"claude manifest {field} must match the codex interface {codex_field}")
+
 # --- MCP server ------------------------------------------------------------
 
-# Keep authentication client-managed: a static Authorization header disables
-# Claude Code OAuth fallback, even when its environment variable is unset.
+# Keep authentication client-managed: any configured Authorization header
+# disables Claude Code OAuth fallback, whatever its value, even when the variable
+# or option it names is unset.
 server = load_json(".mcp.json").get("mcpServers", {}).get(PLUGIN_NAME, {})
 expected = {
     "type": "http",
@@ -130,6 +148,60 @@ expected = {
 }
 if server != expected:
     error(f".mcp.json must configure the hosted server exactly as {expected}, got {server}")
+
+# Claude Code also reads the server from its manifest, and that copy replaces the
+# .mcp.json entry of the same name. It adds the one credential the plugin takes:
+# an API key the user chose to save in the plugin's options (sensitive, so it is
+# kept in the system credential store). It travels as X-Api-Key, never as
+# Authorization, so an empty option is an empty header and OAuth still applies,
+# and a signed-in token wins on the server when both arrive. Codex and Cursor
+# read .mcp.json, where ${user_config.*} would mean nothing.
+API_KEY_HEADER = "${user_config.api_key}"
+claude_expected = {
+    PLUGIN_NAME: {
+        "type": "http",
+        "url": PLUGIN_MCP_URL,
+        "headers": {"X-CarImage-Integration": "plugin", "X-Api-Key": API_KEY_HEADER},
+    }
+}
+if manifests["claude"].get("mcpServers") != claude_expected:
+    error(f"claude manifest mcpServers must be exactly {claude_expected}, got {manifests['claude'].get('mcpServers')}")
+
+user_config = manifests["claude"].get("userConfig")
+option = user_config.get("api_key") if isinstance(user_config, dict) else None
+if not isinstance(option, dict) or set(user_config) != {"api_key"}:
+    error("claude manifest userConfig must declare exactly one option, api_key")
+else:
+    if option.get("type") != "string" or option.get("sensitive") is not True:
+        error("userConfig.api_key must be a string with sensitive: true (masked, kept in the credential store)")
+    if option.get("required") is True:
+        error("userConfig.api_key must stay optional: browser sign-in is the default")
+    # Claude Code reads an unset optional option as "" (checked on 2.1.270 and
+    # 2.1.285); the explicit default says the same to a client that only applies
+    # declared defaults, where an unset option would drop the server instead.
+    if option.get("default") != "":
+        error('userConfig.api_key must default to ""')
+    for field in ("title", "description"):
+        if not isinstance(option.get(field), str) or not option[field].strip():
+            error(f"userConfig.api_key needs a {field}")
+
+
+def authorization_headers(node: object, owner: str) -> None:
+    """Report any Authorization header anywhere in a manifest or MCP file."""
+    if isinstance(node, dict):
+        for key, value in node.items():
+            if key == "headers" and isinstance(value, dict):
+                for name in value:
+                    if name.lower() == "authorization":
+                        error(f"{owner}: an Authorization header disables Claude Code OAuth sign-in; send a key as X-Api-Key")
+            authorization_headers(value, owner)
+    elif isinstance(node, list):
+        for item in node:
+            authorization_headers(item, owner)
+
+
+for relative in [*MANIFESTS.values(), ".mcp.json"]:
+    authorization_headers(load_json(relative), relative)
 
 # The setup skill documents both toolsets; a skill that promises all twenty-five
 # tools on the bare URL sends users to a server with only the core set. The pattern is the
@@ -218,6 +290,20 @@ FORBIDDEN = {
     "[TODO": "an unresolved placeholder",
     "carimage.dev/legal": "a legal page that does not exist",
 }
+# The Anthropic Directory holds a plugin for review ("Uses a credential from the
+# user's machine") when anything in it reads a key or secret from environment
+# variables or files and sends it on, examples included. An agent uses the
+# connection the host authenticated; code for the user's server leaves the key to
+# the deployment (`new CarImageClient()` finds it); REST examples are HTTP
+# requests with `cimg_…` standing for the key.
+CREDENTIAL_READS = re.compile(
+    r"\$\{?[A-Z][A-Z0-9_]*(?:KEY|SECRET|TOKEN|PASSWORD)\b"  # $CAR_IMAGE_API_KEY, ${GITHUB_TOKEN}
+    r"|process\.env(?:\.|\[\s*['\"])[A-Z0-9_]*(?:KEY|SECRET|TOKEN|PASSWORD)\b"
+    r"|\bos\.(?:environ|getenv)\b"
+    r"|Deno\.env\.get\("
+    r"|import\.meta\.env\.[A-Z0-9_]*(?:KEY|SECRET|TOKEN|PASSWORD)\b"
+    r"|car-image-api/config\.json"  # where the CLI saves its key
+)
 # Every published carimage.dev link needs ?ref= for attribution, except the bare
 # origin (callers concatenate it), the API itself, the embed script a browser
 # loads (/embed/…, never a click) and machine-readable files.
@@ -238,6 +324,9 @@ for path in sorted(ROOT.rglob("*")):
     for needle, label in FORBIDDEN.items():
         if needle in text:
             error(f"{relative}: contains {label}: {needle}")
+    for match in CREDENTIAL_READS.finditer(text):
+        line = text.count("\n", 0, match.start()) + 1
+        error(f"{relative}:{line}: reads a credential from the user's machine: {match.group(0)}")
     for match in re.finditer(re.escape(ORIGIN) + r"[^\s\"'`)\],]*", text):
         url = match.group(0)
         if "?ref=" in url or REF_EXEMPT.match(url):

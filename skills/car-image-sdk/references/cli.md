@@ -11,7 +11,7 @@ curl -fsSL https://carimage.dev/install.sh | sh
 ## Signing in
 
 ```bash
-car-image login       # browser device flow; stores the key at $XDG_CONFIG_HOME/car-image-api/config.json, mode 0600
+car-image login       # browser device flow; saves the key for the CLI, readable by your user only
 car-image whoami      # credits, auto-reload, payment method, 30-day usage, masked key prefix, scopes
 car-image logout
 ```

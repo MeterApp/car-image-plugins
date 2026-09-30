@@ -24,12 +24,12 @@ npm install @meterapp/car-image-sdk
 ```ts
 import { CarImageClient } from "@meterapp/car-image-sdk";
 
-const client = new CarImageClient({ apiKey: process.env.CAR_IMAGE_API_KEY });
+const client = new CarImageClient(); // server-side: the key is the deployment's secret, never in code
 const image = await client.getImage({ make: "Porsche", model: "911", year: 2024, view: "side", color: "red", width: 800, height: 450, trim: true });
 // image.bytes, image.source ("cache" | "generated"), image.creditsCharged, image.creditsRemaining, image.requestId
 ```
 
-Zero runtime dependencies. `apiKey` and `baseUrl` fall back to `CAR_IMAGE_API_KEY` and `CAR_IMAGE_API_URL` on a server. Retries on `429` and `503` with full jitter, honoring `Retry-After`, are built in — **and it never retries a `402`**, because being out of credits is not a transient failure.
+Zero runtime dependencies. On a server the client takes its key from the deployment's `CAR_IMAGE_API_KEY` secret, which whoever runs the deployment sets in the platform's secret settings or as a CI secret, and `CAR_IMAGE_API_URL` can point it at another origin; pass `{ apiKey }` for a key kept anywhere else, such as a secret manager. Retries on `429` and `503` with full jitter, honoring `Retry-After`, are built in — **and it never retries a `402`**, because being out of credits is not a transient failure.
 
 `ImageParams` takes the vehicle (`make`, `model`, `year`, or `vehicle: "veh_…"`, a stable id), `view`, `color` (a preset name or any hex such as `"#1a2b3c"`), and the sizing options: `size` (`thumb|small|medium|large`) or `width`/`height` (1–1024; both together return exactly that box), `fit` (`contain` default, `cover`, `inside`), `background` (`transparent` default, `white`, `black` or hex), `trim` with `padding` (0–50 %), and `format` (`png`, `webp`, `jpg`, `auto`). The `car-image` skill explains when to use which.
 
@@ -86,7 +86,7 @@ try {
 
 ## Rules that matter more than the syntax
 
-**The key is a server-side secret.** `process.env.CAR_IMAGE_API_KEY` in a server file, a route handler, a script, or a CI secret. Never in a client component, never in `NEXT_PUBLIC_*`, never in a committed `.env`. If the browser needs the image, mint a signed URL — the `car-image-urls` skill covers it.
+**The key is a server-side secret, and placing it is the user's job.** It lives in the deployment's secret settings or a CI secret, where the client finds it at runtime, so the code you write never contains it. Never in a client component, never in `NEXT_PUBLIC_*`, never in a committed `.env`. You never need its value: try a lookup or a render through the plugin's MCP tools, and never print a key or copy one out of `.env` files, shell profiles or the CLI's config into a command or a file. If the browser needs the image, mint a signed URL — the `car-image-urls` skill covers it.
 
 **Every image is a credit.** A loop over 500 vehicles costs 500 credits ($0.50). That is fine if intended and a surprise if not, so:
 
@@ -112,7 +112,7 @@ import { CarImageClient, CarImageError } from "@meterapp/car-image-sdk";
 import { writeFile, mkdir } from "node:fs/promises";
 import { existsSync } from "node:fs";
 
-const client = new CarImageClient({ apiKey: process.env.CAR_IMAGE_API_KEY });
+const client = new CarImageClient(); // runs where the key is configured, such as CI with the secret set
 
 /** `wanted` is what the source data says: "2023 Toyota RAV4", "2023 Honda CR-V", … */
 async function download(wanted: string[]) {
@@ -165,18 +165,23 @@ Resolves before it spends, deduplicates by vehicle id, checks the budget for wha
 
 ## REST directly
 
-```bash
-curl --fail-with-body -H "Authorization: Bearer $CAR_IMAGE_API_KEY" \
-  "https://carimage.dev/api/v1/images/car?make=porsche&model=911&year=2024&view=front-3-4&color=red&size=medium&format=webp" \
-  --output porsche-911.webp
+Any language that can send an HTTP request can render. The key goes in the `Authorization: Bearer` header (or `X-Api-Key`), read by the server-side code from its own secret settings; `cimg_…` below stands for it. In a shell script the CLI above is shorter.
 
-# Exactly 600×400, car trimmed to fill the box, on a light grey background (hex without the #)
-curl --fail-with-body -H "Authorization: Bearer $CAR_IMAGE_API_KEY" \
-  "https://carimage.dev/api/v1/images/car?make=porsche&model=911&year=2024&view=side&w=600&h=400&trim=1&padding=6&background=f4f4f4" \
-  --output porsche-911-600x400.png
+```http
+GET /api/v1/images/car?make=porsche&model=911&year=2024&view=front-3-4&color=red&size=medium&format=webp HTTP/1.1
+Host: carimage.dev
+Authorization: Bearer cimg_…
 ```
 
-The query spells the vehicle as `make`, `model` and `year`, or as `vehicle=veh_…` (a stable id); the paint as `color=<preset>` or `color=1a2b3c` (bare hex; responses echo `#1a2b3c`); the dimensions `w` and `h` (1–1024), with `fit=contain|cover|inside` (default `contain`), `background=transparent|white|black|<hex>`, `trim=1` with `padding=0-50`, and `format=png|webp|jpg|auto` (`auto` answers with `Vary: Accept`). `GET /api/v1/vin/{vin}` decodes a VIN for free; `POST /api/v1/3d` (100 credits, send an `Idempotency-Key`), `GET /api/v1/3d/{id}` and `GET /api/v1/3d/{id}/files/{kind}` (a 302 to a one-hour signed URL; `curl -L`) are the 3D endpoints. Response headers carry `X-Credits-Charged`, `X-Credits-Remaining`, `X-Image-Source` (`cache` or `generated`), `X-Image-Width`, `X-Image-Height` and `X-Request-Id`. The machine-readable contract is [`/openapi.json`](https://carimage.dev/openapi.json); `car-image describe <operationId>` explains any endpoint from it.
+Exactly 600×400, the car trimmed to fill the box, on a light grey background (hex without the `#`):
+
+```http
+GET /api/v1/images/car?make=porsche&model=911&year=2024&view=side&w=600&h=400&trim=1&padding=6&background=f4f4f4 HTTP/1.1
+Host: carimage.dev
+Authorization: Bearer cimg_…
+```
+
+The response body is the image. The query spells the vehicle as `make`, `model` and `year`, or as `vehicle=veh_…` (a stable id); the paint as `color=<preset>` or `color=1a2b3c` (bare hex; responses echo `#1a2b3c`); the dimensions `w` and `h` (1–1024), with `fit=contain|cover|inside` (default `contain`), `background=transparent|white|black|<hex>`, `trim=1` with `padding=0-50`, and `format=png|webp|jpg|auto` (`auto` answers with `Vary: Accept`). `GET /api/v1/vin/{vin}` decodes a VIN for free; `POST /api/v1/3d` (100 credits, send an `Idempotency-Key`), `GET /api/v1/3d/{id}` and `GET /api/v1/3d/{id}/files/{kind}` (a 302 to a one-hour signed URL; `curl -L`) are the 3D endpoints. Response headers carry `X-Credits-Charged`, `X-Credits-Remaining`, `X-Image-Source` (`cache` or `generated`), `X-Image-Width`, `X-Image-Height` and `X-Request-Id`. The machine-readable contract is [`/openapi.json`](https://carimage.dev/openapi.json); `car-image describe <operationId>` explains any endpoint from it.
 
 ## Make logos
 

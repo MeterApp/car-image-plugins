@@ -88,9 +88,14 @@ Verify the signature over the **raw bytes**, with a constant-time compare, befor
 ```ts
 import { createHmac, timingSafeEqual } from "node:crypto";
 
-const expected = "sha256=" + createHmac("sha256", process.env.CAR_IMAGE_WEBHOOK_SECRET).update(rawBody).digest("hex");
-const given = request.headers.get("x-carimage-signature") ?? "";
-if (given.length !== expected.length || !timingSafeEqual(Buffer.from(given), Buffer.from(expected))) {
+/** `secret` is the webhook_secret the model was requested with, from the app's own secret settings. */
+export function signatureIsValid(rawBody: Buffer, given: string, secret: string): boolean {
+  const expected = "sha256=" + createHmac("sha256", secret).update(rawBody).digest("hex");
+  return given.length === expected.length && timingSafeEqual(Buffer.from(given), Buffer.from(expected));
+}
+
+// In the handler, before parsing the body:
+if (!signatureIsValid(rawBody, request.headers.get("x-carimage-signature") ?? "", secret)) {
   return new Response("bad signature", { status: 401 });
 }
 ```
