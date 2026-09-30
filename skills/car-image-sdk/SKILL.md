@@ -1,6 +1,6 @@
 ---
 name: car-image-sdk
-description: Write code that calls the Car Image API — the zero-dependency TypeScript SDK (@meterapp/car-image-sdk), the CLI (@meterapp/car-image) for shells, scripts and CI, or plain REST with fetch or curl in any language. Covers client setup, typed errors, retries, batching, keeping the key server-side, downloading renders in bulk, decoding VINs and creating, polling and downloading 3D models from code. Use when implementing or reviewing code that talks to the API; do not use for deciding which vehicle to render (vehicle-catalog) or connecting an agent over MCP (car-image-mcp).
+description: Write code that calls the Car Image API — the zero-dependency TypeScript SDK (@meterapp/car-image-sdk), the CLI (@meterapp/car-image) for shells, scripts and CI, or plain REST with fetch or curl in any language. Covers client setup, resolving a name to a vehicle id before rendering, typed errors, retries, batching, keeping the key server-side, downloading renders in bulk, decoding VINs and creating, polling and downloading 3D models from code. Use when implementing or reviewing code that talks to the API; do not use for deciding which vehicle to render (vehicle-catalog) or connecting an agent over MCP (car-image-mcp).
 ---
 
 # Calling the API from code
@@ -33,7 +33,24 @@ Zero runtime dependencies. `apiKey` and `baseUrl` fall back to `CAR_IMAGE_API_KE
 
 `ImageParams` takes the vehicle (`make`, `model`, `year`, or `vehicle: "veh_…"`, a stable id), `view`, `color` (a preset name or any hex such as `"#1a2b3c"`), and the sizing options: `size` (`thumb|small|medium|large`) or `width`/`height` (1–1024; both together return exactly that box), `fit` (`contain` default, `cover`, `inside`), `background` (`transparent` default, `white`, `black` or hex), `trim` with `padding` (0–50 %), and `format` (`png`, `webp`, `jpg`, `auto`). The `car-image` skill explains when to use which.
 
-Beyond images (SDK 1.6.0): `client.decodeVin(vin, { year? })` decodes a VIN for free and returns the catalog `vehicle` with its id; `client.vehicle(id)` looks an id up; `client.create3dModel({ make, model, year | vehicle }, { color?, webhookUrl?, webhookSecret?, publish? })` starts a 3D model (100 credits, charged at creation; free once the account owns that vehicle and color, `billing.already_owned`), `client.get3dModel(id)` polls it, `client.list3dModels({ limit? })` lists them, `client.download3dModel(id, "glb" | "glb_web" | "usdz" | "fbx" | "thumbnail")` follows the signed redirect and returns the bytes, and `client.publish3dModel(id)` / `client.unpublish3dModel(id)` host a model at key-free URLs with a two-line `<car-3d>` embed (`data.public`). The `car-3d` skill covers the lifecycle, the price and the embed.
+## Look the vehicle up, then render by id
+
+A make and model typed by a person, read from a spreadsheet or written by a model are not catalog names: the catalog files a "Mazda MX-5 Miata" as `mx-5`. Resolve each distinct vehicle once, for free, and address everything after that by its id:
+
+```ts
+const { data } = await client.resolve("2018 Mazda MX-5 Miata");
+// data.params.vehicle_id "veh_59854qbgfvar3", data.confidence "high" | "medium" | "low", data.candidates
+if (data.confidence === "low" || !data.params.vehicle_id) {
+  throw new Error(`Ambiguous vehicle: ${data.candidates.map((c) => `${c.make_slug}/${c.model_slug}`).join(", ")}`);
+}
+const image = await client.getImage({ vehicle: data.params.vehicle_id, view: "side", color: "red" });
+```
+
+`client.searchVehicles(query, { year?, limit? })` lists models with an id per year, `client.decodeVin(vin)` returns `data.vehicle.id`, and `client.vehicle(id)` turns an id back into its make, model and year. Store the id next to your own record: it never changes, and it is the cache key to use. A `404` from `resolve` means nothing matched; a vehicle `404` from a render carries `suggestions` with ids. When the phrase names a year, compare it with `data.params.year`: a model the catalog lacks in that year resolves to another one, below `high` confidence. For a picker or a form, the offline `@meterapp/vehicle-db` package needs no network at all (the `vehicle-catalog` skill).
+
+## Beyond images
+
+Since SDK 1.6.0: `client.decodeVin(vin, { year? })` decodes a VIN for free and returns the catalog `vehicle` with its id; `client.vehicle(id)` looks an id up; `client.create3dModel({ make, model, year | vehicle }, { color?, webhookUrl?, webhookSecret?, publish? })` starts a 3D model (100 credits, charged at creation; free once the account owns that vehicle and color, `billing.already_owned`), `client.get3dModel(id)` polls it, `client.list3dModels({ limit? })` lists them, `client.download3dModel(id, "glb" | "glb_web" | "usdz" | "fbx" | "thumbnail")` follows the signed redirect and returns the bytes, and `client.publish3dModel(id)` / `client.unpublish3dModel(id)` host a model at key-free URLs with a two-line `<car-3d>` embed (`data.public`). The `car-3d` skill covers the lifecycle, the price and the embed.
 
 ## The CLI in one line
 
@@ -41,7 +58,7 @@ Beyond images (SDK 1.6.0): `client.decodeVin(vin, { year? })` decodes a VIN for 
 npx @meterapp/car-image get --make Porsche --model 911 --year 2024 --view side --color red --width 800 --height 450 --trim --out porsche.png
 ```
 
-`car-image login` does a browser device flow and stores the key with mode `0600`. `car-image doctor` smoke-tests every endpoint and tells you what is wrong. `car-image resolve <free text>` prints the parameters and a ready-to-run command. `get` and `url` take `--vehicle veh_…` (instead of make, model and year), `--color` as a preset or `#1a2b3c`, `--fit`, `--background`, `--trim [--padding 0-50]` and `--format png|webp|jpg|auto`; `url` also takes `--idempotency-key`. `car-image vin <VIN> [--year] [--json]` decodes a VIN for free (CLI 1.3.0); `car-image 3d create --make --model --year [--color] [--vehicle] [--webhook-url] [--webhook-secret] [--wait] [--out <dir>] [--json]`, `3d get <id> [--wait] [--json]`, `3d download <id> [--format glb|usdz|fbx|thumbnail] [--out <file>]` and `3d list [--limit] [--json]` handle 3D models.
+`car-image login` does a browser device flow and stores the key with mode `0600`. `car-image doctor` smoke-tests every endpoint and tells you what is wrong. `car-image resolve <free text>` prints the vehicle id, the parameters and a ready-to-run command; `car-image search <text> [--year]` lists models and their years. `get` and `url` take `--vehicle veh_…` (instead of make, model and year), `--color` as a preset or `#1a2b3c`, `--fit`, `--background`, `--trim [--padding 0-50]` and `--format png|webp|jpg|auto`; `url` also takes `--idempotency-key`. `car-image vin <VIN> [--year] [--json]` decodes a VIN for free (CLI 1.3.0); `car-image 3d create --make --model --year [--color] [--vehicle] [--webhook-url] [--webhook-secret] [--publish] [--wait] [--out <dir>] [--json]`, `3d get <id> [--wait] [--json]`, `3d download <id> [--format glb|glb_web|usdz|fbx|thumbnail] [--out <file>]`, `3d publish <id> [--unpublish]` and `3d list [--limit] [--json]` handle 3D models; `car-image logo --make Toyota --out toyota-logo.png` saves a make logo.
 
 ## Errors are typed
 
@@ -57,7 +74,8 @@ try {
       throw new Error(`Car Image API out of credits (request ${error.requestId})`);
     }
     if (error.status === 404) {
-      // Not in the catalog — resolve or search for the canonical name.
+      // Not in the catalog under that name. error.problem.suggestions lists real
+      // vehicles with ids; resolve the name first next time and render by id.
     }
   }
   throw error;
@@ -96,34 +114,54 @@ import { existsSync } from "node:fs";
 
 const client = new CarImageClient({ apiKey: process.env.CAR_IMAGE_API_KEY });
 
-async function download(vehicles: Array<{ make: string; model: string; year: number }>) {
+/** `wanted` is what the source data says: "2023 Toyota RAV4", "2023 Honda CR-V", … */
+async function download(wanted: string[]) {
   await mkdir("out", { recursive: true });
-  const { data: account } = await client.account();
-  if (account.credits < vehicles.length) {
-    throw new Error(`Need ${vehicles.length} credits, have ${account.credits}. Top up before running.`);
+
+  // 1. Look every distinct vehicle up once. Free, and it is what keeps a name
+  //    the catalog spells differently from costing a credit, or a 404, per view.
+  const vehicles = new Map<string, string>(); // vehicle id -> file label
+  for (const phrase of new Set(wanted)) {
+    try {
+      const { data } = await client.resolve(phrase);
+      if (data.confidence === "low" || !data.params.vehicle_id) {
+        console.warn(`skip "${phrase}": ambiguous, needs a human`);
+        continue;
+      }
+      vehicles.set(data.params.vehicle_id, `${data.params.year}-${data.params.make}-${data.params.model}`);
+    } catch (error) {
+      if (error instanceof CarImageError && error.status === 404) {
+        console.warn(`skip "${phrase}": not in the catalog`);
+        continue;
+      }
+      throw error;
+    }
   }
 
-  for (const vehicle of vehicles) {
-    const file = `out/${vehicle.year}-${vehicle.make}-${vehicle.model}.png`.toLowerCase().replace(/\s+/g, "-");
-    if (existsSync(file)) continue; // resumable: never re-bill a finished item
+  // 2. Check the budget for what is actually going to render.
+  const { data: account } = await client.account();
+  if (account.credits < vehicles.size) {
+    throw new Error(`Need ${vehicles.size} credits, have ${account.credits}. Top up before running.`);
+  }
+
+  // 3. Render by id, resumably.
+  for (const [vehicle, label] of vehicles) {
+    const file = `out/${label}.png`;
+    if (existsSync(file)) continue; // never re-bill a finished item
 
     try {
-      const image = await client.getImage({ ...vehicle, view: "front-3-4", size: "medium" });
+      const image = await client.getImage({ vehicle, view: "front-3-4", size: "medium" });
       await writeFile(file, image.bytes);
       console.log(`${file}  ${image.source}  ${image.creditsRemaining} credits left`);
     } catch (error) {
       if (error instanceof CarImageError && error.status === 402) throw error; // stop; do not burn the rest
-      if (error instanceof CarImageError && error.status === 404) {
-        console.warn(`skip ${vehicle.make} ${vehicle.model} ${vehicle.year}: not in the catalog`);
-        continue;
-      }
       throw error;
     }
   }
 }
 ```
 
-Checks the budget first, skips finished work, stops dead on `402`, and reports what it skipped and why.
+Resolves before it spends, deduplicates by vehicle id, checks the budget for what is left, skips finished work, stops dead on `402`, and reports what it skipped and why.
 
 ## REST directly
 
@@ -142,26 +180,10 @@ The query spells the vehicle as `make`, `model` and `year`, or as `vehicle=veh_�
 
 ## Make logos
 
-Use MCP `get_make_logo({make: "toyota", width: 256, trim: true})` for an inline
-logo, or `car-image logo --make Toyota --width 256 --trim --out toyota-logo.png`
-to save it. Both accept the image transforms; MCP `format: "auto"` returns PNG.
-Each successful delivery costs 1 credit, including cache hits. There is no signed
-logo URL: download and host the file for a site. Do not use vehicle image URL
-or feedback tools for logos. On 402, stop and ask the human; never buy credits.
+`client.getMakeLogo({ make: "toyota", width: 256, trim: true })` returns the bytes of a catalog make logo; `car-image logo --make Toyota --width 256 --trim --out toyota-logo.png` saves one; over REST it is `GET /api/v1/images/logo?make=toyota` with `images:read`; over MCP, `get_make_logo`.
 
-`GET /api/v1/images/logo?make=toyota` returns a prompt-generated catalog make logo.
-Requires `images:read`; 1 credit per delivered logo, including cache hits. Failed
-delivery is refunded. The first request generates a transparent master; later
-requests share it. Supports `size=thumb|small|medium|large`, `w`/`h` (1–1024),
-`fit=contain|cover|inside`, `background=transparent|white|black|hex`, `trim=1`,
-`padding=0..50` with trim, and `format=png|webp|jpg|auto`. Returns image bytes and
-the same billing/dimension/source headers as car images. No signed URL or 304
-mode, model, year, view, paint color or custom prompt. Unknown makes return 404.
-Cold renders share the existing account and service capacity limits; logos do
-not count as distinct vehicles. SDK: `client.getMakeLogo({make: "toyota", width: 256})`.
-Generated logos can be inaccurate; inspect them before use.
+- **1 credit per delivered logo**, including cache hits; a failed delivery is refunded. Cold renders share the account and service capacity limits, and logos do not count as distinct vehicles. Never retry a `402`.
+- The transforms are the image ones: `size=thumb|small|medium|large`, `w`/`h` (1–1024), `fit=contain|cover|inside`, `background=transparent|white|black|hex`, `trim=1` with `padding=0..50`, `format=png|webp|jpg|auto`, and the same billing, dimension and source headers come back. There is no model, year, view, paint color or custom prompt, no signed URL and no `304` mode: download the file and host it. An unknown make is a `404`.
+- Logos are prompt-generated and can be inaccurate: inspect one before shipping it.
 
-Logos are third-party trademarks. They are served for referential display of the make they identify, no license is granted, and they sit outside every VehiclesDB indemnity — see the API terms.
-
-API terms: https://carimage.dev/terms?ref=plugin#logos
-Docs: https://carimage.dev/docs/logos?ref=plugin
+Logos are third-party trademarks. They are served for referential display of the make they identify, no license is granted, and they sit outside every VehiclesDB indemnity — see the [API terms](https://carimage.dev/terms?ref=plugin#logos) and the [logo docs](https://carimage.dev/docs/logos?ref=plugin).

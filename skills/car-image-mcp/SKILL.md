@@ -1,6 +1,6 @@
 ---
 name: car-image-mcp
-description: Connect an agent or IDE to the Car Image API over MCP, and fix it when the tools do not appear. Covers the hosted HTTP server and the local stdio alternative, browser OAuth sign-in for plugin installs and optional CAR_IMAGE_API_KEY setup for manual connections in Claude Code, Codex, Cursor, Claude Desktop and generic MCP hosts, what each of the seventeen core tools costs (images, signed URLs, catalog, VIN decoding, 3D models) and which eight more ?toolset=all adds, and how to diagnose a 401, a missing server or an empty tool list. Use for setup, configuration and connection troubleshooting; do not use for calling the API from code (car-image-sdk) or for image workflows once the tools already work (car-image).
+description: Connect an agent, IDE or chat app to the Car Image API over MCP, and fix it when the tools do not appear. Covers the hosted HTTP server and the local stdio alternative, browser OAuth sign-in for plugin installs and chat-app connectors, optional CAR_IMAGE_API_KEY setup for manual connections in Claude Code, Codex, Cursor, Claude Desktop and generic MCP hosts, what each of the seventeen core tools costs (images, make logos, signed URLs, catalog, VIN decoding, 3D models, help and billing links) and which eight more ?toolset=all adds, and how to diagnose a 401, a missing server or an empty tool list. Use for setup, configuration and connection troubleshooting; do not use for calling the API from code (car-image-sdk) or for image workflows once the tools already work (car-image).
 ---
 
 # Connecting over MCP
@@ -9,8 +9,6 @@ Two servers expose the same tools. Prefer the hosted one — there is nothing to
 
 - **Hosted (recommended):** `https://carimage.dev/api/mcp`, Streamable HTTP, with browser OAuth sign-in in supported hosts
 - **Local stdio:** `npx @meterapp/car-image mcp`, reads `CAR_IMAGE_API_KEY` or the key stored by `car-image login`
-
-Make logos use `get_make_logo` (1 credit per successful call, including cache hits). It accepts make and image transforms and returns an inline image; no signed logo URLs or trademark license. Use `car-image logo --make Toyota --out toyota-logo.png` to download.
 
 Both come in two toolsets. The default, `core`, is the seventeen tools an agent needs to find, render, embed, decode, model and publish a car. Appending `?toolset=all` to the hosted URL — or passing `--toolset all` to `car-image mcp` — adds the eight request-board tools, twenty-five in total. Fewer tools cost the agent less context and make the right one easier to pick, so opt in only when the agent should also file vehicle and feature requests.
 
@@ -21,6 +19,12 @@ The `car-image` plugin already configures the hosted server with `?toolset=all` 
 The plugin intentionally does not set an `Authorization` header. Claude Code treats a configured header as supplied credentials and disables OAuth fallback, including when `${CAR_IMAGE_API_KEY}` is unset. Do not add that header to fix a plugin sign-in problem.
 
 Upgrading from a release before 1.10.1? Update the plugin, restart the host, and sign in. If you also added a manual server with an API-key header, use the plugin-provided server for OAuth; the manual connection still needs its configured key.
+
+## Chat apps: add it as a connector
+
+A chat app that takes remote MCP servers (custom connectors in Claude, connectors or apps in ChatGPT) needs only the URL: `https://carimage.dev/api/mcp`, or `https://carimage.dev/api/mcp?toolset=all` for the request board too. The app discovers the sign-in itself (`/.well-known/oauth-protected-resource`), opens Car Image in the browser, and the human approves `images:read` and `account:read` on the consent screen. There is no key to paste, and a connected app can never buy anything: it holds no `billing:write`.
+
+Once connected, a request for a picture of a car is two tool calls: `resolve_vehicle` (free), then `create_car_image_urls` with the id it returned (1 credit); paste the returned `markdown` directly into the final reply. The `car-image` skill has the conversation workflow.
 
 ## Manual hosted setup with OAuth
 
@@ -81,15 +85,16 @@ Append `--toolset all` after `mcp` for the request board. `CAR_IMAGE_API_KEY` ca
 
 ## The tools
 
-### Core — every connection has these twelve
+### Core — every connection has these seventeen
 
 | Tool | Costs |
 | --- | --- |
-| `get_car_image` | 1 credit |
-| `create_car_image_urls` | 1 credit per URL |
-| `search_vehicles` | free |
 | `resolve_vehicle` | free |
+| `search_vehicles` | free |
 | `decode_vin` | free |
+| `get_car_image` | 1 credit |
+| `get_make_logo` | 1 credit |
+| `create_car_image_urls` | 1 credit per URL |
 | `create_3d_model` | 100 credits; free once the account owns the vehicle and color |
 | `get_3d_model` | free |
 | `publish_3d_model` | free |
@@ -97,8 +102,12 @@ Append `--toolset all` after `mcp` for the request board. `CAR_IMAGE_API_KEY` ca
 | `get_account` | free |
 | `rate_image` | free |
 | `describe_api` | free |
+| `get_pricing` | free |
+| `search_help` | free |
+| `create_checkout_link` | free; a link the human completes in the browser |
+| `get_billing_link` | free; a link the human completes in the browser |
 
-Three cost credits. `get_car_image` and `create_car_image_urls` take `vehicle` (a stable `veh_…` id) in place of make, model and year, `color` as a preset or any hex, and `fit`, `background`, `trim` and `padding` alongside width and height, so an agent can ask for exactly the box a layout needs, and `format` accepts `auto` (a signed URL negotiates WebP or PNG per viewer; an inline `get_car_image` delivers PNG for it). `create_car_image_urls` also honors `renew` and `renew_days`, and takes `idempotency_key`: pass one whenever the call might be repeated, because a retry with the same key and arguments replays the first result (`idempotent_replayed: true`) instead of billing again. `resolve_vehicle` reports its confidence as `high`, `medium` or `low` and returns the vehicle id. `decode_vin` turns a full or partial VIN into the catalog vehicle. `create_3d_model` is 100 credits at creation, free for a vehicle and color the account already owns (`billing.already_owned`), and takes `publish`; `get_3d_model` polls it and returns `public` once published; `publish_3d_model` hosts a model at key-free URLs with a two-line `<car-3d>` embed, or takes it down with `unpublish: true` (the `car-3d` skill).
+Four cost credits. The three lookups come first in the table because they come first in use: `resolve_vehicle` turns what was asked for into the catalog vehicle and its id, with a confidence of `high`, `medium` or `low`; `search_vehicles` lists a make's models and a model's years; `decode_vin` turns a full or partial VIN into the catalog vehicle. `get_car_image` and `create_car_image_urls` then take `vehicle` (that stable `veh_…` id) in place of make, model and year, `color` as a preset or any hex, and `fit`, `background`, `trim` and `padding` alongside width and height, so an agent can ask for exactly the box a layout needs, and `format` accepts `auto` (a signed URL negotiates WebP or PNG per viewer; an inline `get_car_image` delivers PNG for it). `create_car_image_urls` also honors `renew` and `renew_days`, and takes `idempotency_key`: pass one whenever the call might be repeated, because a retry with the same key and arguments replays the first result (`idempotent_replayed: true`) instead of billing again. `get_make_logo` takes a make and the image transforms and returns an inline logo: no model, view or paint, no signed URL and no trademark license. `create_3d_model` is 100 credits at creation, free for a vehicle and color the account already owns (`billing.already_owned`), and takes `publish`; `get_3d_model` polls it and returns `public` once published; `publish_3d_model` hosts a model at key-free URLs with a two-line `<car-3d>` embed, or takes it down with `unpublish: true` (the `car-3d` skill). `get_pricing` and `search_help` answer product questions from the published sources, and the two link tools prepare a purchase or open billing settings without charging anything (the `car-image-support` skill).
 
 ### Request board — eight more with `?toolset=all` or `--toolset all`
 
@@ -125,7 +134,9 @@ A free end-to-end check that spends nothing:
 
 Then a real one, which costs 1 credit:
 
-> "Get a front-3/4 image of a 2024 Porsche 911 in red."
+> "Show me a red 2024 Porsche 911, front three-quarter."
+
+A working connection answers it in two calls, `resolve_vehicle` and then `get_car_image` with the vehicle id.
 
 For an explicit API-key connection, from a terminal:
 
@@ -153,6 +164,10 @@ That returns the seventeen core tools, or tells you exactly what is wrong. Use `
 
 **Tools appear but every call fails with 402.** The account is out of credits (a 3D model needs 100 at once, so it is the usual cause), or the problem carries `code: "plan_vehicle_limit"` and the request named more new distinct vehicles than the plan allows this month (Free 100, Pro 2,500, Business 15,000). Report the balance, or the plan and the cap, and let the human decide; never buy credits or change a plan automatically.
 
+**A call fails with `Input validation error`.** The tool refused an argument before the API saw it, and nothing was charged. A host that holds no typed schema for a tool sends every argument as text: numbers sent that way (`width: "960"`) are understood, but a flag such as `trim` must be a real boolean. Call again with the argument in its own type, or without it.
+
+**A vehicle the catalog has answers `404`.** The agent rendered by a name from memory. It should look the vehicle up first (`resolve_vehicle`) and render by the `vehicle` id; the `car-image` skill has the two steps.
+
 **Calls fail with 403.** The key lacks `images:read`. Create a correctly scoped key.
 
 **Everything is slow the first time.** The first render of a given make/model/year/view/color takes a few seconds; after that it is cached and instant. This is expected, not a connection problem.
@@ -168,8 +183,4 @@ That returns the seventeen core tools, or tells you exactly what is wrong. Use `
 
 ## Product help and billing links
 
-Use `search_help` for source-linked product, licensing, policy and Enterprise answers; search each question separately without customer emails or secrets. Use `report_gap: true` when related articles do not answer the question. Queries are recorded privately to improve documentation. `get_pricing` returns current plans and packs. On the human's request, `create_checkout_link` prepares a purchase and `get_billing_link` opens settings; the human confirms in the browser. Connected apps get a sign-in dashboard link. Never send an owner-account Stripe link to another customer.
-
-CLI: `car-image pricing`, `car-image support "question" [--report-gap]`, `car-image billing --credits 500 --no-browser`, `car-image billing --plan pro --no-browser`, `car-image billing --portal`. SDK: `pricing()`, `searchHelp(question)`, `createCheckoutLink({credits: 500})`, `getBillingLink()`. The plugin includes the `car-image-support` skill.
-
-[Help center](https://carimage.dev/help?ref=plugin).
+Pricing, licensing and terms questions, and a human's request to buy credits or open billing settings, belong to the `car-image-support` skill (`search_help`, `get_pricing`, `create_checkout_link`, `get_billing_link`). [Help center](https://carimage.dev/help?ref=plugin).

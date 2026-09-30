@@ -1,6 +1,6 @@
 ---
 name: car-3d
-description: Get a textured 3D model (GLB, USDZ, FBX and a thumbnail) of any real vehicle in any paint color from the Car Image API, for AR views, configurators, game assets, product pages and 3D scenes, and put it on a web page with a two-line embed that Car Image hosts. Covers what a model costs (100 credits, charged at creation, free once the account owns that vehicle in that color), how long it takes, polling versus webhooks, verifying the webhook signature, downloading the files, publishing a model and the <car-3d> element. Use when the user wants a 3D model, a GLB, a USDZ, an FBX, an AR-ready asset of a car, or a 3D car on a page; do not use for 2D renders (car-image), signed image URLs (car-image-urls) or finding which vehicle to model (vehicle-catalog).
+description: Get a textured 3D model (GLB, USDZ, FBX and a thumbnail) of any real vehicle in any paint color from the Car Image API, for AR views, configurators, game assets, product pages and 3D scenes, and put it on a web page with a two-line embed that Car Image hosts. Covers the order of work (look the vehicle up, confirm the price, create by vehicle id), what a model costs (100 credits, charged at creation, free once the account owns that vehicle in that color), how long it takes and how to wait in a conversation, polling versus webhooks, verifying the webhook signature, downloading the files, publishing a model and the <car-3d> element. Use when the user wants a 3D model, a GLB, a USDZ, an FBX, an AR-ready asset of a car, or a 3D car on a page; do not use for 2D renders (car-image), signed image URLs (car-image-urls) or finding which vehicle to model (vehicle-catalog).
 ---
 
 # 3D models of real vehicles
@@ -8,6 +8,13 @@ description: Get a textured 3D model (GLB, USDZ, FBX and a thumbnail) of any rea
 `POST /api/v1/3d` turns any catalog vehicle, in any paint, into a textured 3D model: **GLB, USDZ, FBX, a thumbnail and `glb_web`**, a smaller browser build of the GLB. Models are built from the same renders the image API serves, so a model matches the pictures the user already shows, and every color of a vehicle is one mesh with a different texture.
 
 With MCP connected the tools are `create_3d_model`, `get_3d_model` and `publish_3d_model`. Over REST: `POST /api/v1/3d`, `GET /api/v1/3d/{id}`, `GET /api/v1/3d/{id}/files/{kind}`, `GET /api/v1/3d?limit=`, `POST|DELETE /api/v1/3d/{id}/publish`, and the key-free `GET /api/v1/3d/public/{public_id}`. The CLI has `car-image 3d create|get|download|list|publish`; the SDK has `create3dModel`, `get3dModel`, `list3dModels`, `download3dModel`, `publish3dModel` and `unpublish3dModel`. Full reference: [`/docs/3d`](https://carimage.dev/docs/3d?ref=plugin).
+
+## The order of work
+
+1. **Look the vehicle up** (free; the `vehicle-catalog` skill): `resolve_vehicle` for a name, `decode_vin` for a VIN. Keep the vehicle id. A model of the wrong car costs a hundred times an image of it, so this step is never skipped, and a lookup that is not `high` confidence in the year asked for goes back to the user first.
+2. **Say what it is and what it costs, and wait for a yes**: the year, make and model the lookup named, the paint, 100 credits ($1.00) unless the account already owns it, and ten to twenty minutes for a first model. A preview image of that vehicle in that paint (`get_car_image`, 1 credit) is a cheap way to agree on both before the larger charge.
+3. **Create it by id**: `create_3d_model({ vehicle: "veh_…", color, publish: true })`. Keep the request `id`.
+4. **Wait without hammering**, then hand over the files or the embed.
 
 ## What it costs — say this first
 
@@ -39,7 +46,7 @@ Say this before the user waits. Do not present a model as instant.
 - `webhook_url` (public HTTPS) and `webhook_secret` are optional; see below.
 - Send an `Idempotency-Key` header over REST so a retried request replays the first answer instead of charging again (the SDK and CLI do this for you).
 
-Resolve free text first (`vehicle-catalog` skill): a model of the wrong car costs 100 credits.
+Prefer `vehicle`: the id comes from the lookup, so the model is of the car the user confirmed. A name typed from memory can answer `404`, or resolve to a neighbouring model, and a model of the wrong car costs 100 credits.
 
 ## The response and its lifecycle
 
@@ -90,6 +97,15 @@ if (given.length !== expected.length || !timingSafeEqual(Buffer.from(given), Buf
 
 Use a webhook when the user's app has a public HTTPS endpoint; poll otherwise. Never send a `webhook_secret` anywhere but the request body.
 
+## In a conversation
+
+A chat has no page to embed into and no terminal to download with, so plan for what the user can open.
+
+- **Publish at creation** (`publish: true`). The `files` URLs need the account's credential on the first hop; the `public.files` URLs do not, so they are the links a person can click: `glb` to download or drop into any 3D viewer, `usdz` to open in AR on an iPhone or iPad, `poster` for a still. Say that anyone with a public link can load the model, and offer to unpublish when they are done.
+- **Do not hold the conversation for the wait.** After creating, say how long it should take (`estimated_seconds_remaining`), check `get_3d_model` once or twice at most while you have something else to do, and otherwise tell the user to ask for the model again later: the request id is all you need, and the wait costs nothing.
+- **When it is ready**, give the links with their sizes (`bytes`), say which to use for what, and show the still.
+- **When it fails**, the credits came back. Say so, and offer another attempt rather than starting one.
+
 ## On a web page: publish it
 
 When the model is for a page — a listing, a product page, a configurator, a demo — do not download and host files. **Publish** it, with `publish: true` at creation or `publish_3d_model` (`POST /api/v1/3d/{id}/publish`, `car-image 3d publish <id>`, `client.publish3dModel(id)`) at any time, and paste `public.embed.html`:
@@ -125,7 +141,7 @@ Never put the API key, or the hour-long signed URL, in a page. Publishing exists
 | --- | --- | --- |
 | 400 | Bad body: `vehicle` with make/model/year, an unparseable `color`, a `publish` that is not a boolean, a `webhook_url` that is not public HTTPS, a `webhook_secret` without a URL. | Fix and retry once. Nothing was charged. |
 | 402 | Fewer than 100 credits. | **Stop and ask the human** to top up. Never buy credits on your own. |
-| 404 | Vehicle not in the catalog, unknown vehicle id, a request id that is not the user's, or an unpublished public id. | Resolve or search the catalog; check the id. |
+| 404 | Vehicle not in the catalog under that name, unknown vehicle id, a request id that is not the user's, or an unpublished public id. Nothing was charged. | Look the vehicle up (`resolve_vehicle`; the problem's `suggestions` carry ids) and create by `vehicle`; check the id. |
 | 409 | A file was asked for before `ready`, a failed model was asked to publish, or an `Idempotency-Key` retry overtook the first request. | Wait `Retry-After`, then poll `get_3d_model`. |
 | 503 | 3D generation is at its daily capacity (`code: model_3d_at_capacity`, `retry_after_seconds`) or switched off. Nothing charged; images are unaffected. | Tell the user when it resumes; do not loop. |
 
@@ -133,6 +149,7 @@ Every failure is `application/problem+json` with a `request_id`; keep it. The fu
 
 ## Never do these on your own
 
+- Create a model of a vehicle you have not looked up, or one the user has not confirmed by name.
 - Create a model the user did not ask for, or a batch of them. Confirm the count and the cost (100 credits each, unless the account already owns that vehicle in that color) first.
 - Retry a `402`, or poll faster than every 10 seconds.
 - Put the API key, a `webhook_secret` or a signed file URL in a page, a repository or a log. Publish instead.

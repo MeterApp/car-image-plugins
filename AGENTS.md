@@ -44,6 +44,15 @@ purchase cap; subscription credits are spent first, purchased credits never
   exempt — callers concatenate those. The validator enforces it.
 - **Never link the private server repository.** It 404s for everyone outside the
   org. Link `/docs`, the open catalog, or `support@carimage.dev`.
+- **Look up, then render.** Every skill that names a vehicle sends the agent to
+  a lookup first (`resolve_vehicle`, `search_vehicles` or `decode_vin`, all
+  free) and renders by the `vehicle` id it returns. The catalog files cars
+  under its own names, so an example that renders a make and model typed from
+  memory teaches a `404`. `car-image` and `vehicle-catalog` carry the workflow;
+  the others point at it and show `vehicle` where an agent makes the call.
+- **Write for the conversation as well as the codebase.** A chat host loads one
+  skill and has no terminal: say which tool shows the result to a person, what
+  to tell them, what it costs and when to ask first.
 - **Skill frontmatter is `name` and `description` only**, the name matches the
   folder, and the description says both when to use the skill *and* when not to
   — that text is the only thing the model routes on. The validator requires at
@@ -68,6 +77,9 @@ purchase cap; subscription credits are spent first, purchased credits never
   one as private or as a security boundary.
 - Batches cost real money. Skills must tell the agent to confirm the count and
   the cost before rendering a batch the user did not size.
+- A lookup that is ambiguous, or that answers in another year than the one
+  asked for, is a question for the human before a credit is spent. No skill
+  may tell an agent to render the nearest vehicle and mention it afterwards.
 
 ## Validation
 

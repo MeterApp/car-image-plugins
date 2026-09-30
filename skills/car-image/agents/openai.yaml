@@ -1,7 +1,7 @@
 interface:
   display_name: "Car Image API"
   short_description: "Vehicle renders and catalog make logos"
-  default_prompt: "Use $car-image to fetch a studio-quality render of a specific vehicle or a catalog make logo."
+  default_prompt: "Use $car-image to look up a random vehicle and show its image inline in this chat."
 dependencies:
   tools:
     - type: "mcp"

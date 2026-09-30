@@ -25,8 +25,9 @@ Construct it once per process, at module scope. It holds no connection state, so
 | --- | --- | --- |
 | `getImage(params, options?)` | `ImageResult` — `bytes`, `contentType`, `width`, `height`, `creditsCharged`, `creditsRemaining`, `source`, `etag`, `requestId` | 1 credit |
 | `getImageUrl(params, options?)` | One signed delivery URL | 1 credit |
+| `getMakeLogo({ make, …transforms }, options?)` | `ImageResult` for a catalog make logo; no signed URL mode | 1 credit |
 | `createImageUrls(images, { ttlSeconds, maxUses, renew, renewDays, idempotencyKey }?)` | `data[]` of `{ id, url, expires_at, max_uses, renews_until, … }` — 1 to 50 images; `renew: true` keeps a URL alive past the TTL at 1 credit per opened window (email, CMS, PDFs); an `Idempotency-Key` (generated unless `idempotencyKey` is given) makes a retry replay instead of re-bill | 1 credit per URL, plus 1 per opened renewal window |
-| `resolve(query, options?)` | `data.params` (with `vehicle_id`), `candidates`, `confidence` (`"high"`, `"medium"` or `"low"`) | free |
+| `resolve(query, options?)` | The lookup to make before rendering a name someone typed: `data.params` (with `vehicle_id`, the id to render by), `candidates`, `confidence` (`"high"`, `"medium"` or `"low"`) and `extracted` (what the phrase said; compare its `year` with `params.year`) | free |
 | `searchVehicles(query, options?)` | Canonical makes, models, available years and a vehicle id per year | free |
 | `vehicles(filter?, options?)` | Years, or makes for a year, or models for a year and make (with ids) | free |
 | `vehicle(id, options?)` | One catalog vehicle by its stable `veh_…` id: make, model, year, every year, image paths | free |
@@ -95,6 +96,8 @@ export async function POST(request: Request) {
 
 Cache the result keyed on the vehicle parameters. Without a cache, every request to this route bills a credit.
 
+When the three strings come from free text rather than from a picker backed by the catalog, resolve them first (`carImage.resolve(...)`, free) and mint with `{ vehicle: data.params.vehicle_id, view: "side" }`: a name the catalog files differently is a `404` here, and the id is the better cache key.
+
 `CAR_IMAGE_API_KEY` belongs in your platform's environment variables — never in `NEXT_PUBLIC_*`, never in a committed `.env`, never in a client component.
 
 ## Edge runtimes
@@ -105,7 +108,7 @@ The SDK is `fetch`-based with no Node built-ins, so it runs unchanged on Vercel 
 
 `@meterapp/car-image-sdk/mcp` exports the shared tool definitions used by both the hosted and the stdio MCP servers — names, descriptions, JSON schemas and annotations. Import them if you are building your own agent surface and want the tool contracts to match the official ones exactly.
 
-Tools come in two sets: `MCP_TOOLSETS.core` (`DEFAULT_MCP_TOOLSET`, `"core"`) is the seventeen core tools (images, signed URLs, catalog, `decode_vin`, `create_3d_model`, `get_3d_model`, `publish_3d_model`) and `MCP_TOOLSETS.all` adds the eight request-board tools; `McpToolset` is the type, `isMcpToolset(value)` validates a name from a URL or flag, and `mcpInstructions(toolset)` returns the server instructions for either set. The hosted server serves `core` at `https://carimage.dev/api/mcp` and `all` at `https://carimage.dev/api/mcp?toolset=all`; the stdio server takes `car-image mcp --toolset all`.
+Tools come in two sets: `MCP_TOOLSETS.core` (`DEFAULT_MCP_TOOLSET`, `"core"`) is the seventeen core tools (images, signed URLs, catalog, `decode_vin`, `create_3d_model`, `get_3d_model`, `publish_3d_model`) and `MCP_TOOLSETS.all` adds the eight request-board tools; `McpToolset` is the type, `isMcpToolset(value)` validates a name from a URL or flag, and `mcpInstructions(toolset)` returns the server instructions for either set (they open with `mcpInstructionsHead(toolset)`, the part every host shows a model, kept under `MCP_INSTRUCTIONS_HEAD_LIMIT`). The hosted server serves `core` at `https://carimage.dev/api/mcp` and `all` at `https://carimage.dev/api/mcp?toolset=all`; the stdio server takes `car-image mcp --toolset all`.
 
 ## Make logos
 

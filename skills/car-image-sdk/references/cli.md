@@ -81,13 +81,17 @@ car-image 3d download <id> --format usdz --out camry.usdz
 credits=$(car-image whoami --json | jq .data.credits)
 echo "have $credits credits"
 
-# Resolve, then render
-params=$(car-image resolve "blue 2022 bmw m3" --json)
-make=$(jq -r .data.params.make <<<"$params")
-model=$(jq -r .data.params.model <<<"$params")
-year=$(jq -r .data.params.year <<<"$params")
-car-image get --make "$make" --model "$model" --year "$year" --out m3.png
+# Resolve, then render by id
+resolved=$(car-image resolve "blue 2022 bmw m3" --json)
+if [ "$(jq -r .data.confidence <<<"$resolved")" = low ]; then
+  echo "ambiguous: $(jq -c '[.data.candidates[].model_slug]' <<<"$resolved")" >&2
+  exit 2
+fi
+car-image get --vehicle "$(jq -r .data.params.vehicle_id <<<"$resolved")" \
+  --view "$(jq -r .data.params.view <<<"$resolved")" --color "$(jq -r .data.params.color <<<"$resolved")" --out m3.png
 ```
+
+The id is what to keep: `--vehicle` cannot be misspelled, and a name the catalog files differently (a "Mazda MX-5 Miata" is `mx-5`) resolves once instead of answering `404` per image.
 
 A resumable batch over a CSV of `make,model,year`:
 

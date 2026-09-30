@@ -1,5 +1,24 @@
 # Changelog
 
+## 1.11.1 — 2026-09-30
+
+- Show chat images with one signed URL call and inline Markdown in the final reply; reuse existing URLs and avoid duplicate charges for display. Explicit files use the bytes tool.
+- Shorten directory metadata, limit example prompts to three and remove pricing from the listing description.
+
+## 1.11.0 — 2026-09-30
+
+Look the vehicle up, then render it by id.
+
+- **Two steps, every time.** `car-image` opens with the workflow a chat needs: `resolve_vehicle` (or `search_vehicles`, or `decode_vin` for a VIN) first, then `get_car_image` with the `vehicle` id it returned. A chat host asked for "a random car" sent Mazda "MX-5 Miata" 2018 straight to `get_car_image` and got a `404`, because the catalog files that car as `mx-5`. The skill says why the lookup is never skipped, how to read its answer (the confidence, a year other than the one asked for, no match) and the one case that needs none: an id already in hand.
+- **In a conversation.** `car-image` gains the chat use: a frame that suits a chat (`width: 960, height: 600, trim: true, padding: 8` on a light background), what to say with the image, what to do when no car was named, and a table of what people ask for with the calls and the credits each takes (another angle or paint, every angle, a comparison, a VIN, a make logo).
+- `vehicle-catalog` is the lookup the other skills send the agent to: what `resolve_vehicle` reads (a year, a make, a model, a view and a paint) and what it cannot (a description), confidence by example, the year check, and picking a car when none was named. It no longer says the catalog does not separate trims: many variants are catalog models of their own (Civic Type R, M3 Competition, 911 GT3, Corolla Hatchback) and resolve as themselves.
+- `car-image-urls`: mint by vehicle id after one lookup per vehicle; an inventory grid from a list of VINs (decode, deduplicate by id, confirm the count, batch by 50); and downloading one fixed image once instead of minting a URL that expires, with what the license says about hosting copies.
+- `car-3d`: the order of work (look up, confirm the vehicle and the price, create by id) and a conversation section: publish at creation so the links are ones a person can open, and do not hold a chat for a ten-to-twenty-minute wait.
+- `car-image-mcp`: the core table listed twelve of the seventeen tools and said three cost credits; it lists all seventeen, and four cost credits. Adds connecting from a chat app as a connector.
+- `car-image-sdk`: resolve once and render by `vehicle` in the SDK, the CLI and the bulk example; the CLI line gains `search`, `3d publish`, `glb_web` and `logo`.
+- The make-logo and product-help paragraphs appended to three skills are one short section in each, pointing at `car-image-support`. The marketplace entry says seven skills, not six.
+- On the server, the same day: `resolve_vehicle` reads a make and a model by the rules the image tools use, so it names the vehicle they would render (a 2018 "MX-5 Miata" used to resolve to a 1997 car) and keeps a body word the catalog's name carries ("Corolla Hatchback"); `search_vehicles` finds a vehicle named that way when no catalog row carries every word, and every id it returns now names a catalog vehicle (a few did not, where the search had merged two spellings of one car); the image tools read "MX-5 Miata" and "Miata" as the MX-5; and both MCP servers put this workflow, the costs and the `402` rule in the first 2,048 characters of their instructions, which is all some hosts pass to the model. For hosts that pass on less still, a tool result's summary is also the first field of its structured content, and a number sent as text (`width: "960"`) is read as the number. SDK 1.14.0, CLI 1.9.2.
+
 ## 1.10.2 — 2026-09-29
 
 - Resolve each vehicle once before expanding views/colors, and skip unchanged catalog misses.

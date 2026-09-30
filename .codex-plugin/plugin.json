@@ -1,6 +1,6 @@
 {
   "name": "car-image",
-  "version": "1.10.2",
+  "version": "1.11.1",
   "description": "Studio-quality, transparent-background vehicle images for any project. Render any make, model and year in 8 camera views and any paint color, mint signed URLs a browser can load without a key, fetch catalog make logos, decode VINs for free, or build a 3D model of any vehicle.",
   "author": {
     "name": "Meter",
@@ -24,21 +24,19 @@
   "mcpServers": "./.mcp.json",
   "interface": {
     "displayName": "Car Image API",
-    "shortDescription": "Transparent-background car images for any project",
-    "longDescription": "Drop a real vehicle into whatever you are building. Ask for any make, model and year from 1990 to 2027 and get a studio-quality render on a transparent background, in eight camera views and any paint color. For web pages and emails, mint signed URLs that load without exposing your API key. Decode a VIN for free, or turn the same car into a textured 3D model (GLB, USDZ, FBX) for 100 credits. One credit per image, $1 buys 100, and every account starts with 100 free.",
+    "shortDescription": "Vehicle images in your chat",
+    "longDescription": "Show a vehicle directly in your conversation or add it to a page, email or document. Find a make, model and year in the catalog, then render it on a transparent background in eight camera views and any paint color. Signed image URLs load without an API key in the browser. Decode VINs, fetch catalog make logos, or create textured 3D models in GLB, USDZ and FBX formats.",
     "developerName": "Meter",
-    "category": "Productivity",
+    "category": "Developer Tools",
     "capabilities": [
       "Read",
       "Write"
     ],
     "websiteURL": "https://carimage.dev",
     "defaultPrompt": [
-      "Add a red 2024 Porsche 911 side view to the hero section.",
-      "Build a comparison page with front-3/4 renders of the 2023 Toyota RAV4, Honda CR-V and Mazda CX-5.",
-      "How many credits do I have left, and what does a batch of 40 images cost?",
-      "Decode VIN 1HGCM82633A004352 and show me the car in a dark navy paint.",
-      "Make a 3D model of a 2025 Toyota Camry in red and embed it with model-viewer."
+      "Show me a random car image.",
+      "Show a red 2024 Porsche 911 from the side.",
+      "Add vehicle images to a comparison page for a 2023 Toyota RAV4, Honda CR-V and Mazda CX-5."
     ],
     "brandColor": "#CE3600",
     "composerIcon": "./assets/logo.svg",

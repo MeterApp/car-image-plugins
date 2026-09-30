@@ -1,7 +1,7 @@
 interface:
   display_name: "Vehicle Catalog"
-  short_description: "Resolve free text to a real make, model and year"
-  default_prompt: "Use $vehicle-catalog to identify the exact vehicle before rendering it."
+  short_description: "Look a vehicle up before you render it"
+  default_prompt: "Use $vehicle-catalog to look the vehicle up and get its vehicle id before rendering it."
 dependencies:
   tools:
     - type: "mcp"

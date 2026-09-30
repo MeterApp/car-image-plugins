@@ -1,11 +1,15 @@
 ---
 name: car-image-urls
-description: Put a vehicle image into a web page, React component, email, Markdown file, PDF or slide deck using signed delivery URLs, so the browser loads the image without ever holding an API key. Use whenever the output is HTML, JSX, Markdown, CSS, an email template, a document or a spreadsheet rather than bytes on disk; covers TTL and use caps, batching up to 50, caching, alt text and expiry. Do not use for downloading bytes in a script (car-image), or for finding which vehicle to render (vehicle-catalog).
+description: Show a vehicle image inline in chat or put it into a web page, React component, email, Markdown file, PDF or slide deck using signed delivery URLs, so the browser loads the image without ever holding an API key. Use whenever the output is HTML, JSX, Markdown, CSS, an email template, a document or a spreadsheet rather than bytes on disk; covers looking each vehicle up once and minting by its id, TTL and use caps, batching up to 50, inventory grids from a list of VINs, caching, alt text and expiry. Do not use for downloading bytes in a script (car-image), or for finding which vehicle to render (vehicle-catalog).
 ---
 
 # Signed delivery URLs
 
-A signed URL is a key-free link to one rendered vehicle image. You mint it server-side; the browser, email client or PDF reader loads it directly. **This is the only correct way to show a Car Image render in something a user's browser opens.**
+A signed URL is a key-free link to one rendered vehicle image. You mint it server-side; the browser, email client or PDF reader loads it directly. **The API key never goes where a browser can read it: a page gets a signed URL, or a copy of the file you serve yourself.**
+
+## Chat replies
+
+For a chat image, resolve the vehicle first, then mint once with `ttl_seconds: 604800`, `max_uses: 0` and renewal off unless requested. Paste each returned `data[].markdown` directly into the final answer, outside code fences. If an older server omits `markdown`, use `![vehicle description](https://example.com/signed-image.png)` replacing the example URL with its exact returned `url`. Include expiry briefly. Reuse an unexpired URL for the same image; do not call `get_car_image` first or pay for another URL just to display it. On clients without inline images, link the existing URL instead. The `car-image` skill covers random-car selection and the chat workflow.
 
 ## Why not just call the image endpoint from the page
 
@@ -15,7 +19,21 @@ Signed URLs solve this: the signature authorizes exactly one image for a limited
 
 ## The call
 
+Look each vehicle up first (`resolve_vehicle`, `search_vehicles` or `decode_vin`; all free, the `vehicle-catalog` skill) and mint by its id. A name from memory can miss a car the catalog carries, and in a batch one wrong name fails the whole call.
+
 With MCP connected, use `create_car_image_urls`. Over REST it is `POST /api/v1/image-urls`:
+
+```json
+{
+  "images": [
+    { "vehicle": "veh_78qtwrgh37bkr", "view": "side", "color": "red", "width": 768, "height": 432, "trim": true, "format": "auto" }
+  ],
+  "ttl_seconds": 86400,
+  "max_uses": 0
+}
+```
+
+An entry may spell the vehicle out instead, in the catalog's spelling:
 
 ```json
 {
@@ -27,7 +45,7 @@ With MCP connected, use `create_car_image_urls`. Over REST it is `POST /api/v1/i
 }
 ```
 
-Each entry returns `id`, `url`, `expires_at`, `max_uses`, `renews_until` and the normalized vehicle (which opens with `vehicle_id` and echoes `fit`, `background`, `trim` and `padding`). An entry may name the vehicle as `"vehicle": "veh_…"` (a stable id) instead of make, model and year, and `"color": "#1a2b3c"` is any paint at the same price.
+The MCP tool also returns ready-to-display `markdown` for each image. Each REST entry returns `id`, `url`, `expires_at`, `max_uses`, `renews_until` and the normalized vehicle (which opens with `vehicle_id` and echoes `fit`, `background`, `trim` and `padding`). `"vehicle"` and make, model and year together are a `400`, and `"color": "#1a2b3c"` is any paint at the same price.
 
 - **`images`** — 1 to 50 per call. Body limit is 64 KiB; split larger jobs into batches of 50. Each entry takes the same sizing options as `get_car_image`: `size` or `width`/`height` (1–1024; both together return exactly that box), `fit` (`contain` default, `cover`, `inside`), `background` (`transparent` default, `white`, `black` or hex), `trim` with `padding` (0–50 %), and `format` (`png`, `webp`, `jpg`, `auto`). The `car-image` skill has the full table.
 - **`ttl_seconds`** — 60 to 604800 (7 days). Default 3600.
@@ -109,6 +127,28 @@ const { data } = await client.createImageUrls(
 
 One call, three credits. Results come back in request order.
 
+### An inventory grid from a list of VINs
+
+A dealer page, a marketplace import, a fleet dashboard: the input is a spreadsheet of VINs or of year, make and model, and most rows are the same few vehicles.
+
+1. **Look up every row for free.** `decode_vin` for a VIN (`vehicle.id`), `resolve_vehicle` for a name (`params.vehicle_id`). Set aside the rows that do not resolve and report them; do not guess.
+2. **Deduplicate by vehicle id.** Forty Camrys of one model year are one image. The cost is distinct vehicles × views × paints, not rows.
+3. **Say the count and the cost, and get a yes.** "212 rows, 37 distinct vehicles, one view each: 37 credits."
+4. **Mint in batches of 50** with an `idempotency_key` per batch, so a retried import does not pay twice.
+5. **Store `url`, `expires_at` and the `vehicle_id` next to each row**, and re-mint by id before expiry. A page nobody rebuilds wants `renew: true`.
+
+Show the decoded trim, body and engine as text beside the image; the render represents the model, not that car on the lot.
+
+### One fixed image: a hero, a card, a slide
+
+When the image never changes, a signed URL that expires is more machinery than the job needs. Download the file once and serve it from the project's own assets:
+
+```bash
+npx @meterapp/car-image get --vehicle veh_78qtwrgh37bkr --view front-3-4 --color red --width 1024 --height 576 --trim --padding 6 --format webp --out public/hero-911.webp
+```
+
+One credit, no expiry to track, no request at page load. Keeping copies on your own servers or CDN to serve your own product is part of a paid plan's license, for as long as the plan is active; the Free plan is for evaluation and personal projects, and a standalone library or bulk export needs a written agreement. `search_help` has the terms when the user asks (the `car-image-support` skill). Use signed URLs when the set of vehicles is open-ended: a catalog, a search result, a listing feed.
+
 ### Markdown and email
 
 ```md
@@ -131,10 +171,11 @@ Transparent PNG sits on any background, which is what you want in a document. Fo
 
 - Re-mint before expiry, not after a user reports a broken image.
 - A `403` on a delivery URL means expired, invalid, the key that created it was revoked, or `code: "origin_not_allowed"`: the page loading it is on a site the issuing key's allowed origins (set on the key in the dashboard) do not list; loads without a `Referer` or `Origin`, such as email clients, pass. A `410` means a use-capped URL hit its cap. Both are fixed by minting a fresh URL, not by retrying the old one. A `402` means a renewable URL entered a new window the account could not pay for; add credits and the same URL resumes.
-- If you hand a user a URL in chat, tell them when it expires.
+- If you show an image in chat, embed the returned Markdown and tell the user when it expires. A plain link is the fallback for clients that cannot render inline images; use the same URL without another paid call.
 
 ## Do not
 
+- Mint a URL for a vehicle you have not looked up. One `404` fails the whole batch before anything is charged; it carries `suggestions` (and, over REST, the `index` of the entry), so fix that entry and send the batch again.
 - Put `CAR_IMAGE_API_KEY` in client-side code, an `<img src>`, or a committed config file. Mint a signed URL instead.
 - Mint a URL per request or per render without caching — each one is a credit.
 - Treat a signed URL as private. It is unguessable, not access-controlled.
