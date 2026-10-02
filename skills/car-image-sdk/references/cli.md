@@ -26,6 +26,7 @@ car-image logout
 | `url --make … [same sizing flags] [--ttl 3600] [--max-uses 0] [--renew [--renew-days 365]] [--idempotency-key <key>] [--json]` | Creates one signed delivery URL (1 credit). `--renew` keeps it alive past the TTL at 1 credit per opened window. |
 | `url --batch file.json [--ttl 3600] [--max-uses 0] [--renew [--renew-days 365]] [--idempotency-key <key>] [--json]` | Up to 50 signed URLs in one call (1 credit each). Entries may carry `view`, `color`, `size`, `width`, `height`, `fit`, `background`, `trim`, `padding`, `format`. |
 | `resolve <free text…>` | Free text → parameters (with the vehicle id), candidates, confidence (`high`, `medium` or `low`), and a ready-to-run `car-image get …`. Free. |
+| `check <file.csv\|file.json\|-> [--out <file>] [--format csv\|json] [--json]` | Which vehicles of a list the catalog carries, each read the way `get` reads it (CSV columns `make`, `model`, `year`, or `vehicle`, plus an optional `ref`; or a JSON array). `--out` writes the file back with `status`, `vehicle_id`, `match`, `reason` and `suggested_vehicle_id` per row. Any length, 2,000 per request. Free. |
 | `search <query…> [--limit] [--year]` | Fuzzy catalog search, with a vehicle id per model year. Free, no key required. |
 | `vin <VIN> [--year] [--json]` | Decodes a full or partial VIN (`*` for unknown positions): year, make, model, trim, engine, every vPIC attribute, the catalog vehicle id and a ready-to-run `car-image get --vehicle …`. Free. |
 | `3d create --make --model --year [--color] [--vehicle] [--webhook-url] [--webhook-secret] [--publish] [--wait] [--out <dir>] [--json]` | Requests a 3D model (100 credits, charged at creation, free for a vehicle and color you already own; an `Idempotency-Key` is sent). `--publish` hosts it at once and prints the embed. `--wait` polls until ready or failed; with `--out` it then downloads GLB, USDZ, FBX and the thumbnail into the directory. |
@@ -35,10 +36,9 @@ car-image logout
 | `3d list [--limit] [--json]` | Your recent 3D requests, newest first. Free. |
 | `options` | Views with yaw angles, preset colors with hex and the hex paint rule, sizes, fit modes, backgrounds, trim limits, formats, pricing, catalog coverage, the vehicle-id format. Free. |
 | `describe [operationId\|path\|all] [--json]` | Explains any REST endpoint from `/openapi.json`: parameters, enums, defaults, response headers, error codes. |
-| `feedback (--request-id ID \| --make … --year …) (--rating 1-5 \| --good \| --bad) [--reason]` | Rates a delivered image. Free. |
 | `doctor [--json] [--yes] [--no-image]` | Smoke-tests every endpoint with status, latency, cache state and fix hints. Exit 1 on any failure. |
 | `billing [--plan pro\|business [--yearly]] [--credits …] [--portal]` | Opens hosted Stripe Checkout for a plan or extra credits, or the billing portal. The CLI never touches card data; an agent runs it only when the human asked. |
-| `mcp [--toolset core\|all]` | Runs the stdio MCP server: `core` (default) is the seventeen core tools (images, catalog, VIN, 3D, publishing), `all` adds the request board. |
+| `mcp [--toolset core\|all]` | Runs the stdio MCP server: `core` (default) is the seven core tools (lookups, VIN, images, signed URLs, account), `all` adds make logos, 3D models, image options, the API reference, pricing, help and billing links. |
 | `agent-config [--host claude-code\|claude-desktop\|cursor\|chatgpt\|generic] [--remote] [--json]` | Prints ready-to-paste MCP configuration (core toolset, with the `?toolset=all` opt-in noted). |
 | `config path \| get <key> \| set <key> <value> \| list` | Keys: `autoUpdate`, `telemetry`, `baseUrl`. |
 
@@ -48,7 +48,7 @@ Exit codes: `0` ok, `1` failure, `2` usage error.
 
 ## Sizing
 
-`get`, `url` and every `--batch` entry share the sizing options. `--width`/`--height` are 1–1024 px; one keeps the aspect ratio, both together return exactly that box (`--width 600 --height 400` is 600×400, no longer a square), placed by `--fit contain` (default: whole car, padded), `cover` (fill and centre-crop) or `inside` (may return a smaller image). `--trim` crops to the car's own bounds before sizing so it fills a non-square slot; `--padding 0-50` keeps a margin (percent of the car's longer side) and only applies with `--trim`. `--background` is `transparent` (default), `white`, `black` or hex (`rrggbb`, `#rrggbb`, `rgb`, `#rgb`); it flattens PNG and WebP too, and `jpg` defaults to white. `--format auto` lets each client negotiate WebP or PNG from its `Accept` header — on a signed URL, on every load. Nothing is upscaled past 1024.
+`get`, `url` and every `--batch` entry share the sizing options. `--width`/`--height` are delivered up to 1024 px (a larger size is clamped by the API, a box keeping its shape); one keeps the aspect ratio, both together return exactly that box (`--width 600 --height 400` is 600×400, no longer a square), placed by `--fit contain` (default: whole car, padded), `cover` (fill and centre-crop) or `inside` (may return a smaller image). `--trim` crops to the car's own bounds before sizing so it fills a non-square slot; `--padding 0-50` keeps a margin (percent of the car's longer side) and only applies with `--trim`. `--background` is `transparent` (default), a CSS color name (`white`, `whitesmoke`) or hex (`rrggbb`, `#rrggbb`, `rgb`, `#rgb`); it flattens PNG and WebP too, and `jpg` defaults to white. `--format auto` lets each client negotiate WebP or PNG from its `Accept` header — on a signed URL, on every load. Nothing is upscaled past 1024.
 
 ```bash
 car-image get --make Porsche --model 911 --year 2024 --view side --width 1024 --height 512 --trim --padding 6 --out hero.png
@@ -133,8 +133,8 @@ Use MCP `get_make_logo({make: "toyota", width: 256, trim: true})` for an inline
 logo, or `car-image logo --make Toyota --width 256 --trim --out toyota-logo.png`
 to save it. Both accept the image transforms; MCP `format: "auto"` returns PNG.
 Each successful delivery costs 1 credit, including cache hits. There is no signed
-logo URL: download and host the file for a site. Do not use vehicle image URL
-or feedback tools for logos. On 402, stop and ask the human; never buy credits.
+logo URL: download and host the file for a site. Do not use the vehicle image URL
+tools for logos. On 402, stop and ask the human; never buy credits.
 
 SDK: `client.getMakeLogo({ make: "toyota", width: 256, trim: true })` returns bytes and billing metadata.
 

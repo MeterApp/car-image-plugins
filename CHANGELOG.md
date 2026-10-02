@@ -1,5 +1,24 @@
 # Changelog
 
+## 1.14.1 — 2026-10-01
+
+- The API refuses again what it cannot read, and the skills say so: a query parameter an image endpoint does not read is a free `400` that names it (`parameter`) and lists the names it reads (`allowed`), because a request served without it was billed for a different image (`angle=rear` used to come back as the default view). `angle`, `camera`, `perspective` and `orientation` now mean `view`, `paint`, `paint_color`, `hex` and `colors` mean `color`, and `bg` and `background_color` mean `background`; only tracking tags and cache busters (`utm_*`, `gclid`, `ref`, `v`, `t`, `_`…) are still ignored and named in `X-Ignored-Parameters`. The `car-image` error table and the `car-image-sdk` skill describe it; the MCP tools are unchanged, their schemas already named every field.
+
+## 1.14.0 — 2026-09-30
+
+- The hosted server's default toolset is now the seven tools an agent needs to look a vehicle up, render it and watch the balance: `resolve_vehicle`, `search_vehicles`, `decode_vin`, `check_vehicles`, `get_car_image`, `create_car_image_urls` and `get_account`. `?toolset=all`, which this plugin configures, still exposes every tool; the skills now say which tools need it (make logos, 3D models, image options, the API reference, pricing, help and billing links).
+- The skills no longer teach image feedback or the request board. Both keep working over `?toolset=all` and the API; the dashboard's Recent images card is where a person rates a render now.
+
+## 1.13.0 — 2026-09-30
+
+- New core MCP tool `check_vehicles` (eighteen core tools, twenty-six with `?toolset=all`): checks up to 100 vehicles in one free call, each read exactly as `get_car_image` would read it, and answers every entry as a match with its vehicle id, a suggestion (another vehicle close to it, such as the same model in its nearest year, never a stand-in), a miss or an invalid entry.
+- `vehicle-catalog`: "A whole list: check it once", for catalogs, spreadsheets and feeds: check before rendering any of it, store the ids of the matches and render by id, decide the suggestions with the user, skip the misses in every view and color, and compare `distinct_vehicles` with the plan. Longer lists go to code: `car-image check <file>` (CLI 1.11.0) or `client.checkVehicles` (SDK 1.17.0), which split any length.
+- `car-image` routes a list to `check_vehicles`; `car-image-sdk` covers `checkVehicles` and the CLI's `check` command; `car-image-mcp` lists and prices the new tool.
+
+## 1.12.2 — 2026-09-30
+
+- The API reads parameters the way people write them, and the skills say so: `width`/`height` for `w`/`h` in a URL, `grey` for `gray` and any CSS color name as a paint or a background (`navy` is `#000080`), view aliases such as `left`, `right` and `front-left`, and names in any case. A size above 1024 is clamped instead of refused (a box keeps its shape; `X-Clamped-Parameters`), and a query parameter the endpoint does not read is ignored and named in `X-Ignored-Parameters`. The `car-image` error table no longer lists an unknown parameter or a dimension above 1024 as a `400`; the SDK and CLI skills describe the looser checks of SDK 1.16.0 and CLI 1.10.0.
+
 ## 1.12.1 — 2026-09-30
 
 - The README, `car-image` and `vehicle-catalog` quote the catalog the way the API renders it and carimage.dev/cars lists it: 1,595 makes and 41,838 models. They said 1,607 and 46,120, the database's own ids, which count a make or model that two sources spell differently (MOTO GUZZI, MOTO-GUZZI) twice.

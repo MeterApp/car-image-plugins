@@ -33,7 +33,7 @@ create_car_image_urls({ images: [{ vehicle: "veh_59854qbgfvar3", view: "side", c
 | `confidence: "low"` | Show the candidates and ask. Do not render. |
 | `confidence: "medium"`, in the year asked for | Render, and say in one line which vehicle you chose. |
 | `confidence: "high"`, in the year asked for | Render. |
-| No match | Not yet a missing vehicle: send only the year, make and model again, or `search_vehicles` with the model family alone. When the catalog really lacks it, say so and offer `request_vehicle`. Never substitute another car silently. |
+| No match | Not yet a missing vehicle: send only the year, make and model again, or `search_vehicles` with the model family alone. When the catalog really lacks it, say the catalog does not carry it and stop; never substitute another car. |
 
 The rows are in order: the first one that fits decides. `candidates` lists the nameplate's other variants that year (a Giulia Quadrifoglio next to the Giulia); offer them when the user may have meant one, and never treat them as a reason to stall a `high` match.
 
@@ -68,8 +68,8 @@ Reuse an unexpired URL already in the conversation for the same image. Use `get_
 | "How did the Civic change?" | one lookup per model year, the same `view` and `color` | 1 per year |
 | "The Toyota logo" | `get_make_logo` | 1 |
 | "How many credits do I have?" / "What does this cost?" | `get_account` / `get_pricing` | free |
-| "That looks wrong" / "That's great" | `rate_image` with the render's `request_id`, a verdict and the reason | free |
-| "You don't have my car" | `request_vehicle` | free |
+| "That looks wrong" / "That's great" | no call: a render is rated from the Recent images card on [the dashboard](https://carimage.dev/dashboard?ref=plugin#feedback) | none |
+| "You don't have my car" | no call: say the catalog does not carry it and stop; never substitute another car | none |
 
 Anything that renders more than three images the user did not count is a batch: say the number and the cost, and wait for a yes.
 
@@ -78,7 +78,7 @@ Anything that renders more than three images the user did not count is a batch: 
 - Every delivered image costs **exactly 1 credit**, whether it was generated or served from cache.
 - A signed delivery URL costs **1 credit when created**. Loading it is free until it expires.
 - **A plan carries the license and a monthly credit allowance.** Free: $0, **100 credits once at signup** (no card), evaluation and personal projects, up to 100 distinct vehicles a month. Pro: $29/month, 25,000 credits a month, commercial license while the plan is active, 2,500 distinct vehicles a month. Business: $99/month, 150,000 credits a month, 15,000 vehicles. Enterprise: custom, no cap. Every account, including Free, can buy credits at **$1 per 100 credits**; purchased credits never expire, require no subscription, have no monthly purchase cap and are spent after subscription credits, included credits reset monthly. `get_account` reports the plan in force as `data.plan`.
-- Catalog search, resolve, VIN decoding, vehicle lookups by id, options, account, feedback and the request board (vehicle and feature requests) are **free**.
+- Catalog search, resolve, VIN decoding, vehicle lookups by id and by list, options and the account are **free**.
 - A **3D model costs 100 credits ($1.00)**, charged at creation and never again for a vehicle and color the account already owns; polling, downloads and publishing (hosting it as a key-free embed) are free. Confirm before creating one (the `car-3d` skill).
 
 Twenty images cost 20 credits (20¢). Tell the user the number before rendering a batch they did not explicitly size, and call `get_account` first when the batch is large.
@@ -91,33 +91,29 @@ Twenty images cost 20 credits (20¢). Tell the user the number before rendering 
 | Which vehicle a request means, and its id | `resolve_vehicle` (free) first → see the `vehicle-catalog` skill; `params.vehicle_id` is what to render |
 | A VIN, full or partial | `decode_vin` (free) → year, make, model, trim, engine and the catalog `vehicle.id` to render; see the `vehicle-catalog` skill |
 | To list a make's models or a model's years | `search_vehicles` (free; returns a vehicle id per year) |
+| Which vehicles of a list (a catalog, a spreadsheet) the catalog carries, with their ids | `check_vehicles` (free, up to 100 per call; `car-image check <file>` or `client.checkVehicles` for longer lists) → see the `vehicle-catalog` skill |
 | Image bytes or files for a script, backend or notebook | `get_car_image` (1 credit) — returns an MCP image attachment plus `credits_charged`, `credits_remaining`, `source` (`cache`/`generated`), `request_id` |
 | A URL a browser, email or document can load | `create_car_image_urls` → see the `car-image-urls` skill |
+| Credits remaining before a batch | `get_account` (free) |
 | A catalog make logo | `get_make_logo` (1 credit) — inline image; make and transforms only; no trademark license |
 | A 3D model (GLB, USDZ, FBX) of a vehicle | `create_3d_model` (100 credits; free once owned) then `get_3d_model` (free) → see the `car-3d` skill |
 | A 3D model on a web page, with no key in the page | `create_3d_model` with `publish: true`, or `publish_3d_model` (free) → paste `public.embed.html`; see the `car-3d` skill |
 | Valid views, colors, sizes, formats, pricing | `list_image_options` (free) |
-| Credits remaining before a batch | `get_account` (free) |
 | Current prices or product help | `get_pricing`, `search_help` (free) → see the `car-image-support` skill |
 | Human-requested checkout or billing settings | `create_checkout_link`, `get_billing_link` (free links; the human confirms in the browser) → see the `car-image-support` skill |
 | API reference | `describe_api` (free) |
-| To report a bad render, or a good one | `rate_image` (free) |
-| A vehicle the catalog does not have | `request_vehicle` (free) — files it for the team, or upvotes the existing request; the user is emailed when it is live |
-| A feature idea for the API, CLI, SDK or tools | `request_feature` (free) |
-| To see what others have asked for, or upvote it | `list_requests`, `get_request`, `upvote_request`, `comment_on_request` (free; listing needs no key) |
-| To tell the team who you are, privately | `share_building` (what the user is building), `share_referral` (how they found the API) — only the Car Image team reads these |
 
-The rows from `request_vehicle` down exist only when the server was connected with `?toolset=all` (the plugin does this) or `car-image mcp --toolset all`; a bare `https://carimage.dev/api/mcp` exposes the seventeen core tools above them. The `car-image-mcp` skill explains both.
+The rows from `get_make_logo` down exist only when the server was connected with `?toolset=all` (the plugin does this) or `car-image mcp --toolset all`; a bare `https://carimage.dev/api/mcp` exposes the seven core tools above them. The `car-image-mcp` skill explains both.
 
-Without MCP tools connected, the same operations are REST endpoints — `POST /api/v1/images/resolve`, `GET /api/v1/vehicles`, `GET /api/v1/vehicles/{id}`, `GET /api/v1/vin/{vin}`, `GET /api/v1/images/car`, `GET /api/v1/images/logo`, `POST /api/v1/image-urls`, `POST /api/v1/3d`, `GET /api/v1/3d/{id}`, `GET /api/v1/3d/{id}/files/{kind}`, `POST|DELETE /api/v1/3d/{id}/publish`, `GET /api/v1/3d/public/{public_id}` (no key), `GET /api/v1/images/options`, `GET /api/v1/account`, `POST /api/v1/feedback`, `GET|POST /api/v1/requests`, `GET /api/v1/requests/{id}`, `POST /api/v1/requests/{id}/votes`, `GET|POST /api/v1/requests/{id}/comments`, `POST /api/v1/account/building`, `POST /api/v1/account/referral`. The `car-image-sdk` skill covers calling them from code; the CLI equivalents are `car-image resolve …`, `car-image vin …`, `car-image get …`, `car-image 3d …`, `car-image request …` and `car-image about …`. Base URL `https://carimage.dev`; docs at [`/docs`](https://carimage.dev/docs?ref=plugin), [`/agents.md`](https://carimage.dev/agents.md) and [`/openapi.json`](https://carimage.dev/openapi.json).
+Without MCP tools connected, the same operations are REST endpoints — `POST /api/v1/images/resolve`, `GET /api/v1/vehicles`, `GET /api/v1/vehicles/{id}`, `POST /api/v1/vehicles/check`, `GET /api/v1/vin/{vin}`, `GET /api/v1/images/car`, `GET /api/v1/images/logo`, `POST /api/v1/image-urls`, `POST /api/v1/3d`, `GET /api/v1/3d/{id}`, `GET /api/v1/3d/{id}/files/{kind}`, `POST|DELETE /api/v1/3d/{id}/publish`, `GET /api/v1/3d/public/{public_id}` (no key), `GET /api/v1/images/options` and `GET /api/v1/account`. The `car-image-sdk` skill covers calling them from code; the CLI equivalents are `car-image resolve …`, `car-image check …`, `car-image vin …`, `car-image get …`, `car-image logo …` and `car-image 3d …`. Base URL `https://carimage.dev`; docs at [`/docs`](https://carimage.dev/docs?ref=plugin), [`/agents.md`](https://carimage.dev/agents.md) and [`/openapi.json`](https://carimage.dev/openapi.json).
 
 ## What you can ask for
 
 - **Views:** eight, in order around the car: `front`, `front-3-4` (the hero, the default), `side`, `rear-3-4`, `rear`, `rear-3-4-right`, `side-right`, `front-3-4-right`. `front-3-4`, `side` and `rear-3-4` show the car's left side with the nose pointing left; each `-right` twin shows its right side with the nose pointing right, so pick the one that faces into your layout
-- **Colors:** any paint. The 15 presets `white black gray silver blue red green brown beige tan orange yellow gold burgundy purple`, or any hex (`"#1a2b3c"` in JSON, `color=1a2b3c` in a URL); a custom paint costs the same 1 credit as a preset. `resolve_vehicle` reads paint words such as navy, charcoal and cream onto the presets
+- **Colors:** any paint. The 15 presets `white black gray silver blue red green brown beige tan orange yellow gold burgundy purple` (`grey` is `gray`), any other CSS color name (`navy` is `#000080`), or any hex (`"#1a2b3c"` in JSON, `color=1a2b3c` in a URL); a custom paint costs the same 1 credit as a preset. `resolve_vehicle` reads paint words such as navy, charcoal and cream onto the presets
 - **Vehicle ids:** every make, model and year has a stable id such as `veh_395yw8tn73ff8`; pass it as `vehicle` in place of make, model and year (both together is a 400)
 - **Formats:** `png` (transparent), `webp`, `jpg`, or `auto` (WebP or PNG negotiated from `Accept`), up to 1024 px
-- **Sizing:** `size=thumb|small|medium|large` (256/512/768/1024), or `width`/`height` 1–1024 — both together return exactly that box, placed by `fit=contain|cover|inside`; `trim` crops to the car first; `background` flattens onto a solid color
+- **Sizing:** `size=thumb|small|medium|large` (256/512/768/1024), or `width`/`height` up to 1024 (a larger size is clamped, a box keeping its shape) — both together return exactly that box, placed by `fit=contain|cover|inside`; `trim` crops to the car first; `background` flattens onto a solid color
 
 ### Getting the size right
 
@@ -126,7 +122,7 @@ Without MCP tools connected, the same operations are REST endpoints — `POST /a
 | Input | Values | Use it when |
 | --- | --- | --- |
 | `size` | `thumb` 256, `small` 512, `medium` 768, `large` 1024 | A square is fine. |
-| `width`, `height` | 1–1024 px each | The layout has a box. One dimension keeps the aspect ratio; both together return exactly `width`×`height` (600×400 is 600×400, no longer a 400×400 square). |
+| `width`, `height` | up to 1024 px each (a larger box is scaled down whole) | The layout has a box. One dimension keeps the aspect ratio; both together return exactly `width`×`height` (600×400 is 600×400, no longer a 400×400 square). |
 | `fit` | `contain` (default), `cover`, `inside` | Only matters with both dimensions. `contain` keeps the whole car and pads with transparency or the `background`; `cover` fills the box and centre-crops; `inside` keeps the car within the box and may return a smaller image (the old behaviour). |
 | `trim`, `padding` | `true`; 0–50 | The slot is not square. `trim` crops to the car's alpha bounds before sizing so it fills the box instead of floating in the square source frame; `padding` keeps a margin, as a percentage of the car's longer side, and only applies with `trim`. |
 | `background` | `transparent` (default), `white`, `black`, hex as `rrggbb`, `#rrggbb`, `rgb` or `#rgb` | The surface cannot show transparency or wants a flat color. A solid background flattens PNG and WebP too; `jpg` cannot be transparent and defaults to white. |
@@ -151,8 +147,8 @@ Browser code must never hold the key. Mint signed URLs server-side instead — t
 3. **Reuse the id and the parameters.** One lookup serves every view, paint and size of that car, and an identical request hits the cache, so repeats stay fast.
 4. **Write real alt text.** "2024 Porsche 911, side view, red" — not "car image".
 5. **These are renders, not photographs.** They are generated product visuals of a make, model and year. Never claim an options package or an individual listed vehicle is depicted exactly. For a used-car listing, say the image represents the model, not that car.
-6. **Close the loop.** After the user judges a render, call `rate_image` so the quality pipeline sees it.
-7. **Ask, don't substitute.** When the catalog lacks the vehicle, offer `request_vehicle`; when the user wishes the API did something it does not, offer `request_feature`. Both are free, public on [the request board](https://carimage.dev/requests?ref=plugin), and the team emails the user when a vehicle goes live. Only call `share_building` or `share_referral` with something the user actually said and agreed to share.
+6. **Close the loop.** When the user judges a render, point them at the Recent images card on [the dashboard](https://carimage.dev/dashboard?ref=plugin#feedback), where a render is rated; there is no tool for it.
+7. **Say so, don't substitute.** When the catalog lacks the vehicle, say it does not carry it and stop. Never render the nearest thing in its place, and never present another car as the one that was asked for.
 
 ## When something fails
 
@@ -161,10 +157,10 @@ Every JSON failure is an RFC 9457 `application/problem+json` document with `deta
 | Status | Meaning | Do |
 | --- | --- | --- |
 | `Input validation error` | The tool refused an argument before the API saw it: an unknown view or format, a value out of range, a vehicle id together with a make. Nothing was charged. | The message names the argument and the rule: fix that one and call again. The type is rarely the cause, because a host that sends arguments as text is read as it meant: `"true"` is the flag, `"960"` the number, and the JSON of `images` the list. Only a `car-image mcp` server older than CLI 1.9.4 refuses a flag or a list sent that way: leave `trim`, `padding` and `renew` out there, and when it refuses `images` itself use `get_car_image` with `vehicle`, `view`, `color`, `width` and `height`. Do not abandon the render. |
-| 400 | Invalid parameter (`parameter` names it, `retryable: false`) | Views, `fit` and `format` are fixed enums; `color` is a preset name or a hex; `vehicle` cannot be sent with make, model or year; `padding` needs `trim`; `jpg` cannot be `transparent`; dimensions stop at 1024. Fix the value with `list_image_options` or `resolve_vehicle`; sending it again unchanged always fails. |
+| 400 | Invalid parameter (`parameter` names it, `retryable: false`) | Views, `fit` and `format` are fixed enums; `color` is a preset name, a CSS color name or a hex; `vehicle` cannot be sent with make, model or year; `padding` needs `trim`; `jpg` cannot be `transparent`. Fix the value with `list_image_options` or `resolve_vehicle`; sending it again unchanged always fails. |
 | 401 | Missing or invalid credential | For the plugin, ask the user to reconnect through the host’s MCP sign-in controls (`/mcp` in Claude Code), or to replace the key saved in the plugin's options. For code in their project, the application's key is missing or revoked: the user fixes it where the application keeps its secrets. Never guess a key. |
 | 402 | Out of credits, or `code: "plan_vehicle_limit"` (the request named more new distinct vehicles than the plan's monthly cap allows; `scope`, `plan`, `vehicles_this_month`, `vehicles_per_month`, `requested`) | **Stop and ask the human** to top up at [the dashboard](https://carimage.dev/dashboard?ref=plugin#billing) or with `car-image billing`, or, for a plan limit, tell them the plan and the cap. Never buy credits or change a plan on your own. |
-| 404 | Vehicle not in the catalog under that name (`code: "vehicle_not_found"`), or an unknown vehicle id | You rendered by name: look the vehicle up instead. Read the problem's `suggestions` first (up to five real catalog vehicles with ids, closest first) and retry with `vehicle: <id>` when one is plainly the car, or show them to the user; call `resolve_vehicle` when they are empty. Do not send the same name again in another view or color. If it is really missing, offer to file it with `request_vehicle`. Do not invent vehicles or substitute a different one without saying so. |
+| 404 | Vehicle not in the catalog under that name (`code: "vehicle_not_found"`), or an unknown vehicle id | You rendered by name: look the vehicle up instead. Read the problem's `suggestions` first (up to five real catalog vehicles with ids, closest first) and retry with `vehicle: <id>` when one is plainly the car, or show them to the user; call `resolve_vehicle` when they are empty. Do not send the same name again in another view or color. If it is really missing, say so and stop. Do not invent vehicles or substitute a different one. |
 | 429 | Rate limited (per key, or per account with `code: "account_rate_limited"`), or `code: "account_generation_cap"` (the account used its plan's share of today's render budget; cached images keep serving) | Wait `Retry-After` seconds, retry once. Never hammer; a generation cap resets at midnight UTC (`reset_at`), so do not retry cold renders before then. |
 | 502/503 | Render or upstream failure | Credits are refunded. Retry once later; report with the `request_id`. |
 
@@ -181,11 +177,11 @@ The full table, including every `type` URI, is in [references/errors.md](referen
 
 ## Make logos
 
-`get_make_logo({ make: "toyota", width: 256, trim: true })` returns a catalog make logo inline; `car-image logo --make Toyota --width 256 --trim --out toyota-logo.png` and `client.getMakeLogo({ make: "toyota", width: 256 })` save one. REST: `GET /api/v1/images/logo?make=toyota`.
+`get_make_logo({ make: "toyota", width: 256, trim: true })` returns a catalog make logo inline; `car-image logo --make Toyota --width 256 --trim --out toyota-logo.png` and `client.getMakeLogo({ make: "toyota", width: 256 })` save one. REST: `GET /api/v1/images/logo?make=toyota`. The tool is on `?toolset=all`, which the plugin configures; a connection on the bare URL has no logo tool (the `car-image-mcp` skill).
 
 - **1 credit per delivered logo**, including cache hits; a failed delivery is refunded. Logos do not count as distinct vehicles. On a `402`, stop and ask the human.
 - Takes the make and the image transforms (`size`, `width`/`height`, `fit`, `background`, `trim` with `padding`, `format`; `auto` returns PNG over MCP). No model, year, view, paint color or custom prompt, and no signed URL: download the file and host it for a site. An unknown make is a `404`.
-- Logos are prompt-generated and can be inaccurate: look at one before using it. Do not use the vehicle image, URL or feedback tools for logos.
+- Logos are prompt-generated and can be inaccurate: look at one before using it. Do not use the vehicle image or URL tools for logos.
 
 Logos are third-party trademarks. They are served for referential display of the make they identify, no license is granted, and they sit outside every VehiclesDB indemnity — see the [API terms](https://carimage.dev/terms?ref=plugin#logos) and the [logo docs](https://carimage.dev/docs/logos?ref=plugin).
 

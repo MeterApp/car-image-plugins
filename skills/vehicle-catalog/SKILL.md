@@ -1,6 +1,6 @@
 ---
 name: vehicle-catalog
-description: Look a vehicle up before it is rendered - turn what someone asked for ("a 2018 Miata", "the new 911 GT3", a VIN) into the exact catalog make, model and year the Car Image API can render and the stable vehicle id (veh_…) that names it, or check what a make offers and which years exist. Covers resolve_vehicle, search_vehicles and free VIN decoding (full or partial VINs), reading confidence and year mismatches, trims and body styles, picking a car when none was named, missing vehicles, and the open @meterapp/vehicle-db package for offline lookups, dropdowns and validation. Use first, before any image, signed URL or 3D model of a vehicle, and when building a vehicle picker or validating user input; do not use for fetching the image itself (car-image), embedding it in a page (car-image-urls) or making a 3D model (car-3d).
+description: Look a vehicle up before it is rendered - turn what someone asked for ("a 2018 Miata", "the new 911 GT3", a VIN) into the exact catalog make, model and year the Car Image API can render and the stable vehicle id (veh_…) that names it, or check what a make offers and which years exist, or which of a whole list of vehicles the catalog carries. Covers resolve_vehicle, search_vehicles, check_vehicles for lists and free VIN decoding (full or partial VINs), reading confidence and year mismatches, trims and body styles, picking a car when none was named, missing vehicles, and the open @meterapp/vehicle-db package for offline lookups, dropdowns and validation. Use first, before any image, signed URL or 3D model of a vehicle, and when building a vehicle picker or validating user input; do not use for fetching the image itself (car-image), embedding it in a page (car-image-urls) or making a 3D model (car-3d).
 ---
 
 # Finding the right vehicle
@@ -19,6 +19,7 @@ All the lookups below are **free**. Use them liberally.
 | A VIN, full or partial | `decode_vin({ vin, year? })` | `vehicle.id` |
 | A make, and a question about what it offers | `search_vehicles({ query, year?, limit? })` | `id` (the year the query names) or `ids` by year |
 | Nothing named ("a random car", "something sporty") | choose a year, make and model yourself, then `resolve_vehicle`; name your pick in the reply | as above |
+| A list of vehicles (a catalog, a spreadsheet, a feed) | `check_vehicles({ vehicles: [{ make, model, year, ref? }] })`, up to 100 a call; `car-image check <file>` or `client.checkVehicles` for more | `results[].vehicle.id` of each match |
 
 Then render with the id: `create_car_image_urls` with the id, view and color in its `images` array for chat (paste the returned Markdown inline), a page or document (`car-image-urls`); `get_car_image({ vehicle, view, color })` for explicit files or bytes, `create_3d_model` for a model (`car-3d`). One lookup serves every view, paint and size of that car.
 
@@ -45,15 +46,38 @@ It is deterministic, with no model behind it, so write the phrase it can read:
 - **`low`** — a guess. Show the candidates and ask. Do not render.
 - **`medium`** — an interpretation: a badge read as its family, trim words set aside, a body the catalog has no separate model for ("Civic hatchback" answered with the Civic), or a model name several makes use with no make given. Render, and say in one line which vehicle it is.
 - **`high`** — the name the catalog uses, or a reviewed name for the same car (a 2018 "MX-5 Miata" is `mx-5`, a "GR Supra" is `supra`), in the year asked for. Render.
-- **No match** — not yet a missing vehicle. Drop everything but the year, make and model and try again, or call `search_vehicles` with the model family alone. When the catalog really lacks it, say so plainly and offer to file it with `request_vehicle` (make, model, optional year and a note). It is free; the team adds requested vehicles and emails the user when it is live, and if someone already asked, the call upvotes their request instead. Do not substitute a similar car without telling the user.
+- **No match** — not yet a missing vehicle. Drop everything but the year, make and model and try again, or call `search_vehicles` with the model family alone. When the catalog really lacks it, say so plainly and stop. Do not substitute a similar car.
 
 `candidates` lists what else the phrase could be: for a vehicle named with its make, the nameplate's other variants that year (the 911 Carrera and GT3 next to the 911). Offer them when the user may have meant one ("Civic" covers a dozen bodies across four decades), and never treat them as a reason to stall a `high` match.
 
 ## Vehicle ids
 
-Every make, model and year in the catalog has an id such as `veh_395yw8tn73ff8` (the 2023 Ford F-150): `veh_` plus 13 characters, deterministic and permanent. `search_vehicles`, `resolve_vehicle` and `decode_vin` all return them, and every image endpoint, signed-URL item, 3D request and MCP tool accepts `vehicle: "veh_…"` in place of `make`, `model` and `year` (both together is a `400`; an unknown id is a `404`). Every echoed vehicle object opens with `vehicle_id`.
+Every make, model and year in the catalog has an id such as `veh_395yw8tn73ff8` (the 2023 Ford F-150): `veh_` plus 13 characters, deterministic and permanent. `search_vehicles`, `resolve_vehicle`, `decode_vin` and `check_vehicles` all return them, and every image endpoint, signed-URL item, 3D request and MCP tool accepts `vehicle: "veh_…"` in place of `make`, `model` and `year` (both together is a `400`; an unknown id is a `404`). Every echoed vehicle object opens with `vehicle_id`.
 
 Always render by the id: it cannot be misspelled, it survives catalog releases, and it is what to store in the user's database. `GET /api/v1/vehicles/{id}` (public, free) turns an id back into its make, model, year, every year of the model, and ready-made image paths.
+
+## A whole list: check it once
+
+A catalog, an inventory export, a dealer feed: check the whole list once, before rendering any of it, instead of rendering every vehicle in every view and color and collecting the `404`s. `check_vehicles` (REST: `POST /api/v1/vehicles/check`) reads each entry exactly as `get_car_image` would read it and answers each one, in order. Free.
+
+```
+check_vehicles({ vehicles: [
+  { make: "Mazda", model: "MX-5 Miata", year: 2018, ref: "sku-1041" },
+  { make: "Lexus", model: "TX 350", year: 2022, ref: "sku-1042" },
+  { make: "Chevrolet", model: "Sail", year: 2022, ref: "sku-1043" } ] })
+  → summary: { total: 3, match: 1, suggestion: 1, miss: 1, invalid: 0, distinct_vehicles: 1 }
+    results: [ { ref: "sku-1041", status: "match", vehicle: { id: "veh_59854qbgfvar3", model: "mx-5", match: "alias", … } },
+               { ref: "sku-1042", status: "suggestion", reason: "year", suggestions: [ { model: "tx-350", year: 2024, id: "veh_8bbz514ey4ran" }, … ] },
+               { ref: "sku-1043", status: "miss", reason: "model", search: "/api/v1/vehicles?q=chevrolet%20sail" } ]
+```
+
+- Send names as the data spells them; do not clean them up first. The check applies the image endpoints' own rules (nicknames, separators, aliases, trim words, badges, typos), and a name you rewrite may read differently from the one the data will send later.
+- **`match`**: store `vehicle.id` beside the row and render by it from then on, in every view and color. `vehicle.match` other than `exact` means a looser rule read the name; for `trim`, `badge` and `fuzzy`, tell the user which vehicle it is.
+- **`suggestion`**: the catalog lacks the vehicle as named. `suggestions` are other vehicles (the same model in its nearest year, a related model), never a stand-in: ask the user, or apply a rule they chose ("use the nearest year"), before storing one.
+- **`miss`**: nothing close. Skip it in every view and color and say so; never fill the gap with another vehicle.
+- **`invalid`**: `error` says what to fix (usually a missing year).
+
+`summary.distinct_vehicles` is what rendering the matches counts against the plan's distinct vehicles a month (Free 100, Pro 2,500, Business 15,000): compare before a backfill. One call takes 100 entries; for a longer list write code instead of looping the tool: `car-image check inventory.csv --out inventory-checked.csv` writes the file back with `status`, `vehicle_id` and `suggested_vehicle_id` per row, and the SDK's `client.checkVehicles(rows)` splits any length (2,000 per request, 10 requests a minute). Check again only the misses and suggestions, after a catalog release: matches do not change.
 
 ## A VIN in, the vehicle out
 
@@ -67,7 +91,7 @@ Always render by the id: it cannot be misspelled, it survives catalog releases, 
 
 - Render with `vehicle: vehicle.id` (or `vehicle.image_path`); no spelling to get right.
 - `valid: false` with `errors: [{code, text}]` means vPIC found a problem (a bad check digit, an invalid character) but still decoded what it could; `suggested_vin` is its corrected spelling when it can tell. Show the errors; still use the vehicle when there is one.
-- `vehicle` is `null` when the decoded make and model are not in the catalog (a trailer, a commercial chassis). Say so and offer `request_vehicle`; the decoded fields (`attributes` carries every vPIC variable) are still worth showing.
+- `vehicle` is `null` when the decoded make and model are not in the catalog (a trailer, a commercial chassis). Say so; the decoded fields (`attributes` carries every vPIC variable) are still worth showing.
 - The catalog keys on make, model and year: show the decoded `trim`, `body_class` and `engine` next to the image rather than claiming the render depicts them.
 - Pass `year` when you know it: the tenth VIN character encodes the year in a 30-year cycle, and a hint helps a partial VIN.
 - A `400` is not a VIN (length, an I, O or Q); a `404` is a pattern NHTSA does not know, so decoding it again will not help. Ask the user to check the characters rather than guessing, above all the first three (the maker code), or decode what they are sure of as a partial VIN with `*` and a `year`. NHTSA's data covers vehicles made for the US market: find any other car by name with `resolve_vehicle` or `search_vehicles`.
@@ -112,7 +136,7 @@ For a vehicle picker, a validation rule, or anything that should not make a netw
 npm install @meterapp/vehicle-db
 ```
 
-It is open source, has no runtime dependencies, and ships the full make/model/year data. Use it to populate cascading dropdowns (make → model → year), validate a form before submitting, or pre-check that a vehicle exists before calling the API. Then pass the values you selected straight to the render call — they are already canonical.
+It is open source, has no runtime dependencies, and ships the full make/model/year data. Use it to populate cascading dropdowns (make → model → year), validate a form before submitting, or pre-check that a vehicle exists before calling the API. Then pass the values you selected straight to the render call — they are already canonical. The package holds the catalog, not the API's reading rules: to learn what a render of names spelled your own way will do, check them with `check_vehicles`.
 
 This is the right choice when you need instant filtering, offline behavior, or hundreds of lookups. Use `search_vehicles` when you want fuzzy matching and typo tolerance over free text.
 
@@ -120,4 +144,4 @@ This is the right choice when you need instant filtering, offline behavior, or h
 
 When you resolved something that needed interpreting, say so in one line: "This is the 2022 Honda Civic — the catalog has no separate hatchback for that year." or "There is no 2020 WRX STI in the catalog; the newest is 2017. Want that one?" That is the difference between a user trusting the image and being surprised by it.
 
-If the catalog does not have the vehicle, say that rather than rendering the nearest thing, and offer `request_vehicle` so the gap gets closed. A silently substituted car is worse than no image.
+If the catalog does not have the vehicle, say that and stop, rather than rendering the nearest thing. A substituted car is worse than no image.

@@ -5,6 +5,8 @@ description: Answer questions about Car Image API pricing, credits, subscription
 
 # Product help and billing
 
+`search_help`, `get_pricing`, `create_checkout_link` and `get_billing_link` are on `?toolset=all`, which the plugin configures; a connection on the bare URL has the core seven only (the `car-image-mcp` skill).
+
 1. Call `search_help` with one product question at a time. Do not paste full customer emails, signatures, personal information, keys or payment details. Queries are privately recorded to improve articles.
 2. Read the returned paragraphs and sources. Cite the relevant article or original terms. An `articles_found` result means related reading, not that every part of the question is answered. Split multi-part questions and search each one.
 3. If the articles lack needed context, call `search_help` again with the same concise question and `report_gap: true`. Say what is unknown and direct the human to support@carimage.dev. Never invent policies, prices, coverage, SLA commitments, indemnities or agreement exceptions.

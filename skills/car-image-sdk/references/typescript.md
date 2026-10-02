@@ -26,6 +26,7 @@ On a server, `apiKey` comes from the deployment's `CAR_IMAGE_API_KEY` secret, se
 | `createImageUrls(images, { ttlSeconds, maxUses, renew, renewDays, idempotencyKey }?)` | `data[]` of `{ id, url, expires_at, max_uses, renews_until, … }` — 1 to 50 images; `renew: true` keeps a URL alive past the TTL at 1 credit per opened window (email, CMS, PDFs); an `Idempotency-Key` (generated unless `idempotencyKey` is given) makes a retry replay instead of re-bill | 1 credit per URL, plus 1 per opened renewal window |
 | `resolve(query, options?)` | The lookup to make before rendering a name someone typed: `data.params` (with `vehicle_id`, the id to render by), `candidates`, `confidence` (`"high"`, `"medium"` or `"low"`) and `extracted` (what the phrase said; compare its `year` with `params.year`) | free |
 | `searchVehicles(query, options?)` | Canonical makes, models, available years and a vehicle id per year | free |
+| `checkVehicles(entries, { batchSize?, onProgress? }?)` | Which of a list the catalog carries: `data.summary` counts and `data.results` in order, each `match` (`vehicle.id`), `suggestion` (`suggestions`), `miss` or `invalid` (`error`); any length, 2,000 per request | free |
 | `vehicles(filter?, options?)` | Years, or makes for a year, or models for a year and make (with ids) | free |
 | `vehicle(id, options?)` | One catalog vehicle by its stable `veh_…` id: make, model, year, every year, image paths | free |
 | `decodeVin(vin, { year? }?, options?)` | `data.valid`, `errors`, `year`, `make`, `model`, `trim`, `engine`, `attributes` (every vPIC variable) and `vehicle` (`{ id, make, model, year, image_path }` or null); full or partial VINs | free |
@@ -36,12 +37,11 @@ On a server, `apiKey` comes from the deployment's `CAR_IMAGE_API_KEY` secret, se
 | `publish3dModel(id, options?)` / `unpublish3dModel(id, options?)` | The request with `data.public` (`id`, key-free `url` and `files`, `embed.html` to paste) or with `public: null` again | free |
 | `options(options?)` | Views with yaw angles, colors with hex, sizes, fit modes (`fits`, `default_fit`), `backgrounds`, `trim` limits, formats, pricing | free |
 | `account(options?)` | `data.credits`, `auto_reload`, `has_payment_method`, `pricing`, `usage_30d`, `key.scopes` | free |
-| `feedback(input, options?)` | Acknowledgement | free |
 | `health(options?)` / `openapi(options?)` | Service status / the OpenAPI document | free |
 
 `vehicles()` is overloaded: no filter returns years, `{ year }` returns makes, `{ year, makeId }` returns models.
 
-`ImageParams`: `make`, `model`, `year` (or `vehicle`, a stable `veh_…` id in place of the three), and optionally `view`, `color` (a preset name or any hex such as `"#1a2b3c"`), `size` (`thumb|small|medium|large`) or `width`/`height` (1–1024 each), `fit` (`contain` default, `cover`, `inside` — only matters with both dimensions, which return exactly `width`×`height`), `background` (`transparent` default, `white`, `black`, or hex as `rrggbb`, `#rrggbb`, `rgb`, `#rgb`; `jpg` defaults to white), `trim` (crop to the car's bounds before sizing) with `padding` (0–50 % of its longer side, only with `trim`), and `format` (`png|webp|jpg|auto`; `auto` negotiates WebP or PNG from `Accept`). `assertImageParams` throws before any request for dimensions outside 1–1024 or a `padding` without `trim`. The constants `FITS`, `REQUEST_FORMATS`, `MAX_DIMENSION` and `MAX_PADDING_PERCENT` are exported for validation and UI.
+`ImageParams`: `make`, `model`, `year` (or `vehicle`, a stable `veh_…` id in place of the three), and optionally `view`, `color` (a preset name, a CSS color name such as `"navy"`, or any hex such as `"#1a2b3c"`), `size` (`thumb|small|medium|large`) or `width`/`height` (delivered up to 1024 each; the server clamps a larger size, a box keeping its shape), `fit` (`contain` default, `cover`, `inside` — only matters with both dimensions, which return exactly `width`×`height`), `background` (`transparent` default, a CSS color name such as `white`, or hex as `rrggbb`, `#rrggbb`, `rgb`, `#rgb`; `jpg` defaults to white), `trim` (crop to the car's bounds before sizing) with `padding` (0–50 % of its longer side, only with `trim`), and `format` (`png|webp|jpg|auto`; `auto` negotiates WebP or PNG from `Accept`). `assertImageParams` throws before any request for a dimension that is not a whole number of pixels from 1, or a `padding` without `trim`. The constants `FITS`, `REQUEST_FORMATS`, `MAX_DIMENSION` and `MAX_PADDING_PERCENT` are exported for validation and UI.
 
 Retrying `createImageUrls` is safe by construction: every call carries an `Idempotency-Key` (`sdk_<uuid>`), so a `POST` whose connection dropped is retried like a `GET` and the server replays the first answer rather than minting again. Pass `idempotencyKey` yourself when the retry may come from another process; the server keeps a key for 24 hours, answers `422` to the same key with a different body and `409` (`Retry-After`) while the original is still running.
 
@@ -105,7 +105,7 @@ The SDK is `fetch`-based with no Node built-ins, so it runs unchanged on Vercel 
 
 `@meterapp/car-image-sdk/mcp` exports the shared tool definitions used by both the hosted and the stdio MCP servers — names, descriptions, JSON schemas and annotations. Import them if you are building your own agent surface and want the tool contracts to match the official ones exactly.
 
-Tools come in two sets: `MCP_TOOLSETS.core` (`DEFAULT_MCP_TOOLSET`, `"core"`) is the seventeen core tools (images, signed URLs, catalog, `decode_vin`, `create_3d_model`, `get_3d_model`, `publish_3d_model`) and `MCP_TOOLSETS.all` adds the eight request-board tools; `McpToolset` is the type, `isMcpToolset(value)` validates a name from a URL or flag, and `mcpInstructions(toolset)` returns the server instructions for either set (they open with `mcpInstructionsHead(toolset)`, the part every host shows a model, kept under `MCP_INSTRUCTIONS_HEAD_LIMIT`). The hosted server serves `core` at `https://carimage.dev/api/mcp` and `all` at `https://carimage.dev/api/mcp?toolset=all`; the stdio server takes `car-image mcp --toolset all`.
+Tools come in two sets: `MCP_TOOLSETS.core` (`DEFAULT_MCP_TOOLSET`, `"core"`) is the seven core tools (`resolve_vehicle`, `search_vehicles`, `decode_vin`, `check_vehicles`, `get_car_image`, `create_car_image_urls`, `get_account`) and `MCP_TOOLSETS.all` adds make logos, 3D models, image options, the API reference, pricing, help and billing links (`MCP_DOCUMENTED_EXTRAS` names them), twenty-six tools in all; `McpToolset` is the type, `isMcpToolset(value)` validates a name from a URL or flag, and `mcpInstructions(toolset)` returns the server instructions for either set (they open with `mcpInstructionsHead(toolset)`, the part every host shows a model, kept under `MCP_INSTRUCTIONS_HEAD_LIMIT`). The hosted server serves `core` at `https://carimage.dev/api/mcp` and `all` at `https://carimage.dev/api/mcp?toolset=all`; the stdio server takes `car-image mcp --toolset all`.
 
 ## Make logos
 
@@ -113,8 +113,8 @@ Use MCP `get_make_logo({make: "toyota", width: 256, trim: true})` for an inline
 logo, or `car-image logo --make Toyota --width 256 --trim --out toyota-logo.png`
 to save it. Both accept the image transforms; MCP `format: "auto"` returns PNG.
 Each successful delivery costs 1 credit, including cache hits. There is no signed
-logo URL: download and host the file for a site. Do not use vehicle image URL
-or feedback tools for logos. On 402, stop and ask the human; never buy credits.
+logo URL: download and host the file for a site. Do not use the vehicle image URL
+tools for logos. On 402, stop and ask the human; never buy credits.
 
 SDK: `client.getMakeLogo({ make: "toyota", width: 256, trim: true })` returns bytes and billing metadata.
 

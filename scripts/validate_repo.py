@@ -21,10 +21,11 @@ ERRORS: list[str] = []
 PLUGIN_NAME = "car-image"
 MARKETPLACE_NAME = "meterapp"
 MCP_URL = "https://carimage.dev/api/mcp"
-# The hosted server exposes the seventeen core tools by default. The skills teach
-# the request board too (request_vehicle, upvote_request, ...), so the plugin
-# connects with the full toolset; without the query those tools do not exist
-# for the agent and the skills would name tools the host cannot see.
+# The hosted server exposes the seven core tools by default. The skills teach
+# make logos, 3D models, image options, the API reference, pricing, help and
+# billing links too, so the plugin connects with the full toolset; without the
+# query those tools do not exist for the agent and the skills would name tools
+# the host cannot see.
 PLUGIN_MCP_URL = f"{MCP_URL}?toolset=all"
 ORIGIN = "https://carimage.dev"
 # The server repository is private: a link there 404s for everyone outside the
@@ -203,7 +204,7 @@ def authorization_headers(node: object, owner: str) -> None:
 for relative in [*MANIFESTS.values(), ".mcp.json"]:
     authorization_headers(load_json(relative), relative)
 
-# The setup skill documents both toolsets; a skill that promises all twenty-five
+# The setup skill documents both toolsets; a skill that promises all twenty-six
 # tools on the bare URL sends users to a server with only the core set. The pattern is the
 # wording earlier releases used for that promise.
 mcp_skill = ROOT / "skills" / "car-image-mcp" / "SKILL.md"
