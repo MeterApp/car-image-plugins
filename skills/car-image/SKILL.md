@@ -1,11 +1,11 @@
 ---
 name: car-image
-description: Show or fetch a studio-quality, transparent-background image of a real vehicle (any make, model and year from 1990-2027), in a conversation or for a product page, a listing, a comparison, an email or a deck, and fetch catalog make logos with get_make_logo. Every image takes two steps - look the vehicle up first (resolve_vehicle, search_vehicles or decode_vin, free, the vehicle-catalog skill), then show it by its vehicle id (create_car_image_urls, 1 credit; clickable links and browser viewing in ChatGPT/Codex, inline Markdown in Claude). Covers the Car Image API by Meter - the chat workflow, angles, paint, sizing, the per-image credit cost, and how to handle 402, 404 and 429. Use for any request involving a picture of a car, truck, motorcycle or other vehicle, including "show me a car" or "a random car"; do not use for embedding URLs in a browser or document (car-image-urls), SDK and CLI code (car-image-sdk), 3D models (car-3d), or connection setup (car-image-mcp).
+description: Show or fetch a studio-quality, transparent-background image of a real vehicle (any make, model and year from 1990-2027), in a conversation or for a product page, a listing, a comparison, an email or a deck, and fetch catalog make logos with get_make_logo. Every image takes two steps - look the vehicle up first (resolve_vehicle, search_vehicles or decode_vin, free, the vehicle-catalog skill), then show it by its vehicle id (create_car_image_urls, 1 credit; clickable links and browser viewing in ChatGPT/Codex, inline Markdown in Claude). Covers the Car Image API by Meter - the chat workflow, angles, paint, sizing, the per-image credit cost, and how to handle 402, 404 and 429. Works before sign-in: lookups and a free preview of the picture a vehicle's page already shows (preview_car_image), then the account for the exact image. Use for any request involving a picture of a car, truck, motorcycle or other vehicle, including "show me a car" or "a random car"; do not use for embedding URLs in a browser or document (car-image-urls), SDK and CLI code (car-image-sdk), 3D models (car-3d), or connection setup (car-image-mcp).
 ---
 
 # Car Image API
 
-Studio-quality, transparent-background renders of any vehicle in the open [`@meterapp/vehicle-db`](https://github.com/MeterApp/vehicle-db) catalog — 1,595 makes, 41,838 models, model years 1990-2027. Eight camera views, any paint color, PNG/WebP/JPG up to 1024 px.
+Studio-quality, transparent-background renders of any vehicle in the open [`@meterapp/vehicle-db`](https://github.com/MeterApp/vehicle-db) catalog — 1,600 makes, 41,975 models, model years 1990-2027. Eight camera views, any paint color, PNG/WebP/JPG up to 1024 px.
 
 ## Two steps, every time
 
@@ -38,6 +38,19 @@ create_car_image_urls({ images: [{ vehicle: "veh_59854qbgfvar3", view: "side", c
 The rows are in order: the first one that fits decides. `candidates` lists the nameplate's other variants that year (a Giulia Quadrifoglio next to the Giulia); offer them when the user may have meant one, and never treat them as a reason to stall a `high` match.
 
 **Skip the lookup only** when you already hold the vehicle's id from this conversation (another angle or color of the car you just rendered) or the user handed you a `veh_…` id.
+
+## Before the account is connected
+
+The plugin runs two servers. **`car-image-catalog`** needs no account and works from the first session: `resolve_vehicle`, `search_vehicles`, `preview_car_image`, `list_image_options`, `get_pricing` and `describe_api`. **`car-image`** is the account: the image in the view, paint and size asked for, signed URLs, VINs, lists, logos, 3D models and the balance. Until the user signs in, the host lists no `create_car_image_urls`; Claude Code shows `plugin:car-image:car-image` as needing authentication and may list an `authenticate` tool for it (`mcp__plugin_car-image_car-image__authenticate`).
+
+When the user asks for a picture and `create_car_image_urls` is not available:
+
+1. **Look the vehicle up anyway**, as in step 1. Nothing about the lookup changes.
+2. **Show the free preview.** `preview_car_image({ vehicle, view, color })` returns the picture the vehicle's page on carimage.dev already shows, when one is stored. Display `data.preview` by the host rules below (its `markdown` in Claude) and say it is a preview, naming its view and paint when they differ from what was asked. It never renders: a `null` preview means nothing is stored for that car yet. `data.stored` lists every stored view and paint, and `data.page` is the vehicle's page.
+3. **Offer the exact image and the sign-in, in one or two lines.** In Claude Code, call the `authenticate` tool when it is listed and give the user the URL it returns; otherwise ask them to run `/mcp`, choose `plugin:car-image:car-image` and **Authenticate**. In other hosts, connect Car Image in the MCP or connector settings. Signing up is free and comes with 100 credits; the user needs no key for this.
+4. **Finish the original request once the account tools appear**, without asking the user to say it again: `create_car_image_urls` with the id you already hold.
+
+Do not stop at "authentication required", and do not send the user to the website to make the image by hand. Work that needs no image needs no account either: explaining views, sizes and prices, or writing code against the API (`describe_api`, `list_image_options`, `get_pricing`; the code itself needs the user's own key, the `car-image-sdk` skill).
 
 ## In a conversation
 
@@ -88,6 +101,7 @@ Twenty images cost 20 credits (20¢). Tell the user the number before rendering 
 | You need | Use |
 | --- | --- |
 | Show a vehicle in chat | `create_car_image_urls` once → link and browser in ChatGPT/Codex; inline Markdown in Claude |
+| A first look before the user has signed in | `preview_car_image` (free, catalog server; the picture the vehicle's page shows, when one is stored) → see [Before the account is connected](#before-the-account-is-connected) |
 | Which vehicle a request means, and its id | `resolve_vehicle` (free) first → see the `vehicle-catalog` skill; `params.vehicle_id` is what to render |
 | A VIN, full or partial | `decode_vin` (free) → year, make, model, trim, engine and the catalog `vehicle.id` to render; see the `vehicle-catalog` skill |
 | To list a make's models or a model's years | `search_vehicles` (free; returns a vehicle id per year) |
@@ -132,7 +146,7 @@ A 16:9 hero: `width: 1024, height: 576, trim: true, padding: 6`. A thumbnail on 
 
 ## Authentication
 
-The plugin's MCP server is already authenticated: through browser OAuth sign-in managed by the host, or in Claude Code through an API key the user saved in the plugin's options (optional; kept in the system's secure credential store and sent only to the Car Image server). No API-key environment variable is required. If the tools work, use that connection; it is the only credential you need. If they ask for sign-in, tell the user to open `/mcp` in Claude Code, select the Car Image server and authenticate, or to save a key under `/plugin` → the Car Image plugin → **Configure options**.
+The catalog server needs no credential. The account server signs in through browser OAuth managed by the host, or in Claude Code through an API key the user saved in the plugin's options (optional; kept in the system's secure credential store and sent only to the Car Image server). No API-key environment variable is required. If the account tools work, use that connection; it is the only credential you need. If they ask for sign-in, follow [Before the account is connected](#before-the-account-is-connected): the `authenticate` tool, or `/mcp` in Claude Code (select `plugin:car-image:car-image` and authenticate), or a key saved under `/plugin` → the Car Image plugin → **Configure options**.
 
 You never handle a key yourself: do not ask for one in the conversation, and do not read one from environment variables, `.env` files, shell profiles or a CLI's config to put in a command or a header. Code you write for the user's own application gets its key from that application's secret settings, which the user manages (the `car-image-sdk` skill). Keys look like `cimg_…`; a user without one runs `npx @meterapp/car-image login` (a browser device flow) or creates one at [the dashboard](https://carimage.dev/dashboard?ref=plugin).
 

@@ -1,6 +1,6 @@
 ---
 name: car-image-mcp
-description: Connect an agent, IDE or chat app to the Car Image API over MCP, and fix it when the tools do not appear. Covers the hosted HTTP server and the local stdio alternative, browser OAuth sign-in for plugin installs and chat-app connectors, the optional API key saved in the plugin's options in Claude Code, API-key setup for manual connections in Codex, Cursor, Claude Desktop and generic MCP hosts, what each of the seven core tools costs (catalog lookups, VIN decoding, images, signed URLs, the account) and which ten more ?toolset=all adds (make logos, 3D models, image options, the API reference, pricing, help and billing links), and how to diagnose a 401, a missing server or an empty tool list. Use for setup, configuration and connection troubleshooting; do not use for calling the API from code (car-image-sdk) or for image workflows once the tools already work (car-image).
+description: Connect an agent, IDE or chat app to the Car Image API over MCP, and fix it when the tools do not appear. Covers the hosted HTTP server, the catalog server that needs no sign-in (lookups and free previews), the local stdio alternative, browser OAuth sign-in for plugin installs and chat-app connectors, the optional API key saved in the plugin's options in Claude Code, API-key setup for manual connections in Codex, Cursor, Claude Desktop and generic MCP hosts, what each of the seven core tools costs (catalog lookups, VIN decoding, images, signed URLs, the account) and which ten more ?toolset=all adds (make logos, 3D models, image options, the API reference, pricing, help and billing links), and how to diagnose a 401, a missing server or an empty tool list. Use for setup, configuration and connection troubleshooting; do not use for calling the API from code (car-image-sdk) or for image workflows once the tools already work (car-image).
 ---
 
 # Connecting over MCP
@@ -10,11 +10,13 @@ Two servers expose the same tools. Prefer the hosted one — there is nothing to
 - **Hosted (recommended):** `https://carimage.dev/api/mcp`, Streamable HTTP, with browser OAuth sign-in in supported hosts
 - **Local stdio:** `npx @meterapp/car-image mcp`, which uses the key `car-image login` saved for the CLI
 
+A third, the **catalog server** at `https://carimage.dev/api/mcp/catalog`, needs no account at all: `resolve_vehicle`, `search_vehicles`, `list_image_options`, `get_pricing` and `describe_api`, plus `preview_car_image`, the picture a vehicle's page on carimage.dev already shows, free. It renders nothing and reads no account, so it never asks anyone to sign in. The plugin connects it next to the hosted server, so an install can look cars up and show previews before the user signs in.
+
 Both come in two toolsets. The default, `core`, is the seven core tools an agent needs to find a vehicle, render it and watch the balance: `resolve_vehicle`, `search_vehicles`, `decode_vin`, `check_vehicles`, `get_car_image`, `create_car_image_urls` and `get_account`. Make logos, 3D models, image options, the API reference, pricing, help and billing links are ten more with `?toolset=all` on the hosted URL or `--toolset all` for `car-image mcp`, twenty-six tools in all. Fewer tools cost the agent less context and make the right one easier to pick, so opt in when the agent should also fetch logos, make 3D models or answer product and billing questions; the plugin does.
 
 ## Plugin installs: sign in with your browser
 
-The `car-image` plugin already configures the hosted server with `?toolset=all` (the skills teach the logo, 3D, pricing and help tools beyond the core seven). **No API key or environment variable is needed.** Start a new session and use the host’s MCP authentication controls. In Claude Code, open `/mcp`, select the Car Image server, and authenticate; complete Car Image sign-in and approve the connection in your browser. Codex and Cursor expose sign-in through their MCP connection controls. Then skip to [Verifying](#verifying).
+The `car-image` plugin configures two hosted servers: **`car-image-catalog`**, the catalog server, which works at once, and **`car-image`**, the hosted server with `?toolset=all` (the skills teach the logo, 3D, pricing and help tools beyond the core seven), which signs in. **No API key or environment variable is needed.** Sign in when you first want an image: in Claude Code, the agent can start it with the `authenticate` tool Claude Code lists for a server that needs sign-in (`mcp__plugin_car-image_car-image__authenticate`) and hand you the link, or open `/mcp`, select `plugin:car-image:car-image`, and authenticate; complete Car Image sign-in and approve the connection in your browser. Codex and Cursor expose sign-in through their MCP connection controls. Then skip to [Verifying](#verifying).
 
 **Or save an API key (Claude Code, since plugin 1.12.0).** For a machine with no browser, or a shared service account, the plugin takes an optional **Car Image API key**. Claude Code asks for it when the plugin is enabled; to set, change or clear it later, open `/plugin`, select the Car Image plugin, choose **Configure options**, and restart. Recent Claude Code versions also take it from a terminal: `claude plugin configure car-image@meterapp --values-stdin` (for a directory install, use the plugin id `claude plugin list` shows), then type `{"api_key":"cimg_…"}` and end the input with Ctrl-D, which keeps the key out of shell history. Claude Code keeps the key in the system's secure credential store and sends it only to the Car Image server, as the `X-Api-Key` header; left empty, browser sign-in applies. The human enters the key there themselves. Never ask for it in the conversation, and never copy one from environment variables, `.env` files or another tool's config to fill it in.
 
@@ -36,7 +38,11 @@ Once connected, a request for a picture of a car is two tool calls: `resolve_veh
 claude mcp add --transport http car-image https://carimage.dev/api/mcp
 ```
 
-Then open `/mcp` and authenticate. Recent Claude Code versions also support `claude mcp login car-image` from a terminal.
+Then open `/mcp` and authenticate. Recent Claude Code versions also support `claude mcp login car-image` from a terminal. To have the lookups and previews before signing in, add the catalog server too; it needs no sign-in:
+
+```bash
+claude mcp add --transport http car-image-catalog https://carimage.dev/api/mcp/catalog
+```
 
 For all twenty-six tools, use `"https://carimage.dev/api/mcp?toolset=all"` as the URL (quote it: the shell would otherwise treat `?` as a glob).
 
@@ -107,7 +113,7 @@ Two cost credits. The four lookups come first in the table because they come fir
 
 ## Verifying
 
-Ask the host to list tools (`/mcp` in Claude Code and Codex). With the bare hosted URL or a plain `car-image mcp` you should see **seven** tools under `car-image`; with `?toolset=all` (what the plugin ships) or `--toolset all`, **twenty-six** tools. Seven where you expected twenty-six is not a fault — the URL simply has no `?toolset=all`.
+Ask the host to list tools (`/mcp` in Claude Code and Codex). With the bare hosted URL or a plain `car-image mcp` you should see **seven** tools under `car-image`; with `?toolset=all` (what the plugin ships) or `--toolset all`, **twenty-six** tools. Seven where you expected twenty-six is not a fault — the URL simply has no `?toolset=all`. A plugin install also shows `car-image-catalog` as connected, with `resolve_vehicle`, `search_vehicles`, `preview_car_image`, `list_image_options`, `get_pricing` and `describe_api`, whether or not anyone has signed in.
 
 A free end-to-end check that spends nothing:
 
@@ -128,13 +134,13 @@ curl -sS -i -X POST https://carimage.dev/api/mcp \
   -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
 ```
 
-A `401` with `WWW-Authenticate: Bearer realm="Car Image API", resource_metadata="…"` is the healthy answer: the server is up and asking for sign-in. Anything `5xx`, or no answer, is an outage. `car-image doctor` tests the REST endpoints with the key the CLI saved.
+A `401` with `WWW-Authenticate: Bearer realm="Car Image API", resource_metadata="…"` is the healthy answer: the server is up and asking for sign-in. Anything `5xx`, or no answer, is an outage. The same request to `https://carimage.dev/api/mcp/catalog` answers `200` with the catalog server's tools, no credential needed. `car-image doctor` tests the REST endpoints with the key the CLI saved.
 
 ## When it does not work
 
 **No `car-image` server in the list.** The host did not load the config. Restart it — most hosts read MCP configuration only at startup. Check you edited the file the host actually reads (`claude mcp list` shows what Claude Code sees).
 
-**Plugin needs authentication, zero tools, or a connection error.** Open the host’s MCP controls and sign in again. In Claude Code, use `/mcp`. If it says the configured Authorization header was rejected, update the plugin and restart: releases before 1.10.1 required an environment key and prevented OAuth fallback. Check that you selected the plugin server rather than an older manually configured server.
+**Plugin needs authentication, zero tools, or a connection error.** Needing authentication is the normal state of `car-image` before the first sign-in; `car-image-catalog` keeps answering lookups and previews meanwhile. Open the host’s MCP controls and sign in. In Claude Code, use `/mcp`, or let the agent call the `authenticate` tool and open the link it gives you. If it says the configured Authorization header was rejected, update the plugin and restart: releases before 1.10.1 required an environment key and prevented OAuth fallback. Check that you selected the plugin server rather than an older manually configured server.
 
 **A key is saved in the plugin's options, and Claude Code still asks for sign-in.** The server refused the key (mistyped, or revoked in the dashboard) and Claude Code fell back to browser sign-in, which is working as designed. Save a current key under `/plugin` → the Car Image plugin → **Configure options**, or clear the field and sign in, then restart.
 

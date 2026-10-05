@@ -6,6 +6,13 @@
       "headers": {
         "X-CarImage-Integration": "plugin"
       }
+    },
+    "car-image-catalog": {
+      "type": "http",
+      "url": "https://carimage.dev/api/mcp/catalog",
+      "headers": {
+        "X-CarImage-Integration": "plugin"
+      }
     }
   }
 }

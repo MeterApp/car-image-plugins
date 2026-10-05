@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.15.0 — 2026-10-05
+
+- The plugin works before anyone signs in. It now connects a second hosted server, `car-image-catalog` (`https://carimage.dev/api/mcp/catalog`), which needs no account: `resolve_vehicle`, `search_vehicles`, `list_image_options`, `get_pricing` and `describe_api`, plus a new tool, `preview_car_image`, which returns the picture a vehicle's page on carimage.dev already shows, free, with ready-to-paste markdown. Until 1.14.1 every tool sat behind sign-in, so a fresh install could not even look a car up.
+- `car-image`: "Before the account is connected". When `create_car_image_urls` is not available, the agent still looks the vehicle up, shows the free preview and says it is one, then offers the exact image and the sign-in: in Claude Code through the `authenticate` tool Claude Code lists for a server that needs sign-in, or `/mcp`. Once the account tools appear it finishes the original request without asking again.
+- `vehicle-catalog`, `car-image-mcp` and the README describe the two servers; `car-image-mcp` adds the catalog server to the manual Claude Code setup, the checks and the troubleshooting. The account server, its sign-in and the optional API key are unchanged.
+
 ## 1.14.1 — 2026-10-01
 
 - The API refuses again what it cannot read, and the skills say so: a query parameter an image endpoint does not read is a free `400` that names it (`parameter`) and lists the names it reads (`allowed`), because a request served without it was billed for a different image (`angle=rear` used to come back as the default view). `angle`, `camera`, `perspective` and `orientation` now mean `view`, `paint`, `paint_color`, `hex` and `colors` mean `color`, and `bg` and `background_color` mean `background`; only tracking tags and cache busters (`utm_*`, `gclid`, `ref`, `v`, `t`, `_`…) are still ignored and named in `X-Ignored-Parameters`. The `car-image` error table and the `car-image-sdk` skill describe it; the MCP tools are unchanged, their schemas already named every field.

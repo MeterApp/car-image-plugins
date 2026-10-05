@@ -27,6 +27,11 @@ MCP_URL = "https://carimage.dev/api/mcp"
 # query those tools do not exist for the agent and the skills would name tools
 # the host cannot see.
 PLUGIN_MCP_URL = f"{MCP_URL}?toolset=all"
+# The catalog server needs no account: lookups, image options, prices, the API
+# reference and free previews of stored pictures. Connected beside the account
+# server so an install has working tools before anyone signs in.
+CATALOG_SERVER = "car-image-catalog"
+CATALOG_MCP_URL = f"{MCP_URL}/catalog"
 ORIGIN = "https://carimage.dev"
 # The server repository is private: a link there 404s for everyone outside the
 # org, and `/plugin marketplace add` of a private repo simply fails. Assembled
@@ -141,7 +146,8 @@ for field, (codex_field, required) in LISTING_URLS.items():
 # Keep authentication client-managed: any configured Authorization header
 # disables Claude Code OAuth fallback, whatever its value, even when the variable
 # or option it names is unset.
-server = load_json(".mcp.json").get("mcpServers", {}).get(PLUGIN_NAME, {})
+mcp_servers = load_json(".mcp.json").get("mcpServers", {})
+server = mcp_servers.get(PLUGIN_NAME, {})
 expected = {
     "type": "http",
     "url": PLUGIN_MCP_URL,
@@ -149,6 +155,19 @@ expected = {
 }
 if server != expected:
     error(f".mcp.json must configure the hosted server exactly as {expected}, got {server}")
+
+# The catalog server takes no credential of any kind: it serves nothing that
+# belongs to an account, and a key header there would only leak one to a
+# server that never reads it.
+catalog_expected = {
+    "type": "http",
+    "url": CATALOG_MCP_URL,
+    "headers": {"X-CarImage-Integration": "plugin"},
+}
+if mcp_servers.get(CATALOG_SERVER) != catalog_expected:
+    error(f".mcp.json must configure the catalog server exactly as {catalog_expected}, got {mcp_servers.get(CATALOG_SERVER)}")
+if set(mcp_servers) != {PLUGIN_NAME, CATALOG_SERVER}:
+    error(f".mcp.json must configure exactly {PLUGIN_NAME} and {CATALOG_SERVER}, got {sorted(mcp_servers)}")
 
 # Claude Code also reads the server from its manifest, and that copy replaces the
 # .mcp.json entry of the same name. It adds the one credential the plugin takes:
@@ -163,7 +182,8 @@ claude_expected = {
         "type": "http",
         "url": PLUGIN_MCP_URL,
         "headers": {"X-CarImage-Integration": "plugin", "X-Api-Key": API_KEY_HEADER},
-    }
+    },
+    CATALOG_SERVER: catalog_expected,
 }
 if manifests["claude"].get("mcpServers") != claude_expected:
     error(f"claude manifest mcpServers must be exactly {claude_expected}, got {manifests['claude'].get('mcpServers')}")

@@ -2,7 +2,7 @@
 
 Studio-quality, transparent-background renders of any vehicle, wherever your agent works. One repository, native packaging for each client, plus the vendor-neutral [Open Plugins](https://agent-plugins.org) manifest.
 
-Any make, model and year from **1990 to 2027** — 1,595 makes and 41,838 models from the open [`@meterapp/vehicle-db`](https://github.com/MeterApp/vehicle-db) catalog, each make, model and year with its own page at [carimage.dev/cars](https://carimage.dev/cars?ref=plugin). Eight camera views, any paint color (15 named presets or any hex), PNG/WebP/JPG up to 1024 px, delivered at any width × height (`fit` contain, cover or inside), transparent or on a solid background, optionally trimmed to the car. Plus free VIN decoding, stable vehicle ids, and textured 3D models (GLB, USDZ, FBX) of any vehicle in any paint.
+Any make, model and year from **1990 to 2027** — 1,600 makes and 41,975 models from the open [`@meterapp/vehicle-db`](https://github.com/MeterApp/vehicle-db) catalog, each make, model and year with its own page at [carimage.dev/cars](https://carimage.dev/cars?ref=plugin). Eight camera views, any paint color (15 named presets or any hex), PNG/WebP/JPG up to 1024 px, delivered at any width × height (`fit` contain, cover or inside), transparent or on a solid background, optionally trimmed to the car. Plus free VIN decoding, stable vehicle ids, and textured 3D models (GLB, USDZ, FBX) of any vehicle in any paint.
 
 **1 credit per image · 100 credits per 3D model, once per vehicle and color, hosted for free · VIN decoding free · Free 100 credits at signup · Pro $29/mo 25,000 credits a month · Business $99/mo 150,000 · $1 per 100 credits beyond the allowance, purchased credits never expire.**
 
@@ -41,9 +41,9 @@ Then reload Cursor.
 npx skills add MeterApp/car-image-plugins
 ```
 
-### Then sign in
+### Then sign in, when you want an image
 
-Start a new session and sign in to the Car Image MCP server when your host prompts you. In Claude Code, open `/mcp`, select the Car Image server, and authenticate in your browser. The plugin uses OAuth: no API key or environment variable is required. Codex and Cursor use their MCP connection controls to sign in.
+The plugin works before you sign in: its catalog server looks vehicles up and shows the picture a vehicle's page already has, free and with no account. Sign in when you first want an image in the view, paint and size you asked for. In Claude Code the agent can start it for you and hand you a link, or open `/mcp`, select `plugin:car-image:car-image`, and authenticate in your browser. The plugin uses OAuth: no API key or environment variable is required. Codex and Cursor use their MCP connection controls to sign in.
 
 On a machine without a browser, use an API key instead. Claude Code offers an optional **Car Image API key** field when you enable the plugin: leave it empty for browser sign-in, or paste a key from [the dashboard](https://carimage.dev/dashboard?ref=plugin). To set, change or clear it later, open `/plugin`, select the Car Image plugin, choose **Configure options**, then restart. Claude Code keeps the key in your system's secure credential store and sends it only to the Car Image MCP server.
 
@@ -63,7 +63,7 @@ Either way the agent makes two calls per car: a free lookup that turns what you 
 
 ## What you get
 
-Seven skills and the hosted MCP server.
+Seven skills and two hosted MCP servers: the catalog server, which needs no account, and the account server.
 
 | Skill | Job |
 | --- | --- |
@@ -77,10 +77,13 @@ Seven skills and the hosted MCP server.
 
 The hosted MCP server at `https://carimage.dev/api/mcp` exposes seven core tools: `resolve_vehicle`, `search_vehicles`, `decode_vin`, `check_vehicles`, `get_car_image`, `create_car_image_urls` and `get_account`. `get_car_image` costs 1 credit and `create_car_image_urls` 1 credit per URL; the lookups and the account are free. This plugin connects to `https://carimage.dev/api/mcp?toolset=all`, which adds ten more: `get_make_logo` (1 credit), `create_3d_model` (100 credits; free once the account owns the vehicle and color), `get_3d_model`, `publish_3d_model`, `list_image_options`, `describe_api`, `get_pricing`, `search_help`, `create_checkout_link` and `get_billing_link` (free) — twenty-six tools in all, because the skills teach the extras. When the catalog lacks a vehicle, the agent says so and stops; it never substitutes another car.
 
+The catalog server at `https://carimage.dev/api/mcp/catalog` needs no account and is connected beside it: `resolve_vehicle`, `search_vehicles`, `list_image_options`, `describe_api` and `get_pricing`, plus `preview_car_image`, which returns the picture a vehicle's page on carimage.dev already shows, free. It never renders or reads an account, so the agent can look a car up, show a preview and explain the API from the first session, and ask you to sign in only for the image you asked for. Once you have signed in, it finishes that request without being asked again.
+
 ## Authentication
 
 | Surface | Credential |
 | --- | --- |
+| Plugin / catalog server | None: it serves nothing that belongs to an account |
 | Plugin / hosted MCP | Browser OAuth sign-in; the host stores and refreshes the token |
 | Plugin in Claude Code, optionally | The API key you saved in the plugin's options, kept in your system's secure credential store and sent as `X-Api-Key` |
 | Manually configured MCP without OAuth | A key entered in that host's own MCP settings, sent as an `X-Api-Key` or `Authorization: Bearer` header |
@@ -91,7 +94,7 @@ The plugin never sets an `Authorization` header: Claude Code turns off OAuth fal
 
 ### What the plugin sends
 
-The plugin runs no local commands or hooks. Its MCP tools call one server, `https://carimage.dev/api/mcp`, with your sign-in token or the key you saved, and the arguments of each tool call. The MCP configuration also sends `X-CarImage-Integration: plugin` for usage attribution. This declares the integration; it contains no user identity, prompt, or conversation text. The calling host may separately identify itself through MCP client information. How Car Image handles this data is in the [privacy policy](https://carimage.dev/privacy?ref=plugin).
+The plugin runs no local commands or hooks. Its MCP tools call two servers: `https://carimage.dev/api/mcp`, with your sign-in token or the key you saved, and `https://carimage.dev/api/mcp/catalog`, with no credential; each receives the arguments of its tool calls. The MCP configuration also sends `X-CarImage-Integration: plugin` for usage attribution. This declares the integration; it contains no user identity, prompt, or conversation text. The calling host may separately identify itself through MCP client information. How Car Image handles this data is in the [privacy policy](https://carimage.dev/privacy?ref=plugin).
 
 ## Safety model
 
