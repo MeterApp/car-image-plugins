@@ -2,9 +2,7 @@
 
 Zero runtime dependencies. Node 20+, Vercel and Cloudflare edge runtimes, Deno, Bun, and browsers (browsers may only redeem signed URLs — never give one a key).
 
-```bash
-npm install @meterapp/car-image-sdk
-```
+Use these application-code examples only when the project already has this dependency. Do not install or execute packages through this skill. If it is absent, use plain HTTP as described in the main skill.
 
 ## Constructing the client
 
@@ -75,9 +73,9 @@ import { carImage } from "@/lib/car-image";
 import { CarImageError } from "@meterapp/car-image-sdk";
 
 export async function POST(request: Request) {
-  const { make, model, year } = await request.json();
+  const { vehicle } = await request.json(); // id previously resolved and confirmed
   try {
-    const { data } = await carImage.createImageUrls([{ make, model, year, view: "side" }], {
+    const { data } = await carImage.createImageUrls([{ vehicle, view: "side" }], {
       ttlSeconds: 24 * 60 * 60,
       maxUses: 0,
     });
@@ -105,16 +103,14 @@ The SDK is `fetch`-based with no Node built-ins, so it runs unchanged on Vercel 
 
 `@meterapp/car-image-sdk/mcp` exports the shared tool definitions used by both the hosted and the stdio MCP servers — names, descriptions, JSON schemas and annotations. Import them if you are building your own agent surface and want the tool contracts to match the official ones exactly.
 
-Tools come in two sets: `MCP_TOOLSETS.core` (`DEFAULT_MCP_TOOLSET`, `"core"`) is the seven core tools (`resolve_vehicle`, `search_vehicles`, `decode_vin`, `check_vehicles`, `get_car_image`, `create_car_image_urls`, `get_account`) and `MCP_TOOLSETS.all` adds make logos, 3D models, image options, the API reference, pricing, help and billing links (`MCP_DOCUMENTED_EXTRAS` names them), twenty-six tools in all; `McpToolset` is the type, `isMcpToolset(value)` validates a name from a URL or flag, and `mcpInstructions(toolset)` returns the server instructions for either set (they open with `mcpInstructionsHead(toolset)`, the part every host shows a model, kept under `MCP_INSTRUCTIONS_HEAD_LIMIT`). The hosted server serves `core` at `https://carimage.dev/api/mcp` and `all` at `https://carimage.dev/api/mcp?toolset=all`; the stdio server takes `car-image mcp --toolset all`.
+Tools come in two sets: `MCP_TOOLSETS.core` (`DEFAULT_MCP_TOOLSET`, `"core"`) is the seven core tools (`resolve_vehicle`, `search_vehicles`, `decode_vin`, `check_vehicles`, `get_car_image`, `create_car_image_urls`, `get_account`) and `MCP_TOOLSETS.all` adds make logos, 3D models, image options, the API reference, pricing, help and billing links (`MCP_DOCUMENTED_EXTRAS` names them), twenty-six tools in all; `McpToolset` is the type, `isMcpToolset(value)` validates a name from a URL or flag, and `mcpInstructions(toolset)` returns the server instructions for either set (they open with `mcpInstructionsHead(toolset)`, the part every host shows a model, kept under `MCP_INSTRUCTIONS_HEAD_LIMIT`). The hosted server serves `core` at `https://carimage.dev/api/mcp` and `all` at `https://carimage.dev/api/mcp?toolset=all`.
 
 ## Make logos
 
-Use MCP `get_make_logo({make: "toyota", width: 256, trim: true})` for an inline
-logo, or `car-image logo --make Toyota --width 256 --trim --out toyota-logo.png`
-to save it. Both accept the image transforms; MCP `format: "auto"` returns PNG.
+For application code, use the existing SDK client to retrieve logo image data.
 Each successful delivery costs 1 credit, including cache hits. There is no signed
-logo URL: download and host the file for a site. Do not use the vehicle image URL
-tools for logos. On 402, stop and ask the human; never buy credits.
+logo URL: host the returned image data for a site. On 402, stop and ask the human;
+never buy credits.
 
 SDK: `client.getMakeLogo({ make: "toyota", width: 256, trim: true })` returns bytes and billing metadata.
 

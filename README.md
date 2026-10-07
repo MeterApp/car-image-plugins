@@ -80,7 +80,7 @@ Seven skills and two hosted MCP servers: the catalog server, which needs no acco
 | `vehicle-catalog` | The lookup that comes first: a name or a VIN → the exact catalog vehicle and its stable id; confidence, years, variants and body styles, offline lookups |
 | `car-image-urls` | Signed delivery URLs for pages, emails and documents — no key in the browser; inventory grids from a list of VINs |
 | `car-3d` | 3D models (GLB, USDZ, FBX) of any vehicle in any paint: cost, owning it once, waiting, webhooks, publishing and the `<car-3d>` embed |
-| `car-image-sdk` | The TypeScript SDK, the CLI, and plain REST |
+| `car-image-sdk` | Application code with an existing TypeScript SDK or plain HTTP |
 | `car-image-support` | Source-linked product answers, pricing, missing-context reporting and hosted billing links |
 | `car-image-mcp` | Connecting over MCP, from an IDE or a chat app, and fixing it when tools do not appear |
 

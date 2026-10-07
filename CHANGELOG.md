@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.15.3 — 2026-10-07
+
+- Quote the `car-image` frontmatter description so its embedded colon parses in the skills CLI and all seven skills are discovered.
+
+- `car-image-sdk` is an application integration reference using plain HTTP or an existing SDK dependency. Removed package installation, package-runner, remote shell installer, CLI login and background update instructions, including the CLI reference. The skill explicitly prohibits downloading or executing external code and treats image and model downloads as data. SDK examples remain illustrative server-side code with deployment-managed secrets.
+- SDK examples resolve and validate vehicle ids and years before rendering; batches require count and cost confirmation and stop on `402`.
+
 ## 1.15.2 — 2026-10-07
 
 - README, "Keep it up to date": how each host keeps the plugin current. Claude Code updates it at startup once auto-update is on for the `meterapp` marketplace (`/plugin` → Marketplaces), which Claude Code leaves off for marketplaces outside Anthropic's; by hand, `/plugin marketplace update meterapp` then `/plugin update car-image@meterapp`. Codex: `codex plugin marketplace upgrade meterapp`; Cursor: `git pull`; skills only: `npx skills update`.

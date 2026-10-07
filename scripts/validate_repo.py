@@ -289,6 +289,20 @@ for name in found:
     elif "dependencies:" in openai:
         error(f"{name}: declares an MCP dependency it does not need")
 
+# The SDK skill is documentation for application integrations, not an installer.
+SDK_EXTERNAL_EXECUTION = re.compile(
+    r"\b(?:npm|pnpm|yarn|bun)\s+(?:install|add|update|upgrade)\b"
+    r"|\b(?:npx|pnpx|bunx)\s+"
+    r"|https?://[^\s`]+/install\.sh"
+    r"|\bcar-image\s+(?:login|update|mcp)\b"
+    r"|\b(?:curl|wget)\b[^\n]*\|\s*(?:sh|bash)\b"
+)
+for sdk_file in (ROOT / "skills/car-image-sdk").rglob("*.md"):
+    sdk_text = sdk_file.read_text(encoding="utf-8")
+    for match in SDK_EXTERNAL_EXECUTION.finditer(sdk_text):
+        line = sdk_text.count("\n", 0, match.start()) + 1
+        error(f"{sdk_file.relative_to(ROOT)}:{line}: SDK skill instructs external code execution: {match.group(0)}")
+
 # --- local links -----------------------------------------------------------
 
 link = re.compile(r"\[[^\]]+\]\(([^)]+)\)")
