@@ -47,7 +47,7 @@ The plugin works before you sign in: its catalog server looks vehicles up and sh
 
 On a machine without a browser, use an API key instead. Claude Code offers an optional **Car Image API key** field when you enable the plugin: leave it empty for browser sign-in, or paste a key from [the dashboard](https://carimage.dev/dashboard?ref=plugin). To set, change or clear it later, open `/plugin`, select the Car Image plugin, choose **Configure options**, then restart. Claude Code keeps the key in your system's secure credential store and sends it only to the Car Image MCP server.
 
-Updating from an older release? Update the plugin and restart the host before signing in. In Claude Code, run `/plugin marketplace update meterapp`, then `/plugin update car-image@meterapp`. For an Anthropic Directory install, use the marketplace shown for that install in `/plugin`.
+Updating from an older release? Update the plugin ([Keep it up to date](#keep-it-up-to-date)) and restart the host before signing in.
 
 Skills-only installs do not configure an MCP connection; follow the `car-image-mcp` setup skill. For SDK, CLI or a host without OAuth, get a key with `npx @meterapp/car-image login` or at [the dashboard](https://carimage.dev/dashboard?ref=plugin) and follow the API-key setup in that skill.
 
@@ -60,6 +60,15 @@ or in a project:
 > "Add a red 2024 Porsche 911 side view to the hero section."
 
 Either way the agent makes two calls per car: a free lookup that turns what you said into the catalog's vehicle and its stable id, then the render by that id. The catalog files cars under its own names (that Miata is `mx-5`), so the lookup is what keeps a name from memory from missing a car the catalog carries.
+
+### Keep it up to date
+
+- **Claude Code** updates the plugin by itself at startup once auto-update is on for its marketplace, which Claude Code leaves off for marketplaces outside Anthropic's: open `/plugin`, go to **Marketplaces**, choose `meterapp` and select **Enable auto-update**. By hand: `/plugin marketplace update meterapp`, then `/plugin update car-image@meterapp`, then restart (or `/reload-plugins`). For an Anthropic Directory install, use the marketplace shown for that install in `/plugin`.
+- **Codex:** `codex plugin marketplace upgrade meterapp`.
+- **Cursor:** `git -C car-image-plugins pull` in the directory you cloned, then reload Cursor.
+- **Skills only:** `npx skills update`.
+
+The CLI, [`@meterapp/car-image`](https://www.npmjs.com/package/@meterapp/car-image), installs its own new versions in the background. `car-image update` updates it now and refreshes this plugin wherever Claude Code or Codex has it installed.
 
 ## What you get
 

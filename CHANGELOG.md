@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.15.2 — 2026-10-07
+
+- README, "Keep it up to date": how each host keeps the plugin current. Claude Code updates it at startup once auto-update is on for the `meterapp` marketplace (`/plugin` → Marketplaces), which Claude Code leaves off for marketplaces outside Anthropic's; by hand, `/plugin marketplace update meterapp` then `/plugin update car-image@meterapp`. Codex: `codex plugin marketplace upgrade meterapp`; Cursor: `git pull`; skills only: `npx skills update`.
+- `car-image-mcp` names `@meterapp/car-image@latest` for the local stdio server: a bare package name lets npx reuse whatever copy it finds, an old global install included, for as long as the configuration lives.
+- `car-image-sdk`'s CLI reference: CLI 1.14.0 installs its own new versions in the background, and `car-image update` updates it now and refreshes this plugin in Claude Code and Codex.
+
+## 1.15.1 — 2026-10-05
+
+- `car-image`, "Before the account is connected", from rollouts against the live catalog server: a preview in the view and paint asked for answers the request and is never rendered again for a credit; the account is offered for what a preview cannot do (another view, paint or size, or an image to use in a page, app or document, which carries the plan's license). A preview URL never expires, goes into a terminal as a plain link, and takes `view` and `color` only when the user named them. The `authenticate` link starts on Car Image's sign-in provider (a supabase.co address) and works while the session is open, and the agent says so. Before sign-in a VIN needs the year, make and model it stands for, since `decode_vin` is on the account server. The agent finishes the original request once the user says they have signed in.
+- `car-image` says what `get_pricing` already did: buying credits does not grant a commercial license; commercial use requires an active paid plan.
+
 ## 1.15.0 — 2026-10-05
 
 - The plugin works before anyone signs in. It now connects a second hosted server, `car-image-catalog` (`https://carimage.dev/api/mcp/catalog`), which needs no account: `resolve_vehicle`, `search_vehicles`, `list_image_options`, `get_pricing` and `describe_api`, plus a new tool, `preview_car_image`, which returns the picture a vehicle's page on carimage.dev already shows, free, with ready-to-paste markdown. Until 1.14.1 every tool sat behind sign-in, so a fresh install could not even look a car up.

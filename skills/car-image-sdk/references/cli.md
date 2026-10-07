@@ -8,6 +8,8 @@ npm install -g @meterapp/car-image           # or pnpm add -g / bun add -g
 curl -fsSL https://carimage.dev/install.sh | sh
 ```
 
+A global install keeps itself current: when npm has a newer version, a background process installs it with the same package manager and the next command runs it, with nothing printed for scripts or agents. `npx @meterapp/car-image@latest` always runs the newest release; a bare `npx @meterapp/car-image` reuses whatever copy npx finds first.
+
 ## Signing in
 
 ```bash
@@ -40,10 +42,11 @@ car-image logout
 | `billing [--plan pro\|business [--yearly]] [--credits …] [--portal]` | Opens hosted Stripe Checkout for a plan or extra credits, or the billing portal. The CLI never touches card data; an agent runs it only when the human asked. |
 | `mcp [--toolset core\|all]` | Runs the stdio MCP server: `core` (default) is the seven core tools (lookups, VIN, images, signed URLs, account), `all` adds make logos, 3D models, image options, the API reference, pricing, help and billing links. |
 | `agent-config [--host claude-code\|claude-desktop\|cursor\|chatgpt\|generic] [--remote] [--json]` | Prints ready-to-paste MCP configuration (core toolset, with the `?toolset=all` opt-in noted). |
-| `config path \| get <key> \| set <key> <value> \| list` | Keys: `autoUpdate`, `telemetry`, `baseUrl`. |
+| `update [--check] [--no-plugins] [--json]` | Updates the CLI now and refreshes the car-image plugin in Claude Code and Codex; `--check` only reports the installed and latest versions. It changes what is installed on the machine, so run it when the user asks. |
+| `config path \| get <key> \| set <key> <value> \| list` | Keys: `autoUpdate` (`always`, the default: install updates in the background; `ask`; `never`), `telemetry`, `baseUrl`. |
 
 Global flags: `--json`, `--quiet`, `--base-url`, `--api-key`, `--no-color`, `-h`, `-v`.
-Environment: `CAR_IMAGE_API_KEY`, `CAR_IMAGE_API_URL`, `CAR_IMAGE_CONFIG`, `CAR_IMAGE_TELEMETRY=0`.
+Environment: `CAR_IMAGE_API_KEY`, `CAR_IMAGE_API_URL`, `CAR_IMAGE_CONFIG`, `CAR_IMAGE_TELEMETRY=0`, `CAR_IMAGE_NO_UPDATE_CHECK=1` (no background update check or install; `CI` does the same).
 Exit codes: `0` ok, `1` failure, `2` usage error.
 
 ## Sizing

@@ -8,7 +8,7 @@ description: Connect an agent, IDE or chat app to the Car Image API over MCP, an
 Two servers expose the same tools. Prefer the hosted one — there is nothing to install and nothing to keep up to date.
 
 - **Hosted (recommended):** `https://carimage.dev/api/mcp`, Streamable HTTP, with browser OAuth sign-in in supported hosts
-- **Local stdio:** `npx @meterapp/car-image mcp`, which uses the key `car-image login` saved for the CLI
+- **Local stdio:** `npx @meterapp/car-image@latest mcp`, which uses the key `car-image login` saved for the CLI
 
 A third, the **catalog server** at `https://carimage.dev/api/mcp/catalog`, needs no account at all: `resolve_vehicle`, `search_vehicles`, `list_image_options`, `get_pricing` and `describe_api`, plus `preview_car_image`, the picture a vehicle's page on carimage.dev already shows, free. It renders nothing and reads no account, so it never asks anyone to sign in. The plugin connects it next to the hosted server, so an install can look cars up and show previews before the user signs in.
 
@@ -73,7 +73,7 @@ For a host without OAuth, or an explicit API-key connection, the human gets a ke
 Local stdio instead, using the key `car-image login` saved:
 
 ```bash
-claude mcp add car-image-local -- npx -y @meterapp/car-image mcp
+claude mcp add car-image-local -- npx -y @meterapp/car-image@latest mcp
 ```
 
 Append `--toolset all` after `mcp` for all twenty-six tools.
