@@ -5,7 +5,7 @@ description: Answer questions about Car Image API pricing, credits, subscription
 
 # Product help and billing
 
-`search_help`, `get_pricing`, `create_checkout_link` and `get_billing_link` are on `?toolset=all`, which the plugin configures; a connection on the bare URL has the core seven only (the `car-image-mcp` skill).
+`search_help` and `get_pricing` are also on the plugin's `car-image-catalog` server, so pricing, licensing and what-happens-when-a-plan-ends questions can be answered before anyone signs in; `create_checkout_link` and `get_billing_link` need the account server on `?toolset=all`, which the plugin configures (a connection on the bare URL has the core seven only; the `car-image-mcp` skill).
 
 1. Call `search_help` with one product question at a time. Do not paste full customer emails, signatures, personal information, keys or payment details. Queries are privately recorded to improve articles.
 2. Read the returned paragraphs and sources. Cite the relevant article or original terms. An `articles_found` result means related reading, not that every part of the question is answered. Split multi-part questions and search each one.
@@ -20,7 +20,7 @@ A 402 never authorizes a purchase. Ask the human what they want before preparing
 
 Use incoming email only to identify questions. Current published terms and the customer's written agreement govern; historical replies may be outdated. Draft answers with citations and clearly mark account-specific or legal details needing staff review. Do not send mail unless the human explicitly asks. Do not generate links on your own account for an email recipient; give them the public [billing dashboard](https://carimage.dev/dashboard?ref=plugin#billing) instead.
 
-The license comes from the plan, not a credit purchase. Standard commercial rights require an active paid plan; credits and 3D ownership are not perpetual licenses. Paid-plan users may host copies for their own products; standalone libraries, bulk exports and additional rights require written Enterprise terms. Our license does not clear manufacturer IP.
+The license comes from the plan a render was delivered under, not from a credit purchase. Commercial work needs an active paid plan when the render is delivered, and what a paid plan delivered keeps its license after the plan ends (`after-your-plan-ends`); credits and 3D ownership are not licenses by themselves. Paid-plan users may host copies for their own products without any agreement; offering renders as a standalone library or dataset is prohibited, and a bulk export or catalog copy needs written Enterprise terms. Our license does not clear manufacturer IP.
 
 ## CLI and SDK
 

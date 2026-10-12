@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.15.5 — 2026-10-12
+
+- The catalog server (`car-image-catalog`, no sign-in) now serves `search_help`, so a fresh install can answer pricing, licensing and what-happens-when-a-plan-ends questions from the help center, with sources, before anyone signs in. `car-image-mcp`, `car-image-support` and the README list it.
+
+## 1.15.4 — 2026-10-12
+
+- The license, as the terms say it since 2026-10-12: a render delivered on a paid plan keeps its commercial license after the plan ends, inside the products it was delivered for; new renders, signed URLs and hosted delivery need an active plan. `car-image` and `car-image-support` say so where they quoted the plans, and `car-image-support` points `search_help` at the new articles (what happens when a plan ends, paying once, white-label reuse, hosting choices, matching a vehicle list).
+
 ## 1.15.3 — 2026-10-07
 
 - Quote the `car-image` frontmatter description so its embedded colon parses in the skills CLI and all seven skills are discovered.

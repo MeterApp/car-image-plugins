@@ -30,7 +30,7 @@ nested plugin directory, which is why one repository serves all four channels.
 - **Product facts do not drift.** 1 credit per image; a plan carries the
   license and a monthly credit allowance (Free: 100 credits once at signup,
   evaluation and personal projects; Pro $29/month: 25,000 credits a month and a
-  commercial license while active; Business $99/month: 150,000; Enterprise:
+  commercial license that the renders keep after the plan ends; Business $99/month: 150,000; Enterprise:
   custom), $1 per 100 credits on any plan (including Free), no subscription or monthly
 purchase cap; subscription credits are spent first, purchased credits never
   expire; 8 views, any paint color (15 named presets or any hex), PNG/WebP/JPG
