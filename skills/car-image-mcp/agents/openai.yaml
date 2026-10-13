@@ -1,6 +1,6 @@
 interface:
   display_name: "Car Image MCP Setup"
   short_description: "Connect and troubleshoot the MCP server"
-  default_prompt: "Use $car-image-mcp to configure or troubleshoot the Car Image MCP connection."
+  default_prompt: "Use $car-image-mcp to configure or troubleshoot the Car Image MCP connection. Use front-3-4 (35 degrees, facing left) when no view is requested."
 policy:
   allow_implicit_invocation: true

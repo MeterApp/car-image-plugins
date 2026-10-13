@@ -3,6 +3,8 @@ name: car-image-sdk
 description: Implement or review server-side code that calls the Car Image API using plain HTTP or an existing TypeScript SDK dependency. Covers resolving vehicle ids before rendering, typed errors, retries, batching, signed URLs, VINs and 3D models. Use for application integration code; do not use to install or run packages, manage a CLI, connect MCP (car-image-mcp), or show images in chat (car-image).
 ---
 
+When no view is specified, use **Front three-quarter (facing left)**, `view=front-3-4` (35°). Preserve any view the user explicitly requests.
+
 # Calling the API from application code
 
 This skill is a bundled documentation reference. Write and review application code using the HTTP examples here or [references/typescript.md](references/typescript.md) when the user's project already depends on `@meterapp/car-image-sdk`.

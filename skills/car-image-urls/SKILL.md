@@ -3,6 +3,8 @@ name: car-image-urls
 description: Share a vehicle image in chat (clickable links and browser viewing in ChatGPT/Codex, inline images in Claude) or put it into a web page, React component, email, Markdown file, PDF or slide deck using signed delivery URLs, so the browser loads the image without ever holding an API key. Use whenever the output is HTML, JSX, Markdown, CSS, an email template, a document or a spreadsheet rather than bytes on disk; covers looking each vehicle up once and minting by its id, TTL and use caps, batching up to 50, inventory grids from a list of VINs, caching, alt text and expiry. Do not use for downloading bytes in a script (car-image), or for finding which vehicle to render (vehicle-catalog).
 ---
 
+When no view is specified, use **Front three-quarter (facing left)**, `view=front-3-4` (35°). Preserve any view the user explicitly requests.
+
 # Signed delivery URLs
 
 A signed URL is a key-free link to one rendered vehicle image. You mint it server-side; the browser, email client or PDF reader loads it directly. **The API key never goes where a browser can read it: a page gets a signed URL, or a copy of the file you serve yourself.**

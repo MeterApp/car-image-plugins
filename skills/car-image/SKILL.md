@@ -3,9 +3,11 @@ name: car-image
 description: "Show or fetch a studio-quality, transparent-background image of a real vehicle (any make, model and year from 1990-2027), in a conversation or for a product page, a listing, a comparison, an email or a deck, and fetch catalog make logos with get_make_logo. Every image takes two steps - look the vehicle up first (resolve_vehicle, search_vehicles or decode_vin, free, the vehicle-catalog skill), then show it by its vehicle id (create_car_image_urls, 1 credit; clickable links and browser viewing in ChatGPT/Codex, inline Markdown in Claude). Covers the Car Image API by Meter - the chat workflow, angles, paint, sizing, the per-image credit cost, and how to handle 402, 404 and 429. Works before sign-in: lookups and a free preview of the picture a vehicle's page already shows (preview_car_image), then the account for the exact image. Use for any request involving a picture of a car, truck, motorcycle or other vehicle, including \"show me a car\" or \"a random car\"; do not use for embedding URLs in a browser or document (car-image-urls), SDK and CLI code (car-image-sdk), 3D models (car-3d), or connection setup (car-image-mcp)."
 ---
 
+When no view is specified, use **Front three-quarter (facing left)**, `view=front-3-4` (35°). Preserve any view the user explicitly requests.
+
 # Car Image API
 
-Studio-quality, transparent-background renders of any vehicle in the open [`@meterapp/vehicle-db`](https://github.com/MeterApp/vehicle-db) catalog — 1,600 makes, 41,975 models, model years 1990-2027. Eight camera views, any paint color, PNG/WebP/JPG up to 1024 px.
+Studio-quality, transparent-background renders of any vehicle in the open [`@meterapp/vehicle-db`](https://github.com/MeterApp/vehicle-db) catalog — 1,601 makes, 42,002 models, model years 1990-2027. Eight camera views, any paint color, PNG/WebP/JPG up to 1024 px.
 
 ## Two steps, every time
 
