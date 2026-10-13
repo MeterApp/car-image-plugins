@@ -1,6 +1,6 @@
 interface:
   display_name: "Car Image API Integration"
   short_description: "Call the Car Image API from code"
-  default_prompt: "Use $car-image-sdk to write server-side API integration code with plain HTTP or an existing SDK dependency, without installing or running external code."
+  default_prompt: "Use $car-image-sdk to write server-side API integration code with plain HTTP or an existing SDK dependency, without installing or running external code. Use front-3-4 (35 degrees, facing left) when no view is requested."
 policy:
   allow_implicit_invocation: true

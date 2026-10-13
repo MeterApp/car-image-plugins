@@ -3,6 +3,8 @@ name: car-image-mcp
 description: Connect an agent, IDE or chat app to the Car Image API over MCP, and fix it when the tools do not appear. Covers the hosted HTTP server, the catalog server that needs no sign-in (lookups and free previews), the local stdio alternative, browser OAuth sign-in for plugin installs and chat-app connectors, the optional API key saved in the plugin's options in Claude Code, API-key setup for manual connections in Codex, Cursor, Claude Desktop and generic MCP hosts, what each of the seven core tools costs (catalog lookups, VIN decoding, images, signed URLs, the account) and which ten more ?toolset=all adds (make logos, 3D models, image options, the API reference, pricing, help and billing links), and how to diagnose a 401, a missing server or an empty tool list. Use for setup, configuration and connection troubleshooting; do not use for calling the API from code (car-image-sdk) or for image workflows once the tools already work (car-image).
 ---
 
+When no view is specified, use **Front three-quarter (facing left)**, `view=front-3-4` (35°). Preserve any view the user explicitly requests.
+
 # Connecting over MCP
 
 Two servers expose the same tools. Prefer the hosted one — there is nothing to install and nothing to keep up to date.

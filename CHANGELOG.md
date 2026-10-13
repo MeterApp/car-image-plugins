@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.15.6 — 2026-10-13
+
+- State the shared default across image, signed URL, SDK, MCP and vehicle lookup skills: Front three-quarter (facing left), `front-3-4` at 35°. Explicitly requested views take precedence.
+
 ## 1.15.5 — 2026-10-12
 
 - The catalog server (`car-image-catalog`, no sign-in) now serves `search_help`, so a fresh install can answer pricing, licensing and what-happens-when-a-plan-ends questions from the help center, with sources, before anyone signs in. `car-image-mcp`, `car-image-support` and the README list it.

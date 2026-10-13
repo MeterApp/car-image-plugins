@@ -3,11 +3,13 @@ name: vehicle-catalog
 description: Look a vehicle up before it is rendered - turn what someone asked for ("a 2018 Miata", "the new 911 GT3", a VIN) into the exact catalog make, model and year the Car Image API can render and the stable vehicle id (veh_…) that names it, or check what a make offers and which years exist, or which of a whole list of vehicles the catalog carries. Covers resolve_vehicle, search_vehicles, check_vehicles for lists and free VIN decoding (full or partial VINs), reading confidence and year mismatches, trims and body styles, picking a car when none was named, missing vehicles, and the open @meterapp/vehicle-db package for offline lookups, dropdowns and validation. Use first, before any image, signed URL or 3D model of a vehicle, and when building a vehicle picker or validating user input; do not use for fetching the image itself (car-image), embedding it in a page (car-image-urls) or making a 3D model (car-3d).
 ---
 
+When no view is specified, use **Front three-quarter (facing left)**, `view=front-3-4` (35°). Preserve any view the user explicitly requests.
+
 # Finding the right vehicle
 
 Renders are addressed by **make, model, year** — or by the one **vehicle id** that stands for the three. The lookup comes first, every time: the catalog files cars under its own names, a render of the wrong car still costs a credit, and a 3D model of the wrong car costs a hundred.
 
-The catalog is the open [`@meterapp/vehicle-db`](https://github.com/MeterApp/vehicle-db) — 1,600 makes and 41,975 models across model years 1990-2027, built from public sources (NHTSA vPIC, UK DfT/DVLA, NZTA, Malaysia JPJ and others). It covers cars, motorcycles, trucks, buses, MPVs and more, internationally — not just the US market. Every make, model and model year also has a public page under the same slugs, from [carimage.dev/cars](https://carimage.dev/cars?ref=plugin) down to `/cars/<make>/<model>/<year>`: link it when a person wants to browse what the catalog holds.
+The catalog is the open [`@meterapp/vehicle-db`](https://github.com/MeterApp/vehicle-db) — 1,601 makes and 42,002 models across model years 1990-2027, built from public sources (NHTSA vPIC, UK DfT/DVLA, NZTA, Malaysia JPJ and others). It covers cars, motorcycles, trucks, buses, MPVs and more, internationally — not just the US market. Every make, model and model year also has a public page under the same slugs, from [carimage.dev/cars](https://carimage.dev/cars?ref=plugin) down to `/cars/<make>/<model>/<year>`: link it when a person wants to browse what the catalog holds.
 
 All the lookups below are **free**. Use them liberally.
 
