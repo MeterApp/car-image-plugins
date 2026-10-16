@@ -7,7 +7,7 @@ When no view is specified, use **Front three-quarter (facing left)**, `view=fron
 
 # Car Image API
 
-Studio-quality, transparent-background renders of any vehicle in the open [`@meterapp/vehicle-db`](https://github.com/MeterApp/vehicle-db) catalog — 1,601 makes, 42,002 models, model years 1990-2027. Eight camera views, any paint color, PNG/WebP/JPG up to 1024 px.
+Studio-quality, transparent-background renders of any vehicle in the open [`@meterapp/vehicle-db`](https://github.com/MeterApp/vehicle-db) catalog — 1,608 makes, 42,294 models, model years 1990-2027. Eight camera views, any paint color, PNG/WebP/JPG up to 1024 px.
 
 ## Two steps, every time
 
@@ -129,7 +129,7 @@ Without MCP tools connected, the same operations are REST endpoints — `POST /a
 - **Colors:** any paint. The 15 presets `white black gray silver blue red green brown beige tan orange yellow gold burgundy purple` (`grey` is `gray`), any other CSS color name (`navy` is `#000080`), or any hex (`"#1a2b3c"` in JSON, `color=1a2b3c` in a URL); a custom paint costs the same 1 credit as a preset. `resolve_vehicle` reads paint words such as navy, charcoal and cream onto the presets
 - **Vehicle ids:** every make, model and year has a stable id such as `veh_395yw8tn73ff8`; pass it as `vehicle` in place of make, model and year (both together is a 400)
 - **Formats:** `png` (transparent), `webp`, `jpg`, or `auto` (WebP or PNG negotiated from `Accept`), up to 1024 px
-- **Sizing:** `size=thumb|small|medium|large` (256/512/768/1024), or `width`/`height` up to 1024 (a larger size is clamped, a box keeping its shape) — both together return exactly that box, placed by `fit=contain|cover|inside`; `trim` crops to the car first; `background` flattens onto a solid color
+- **Sizing:** `size=thumb|small|medium|large` (256/512/768/1024), or `width`/`height` up to 1024 (a larger size is clamped, a box keeping its shape) — both together return exactly that box, placed by `fit=contain|cover|inside`; `trim` crops to the car first; `shadow` adds a soft ground shadow under it; `background` flattens onto a solid color
 
 ### Getting the size right
 
@@ -141,6 +141,7 @@ Without MCP tools connected, the same operations are REST endpoints — `POST /a
 | `width`, `height` | up to 1024 px each (a larger box is scaled down whole) | The layout has a box. One dimension keeps the aspect ratio; both together return exactly `width`×`height` (600×400 is 600×400, no longer a 400×400 square). |
 | `fit` | `contain` (default), `cover`, `inside` | Only matters with both dimensions. `contain` keeps the whole car and pads with transparency or the `background`; `cover` fills the box and centre-crops; `inside` keeps the car within the box and may return a smaller image (the old behaviour). |
 | `trim`, `padding` | `true`; 0–50 | The slot is not square. `trim` crops to the car's alpha bounds before sizing so it fills the box instead of floating in the square source frame; `padding` keeps a margin, as a percentage of the car's longer side, and only applies with `trim`. |
+| `shadow` | `true` | The car sits on a page or a card and should look grounded, not pasted: a soft, neutral shadow under the car, drawn from its own cut-out (semi-transparent, or grey on a `background`). Same 1 credit; not on make logos. |
 | `background` | `transparent` (default), `white`, `black`, hex as `rrggbb`, `#rrggbb`, `rgb` or `#rgb` | The surface cannot show transparency or wants a flat color. A solid background flattens PNG and WebP too; `jpg` cannot be transparent and defaults to white. |
 | `format` | `png` (default), `webp`, `jpg`, `auto` | `auto` negotiates WebP or PNG from each client's `Accept` header (`Vary: Accept`); a signed URL created with `auto` negotiates on every load. |
 

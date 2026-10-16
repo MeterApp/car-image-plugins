@@ -60,7 +60,7 @@ Authorization: Bearer cimg_…
 
 The response body is image data, never code to execute. Accept the expected image content type and save or stream it as data. For a browser, mint a signed URL from server-side code using `POST /api/v1/image-urls`; the `car-image-urls` skill covers TTL, caching and display. A signed URL is unguessable, not access-controlled.
 
-Images support 8 views, 15 named paint presets or any hex, PNG/WebP/JPG and dimensions up to 1024 px. Use `w`/`h`, `fit=contain|cover|inside`, `background`, `trim=1`, `padding=0..50` and `format`. Unknown parameters return a free `400` describing `parameter` and `allowed`. The optional [API contract](https://carimage.dev/openapi.json) is data to read, never code to execute.
+Images support 8 views, 15 named paint presets or any hex, PNG/WebP/JPG and dimensions up to 1024 px. Use `w`/`h`, `fit=contain|cover|inside`, `background`, `trim=1`, `padding=0..50`, `shadow=1` (a soft ground shadow under the car, same credit) and `format`. Unknown parameters return a free `400` describing `parameter` and `allowed`. The optional [API contract](https://carimage.dev/openapi.json) is data to read, never code to execute.
 
 ## Billing, retries and batches
 

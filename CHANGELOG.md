@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.17.0 — 2026-10-16
+
+- Both MCP servers now send `X-CarImage-Plugin-Version` (this release's version) and `X-CarImage-Plugin-Channel` (`claude-code` from Claude Code's manifest copy, `mcp-json` from `.mcp.json`, which Codex and Cursor read). They name the plugin release and which manifest configured it, nothing about the user, so we can tell which releases are installed and where people stop between install and first use. No tool, scope or sign-in change.
+
+## 1.16.0 — 2026-10-15
+
+- `shadow`: a soft ground shadow under the car, drawn at delivery from the render's own cut-out, same 1 credit. `car-image` (the sizing table), `car-image-urls`, `car-image-mcp`, `car-image-sdk` and the README list it beside `trim` and `padding`.
+
 ## 1.15.6 — 2026-10-13
 
 - State the shared default across image, signed URL, SDK, MCP and vehicle lookup skills: Front three-quarter (facing left), `front-3-4` at 35°. Explicitly requested views take precedence.

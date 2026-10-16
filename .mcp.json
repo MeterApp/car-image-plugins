@@ -4,14 +4,18 @@
       "type": "http",
       "url": "https://carimage.dev/api/mcp?toolset=all",
       "headers": {
-        "X-CarImage-Integration": "plugin"
+        "X-CarImage-Integration": "plugin",
+        "X-CarImage-Plugin-Version": "1.17.0",
+        "X-CarImage-Plugin-Channel": "mcp-json"
       }
     },
     "car-image-catalog": {
       "type": "http",
       "url": "https://carimage.dev/api/mcp/catalog",
       "headers": {
-        "X-CarImage-Integration": "plugin"
+        "X-CarImage-Integration": "plugin",
+        "X-CarImage-Plugin-Version": "1.17.0",
+        "X-CarImage-Plugin-Channel": "mcp-json"
       }
     }
   }

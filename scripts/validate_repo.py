@@ -148,10 +148,25 @@ for field, (codex_field, required) in LISTING_URLS.items():
 # or option it names is unset.
 mcp_servers = load_json(".mcp.json").get("mcpServers", {})
 server = mcp_servers.get(PLUGIN_NAME, {})
+# Every server also names the plugin release and the manifest that configured
+# it (Claude Code's own copy, or .mcp.json for Codex, Cursor and the rest): the
+# server records both beside the integration (lib/analytics/request-attribution.ts),
+# so a stale header would misreport which release is installed.
+PLUGIN_VERSION = next(iter(versions.values()), None)
+
+
+def plugin_headers(channel: str) -> dict:
+    return {
+        "X-CarImage-Integration": "plugin",
+        "X-CarImage-Plugin-Version": PLUGIN_VERSION,
+        "X-CarImage-Plugin-Channel": channel,
+    }
+
+
 expected = {
     "type": "http",
     "url": PLUGIN_MCP_URL,
-    "headers": {"X-CarImage-Integration": "plugin"},
+    "headers": plugin_headers("mcp-json"),
 }
 if server != expected:
     error(f".mcp.json must configure the hosted server exactly as {expected}, got {server}")
@@ -162,7 +177,7 @@ if server != expected:
 catalog_expected = {
     "type": "http",
     "url": CATALOG_MCP_URL,
-    "headers": {"X-CarImage-Integration": "plugin"},
+    "headers": plugin_headers("mcp-json"),
 }
 if mcp_servers.get(CATALOG_SERVER) != catalog_expected:
     error(f".mcp.json must configure the catalog server exactly as {catalog_expected}, got {mcp_servers.get(CATALOG_SERVER)}")
@@ -181,9 +196,9 @@ claude_expected = {
     PLUGIN_NAME: {
         "type": "http",
         "url": PLUGIN_MCP_URL,
-        "headers": {"X-CarImage-Integration": "plugin", "X-Api-Key": API_KEY_HEADER},
+        "headers": {**plugin_headers("claude-code"), "X-Api-Key": API_KEY_HEADER},
     },
-    CATALOG_SERVER: catalog_expected,
+    CATALOG_SERVER: {**catalog_expected, "headers": plugin_headers("claude-code")},
 }
 if manifests["claude"].get("mcpServers") != claude_expected:
     error(f"claude manifest mcpServers must be exactly {claude_expected}, got {manifests['claude'].get('mcpServers')}")
