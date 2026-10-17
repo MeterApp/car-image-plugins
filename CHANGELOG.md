@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.19.0 — 2026-10-17
+
+- Pricing for agents: `get_pricing` (on the catalog server too, before sign-in) returns every plan's price, limits per tier and features, the credit packs and a `checkout_url` per plan and pack that signs the human in, or up, and opens Stripe Checkout; `get_account` adds usage against each limit (`limits_usage`) and the next plan (`next_plan`). Every 402 carries `checkout_url` and `pricing`. `car-image-support` and the error reference say to hand the human the link with the price, and to buy or change a plan only when the human asks or a spending mandate they set up covers it.
+
+## 1.18.0 — 2026-10-17
+
+- `framing`: a composition preset for images, `consistent` (the default, the camera scale every view of a vehicle shares), `tight` (= `trim` with no margin) or `balanced` (= `trim` with a 6% margin), never together with `trim` or `padding`; same image and credit as the spelled-out form. `car-image` (the sizing table), `car-image-urls`, `car-image-mcp`, `car-image-sdk` and the README list it.
+
 ## 1.17.0 — 2026-10-16
 
 - Both MCP servers now send `X-CarImage-Plugin-Version` (this release's version) and `X-CarImage-Plugin-Channel` (`claude-code` from Claude Code's manifest copy, `mcp-json` from `.mcp.json`, which Codex and Cursor read). They name the plugin release and which manifest configured it, nothing about the user, so we can tell which releases are installed and where people stop between install and first use. No tool, scope or sign-in change.
