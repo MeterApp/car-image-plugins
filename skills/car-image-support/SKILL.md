@@ -1,6 +1,6 @@
 ---
 name: car-image-support
-description: Answer questions about Car Image API pricing, credits, subscriptions, commercial licenses, terms, privacy, vehicle coverage and Enterprise agreements using source-linked help. Prepare checkout and billing links on the human's request, or draft customer support replies. Do not use for generating images (car-image), embedding images (car-image-urls), or changing a customer's account on their behalf.
+description: Answer questions about Car Image API pricing, credits, subscriptions, commercial licenses, terms, privacy, vehicle coverage and Enterprise agreements using source-linked help. Prepare checkout and billing links on the human's request, buy a plan or pay a renewal with a payment token only under the owner's agent spending limit, or draft customer support replies. Do not use for generating images (car-image), embedding images (car-image-urls), or changing a customer's account on their behalf.
 ---
 
 # Product help and billing
@@ -13,6 +13,16 @@ description: Answer questions about Car Image API pricing, credits, subscription
 4. Use `get_pricing` for current plan prices, credit packs, allowances, limits per tier and 3D cost; it works before sign-in (the catalog server has it too), and every plan and pack carries a `checkout_url` that signs the human in, or up, and opens Stripe Checkout. Use `get_account` only for the connected account's balance, plan, usage against each limit (`limits_usage`) and next tier (`next_plan`). A support agent's credentials do not identify an email sender's account.
 5. When the human asks to buy credits or subscribe, call `create_checkout_link` with exactly one of `credits` (100, 500, 1000, 2500, 10000) or `plan` (pro, business; optional `interval: month|year`). Return `data.url` and `data.message`. Payment happens in the browser; a link is not a successful purchase.
 6. `get_billing_link` returns billing settings. Connected apps and keys without billing:write receive a sign-in dashboard link for settings, and `create_checkout_link` gives them a checkout link that signs the human in first. Owner keys with billing:write can receive private Stripe links; never publish or forward those to another customer. Existing subscriptions go to the dashboard for review; no tool switches a plan or charges a saved card.
+
+### When to buy instead of handing over a link
+
+`purchase_plan` (and `pay_invoice` for an open renewal, `billing.renewal_due` in `get_account`) pays with a Stripe Shared Payment Token (`spt_…`) your platform minted from the buyer's card. Use it only when all of these hold; otherwise hand the human `checkout_url`:
+
+- the human asked you to buy, or their agent spending limit (`billing.agent_spend` in `get_account`) covers this plan and amount;
+- you hold a payment token for this seller (never ask for, read or type a card number; one is refused);
+- you ran it with `dry_run: true` first and told the human the amount, the card and that a token pays once (renewals need a card they save, or `pay_invoice` with a fresh token).
+
+Then call it again with the same `purchase_id` and `dry_run: false`; a repeat never charges twice. Every refusal (`no_mandate`, `mandate_exceeded`, `scope_missing`, `payment_failed`, `requires_action` for 3D Secure, `already_subscribed`, `price_changed`) carries `checkout_url`: give it to the human and stop. Paying in the browser with an agent card or Link instead: `create_checkout_link`, then poll `checkout_status` with its `session_id` until `complete`. Only the owner sets or raises the limit, in the dashboard's Let agents buy card; never try to change it.
 
 A 402 never authorizes a purchase by itself. It carries `checkout_url` and `pricing`: tell the human the price and hand them the link. Complete Checkout or change billing only when the human asks you to, or a spending mandate they set up covers the amount; never enter card details.
 

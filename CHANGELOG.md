@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.20.0 — 2026-10-17
+
+- Agents can pay, within limits the owner sets. `purchase_plan` buys Pro or Business and `pay_invoice` pays an open plan invoice with a Stripe Shared Payment Token (never a card number), only for a key the owner allowed and within the owner's monthly agent spending limit; `checkout_status` polls a hosted Checkout session for agents paying in the browser. `car-image-support` says when to buy and when to hand over the link (dry run first, confirm the amount), and `car-image-mcp` lists the three tools (twenty-nine with `?toolset=all`).
+
 ## 1.19.0 — 2026-10-17
 
 - Pricing for agents: `get_pricing` (on the catalog server too, before sign-in) returns every plan's price, limits per tier and features, the credit packs and a `checkout_url` per plan and pack that signs the human in, or up, and opens Stripe Checkout; `get_account` adds usage against each limit (`limits_usage`) and the next plan (`next_plan`). Every 402 carries `checkout_url` and `pricing`. `car-image-support` and the error reference say to hand the human the link with the price, and to buy or change a plan only when the human asks or a spending mandate they set up covers it.

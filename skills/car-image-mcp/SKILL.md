@@ -1,6 +1,6 @@
 ---
 name: car-image-mcp
-description: Connect an agent, IDE or chat app to the Car Image API over MCP, and fix it when the tools do not appear. Covers the hosted HTTP server, the catalog server that needs no sign-in (lookups and free previews), the local stdio alternative, browser OAuth sign-in for plugin installs and chat-app connectors, the optional API key saved in the plugin's options in Claude Code, API-key setup for manual connections in Codex, Cursor, Claude Desktop and generic MCP hosts, what each of the seven core tools costs (catalog lookups, VIN decoding, images, signed URLs, the account) and which ten more ?toolset=all adds (make logos, 3D models, image options, the API reference, pricing, help and billing links), and how to diagnose a 401, a missing server or an empty tool list. Use for setup, configuration and connection troubleshooting; do not use for calling the API from code (car-image-sdk) or for image workflows once the tools already work (car-image).
+description: Connect an agent, IDE or chat app to the Car Image API over MCP, and fix it when the tools do not appear. Covers the hosted HTTP server, the catalog server that needs no sign-in (lookups and free previews), the local stdio alternative, browser OAuth sign-in for plugin installs and chat-app connectors, the optional API key saved in the plugin's options in Claude Code, API-key setup for manual connections in Codex, Cursor, Claude Desktop and generic MCP hosts, what each of the seven core tools costs (catalog lookups, VIN decoding, images, signed URLs, the account) and which thirteen more ?toolset=all adds (make logos, 3D models, image options, the API reference, pricing, help and billing links), and how to diagnose a 401, a missing server or an empty tool list. Use for setup, configuration and connection troubleshooting; do not use for calling the API from code (car-image-sdk) or for image workflows once the tools already work (car-image).
 ---
 
 When no view is specified, use **Front three-quarter (facing left)**, `view=front-3-4` (35°). Preserve any view the user explicitly requests.
@@ -14,7 +14,7 @@ Two servers expose the same tools. Prefer the hosted one — there is nothing to
 
 A third, the **catalog server** at `https://carimage.dev/api/mcp/catalog`, needs no account at all: `resolve_vehicle`, `search_vehicles`, `list_image_options`, `get_pricing`, `search_help` and `describe_api`, plus `preview_car_image`, the picture a vehicle's page on carimage.dev already shows, free. It renders nothing and reads no account, so it never asks anyone to sign in. The plugin connects it next to the hosted server, so an install can look cars up and show previews before the user signs in.
 
-Both come in two toolsets. The default, `core`, is the seven core tools an agent needs to find a vehicle, render it and watch the balance: `resolve_vehicle`, `search_vehicles`, `decode_vin`, `check_vehicles`, `get_car_image`, `create_car_image_urls` and `get_account`. Make logos, 3D models, image options, the API reference, pricing, help and billing links are ten more with `?toolset=all` on the hosted URL or `--toolset all` for `car-image mcp`, twenty-six tools in all. Fewer tools cost the agent less context and make the right one easier to pick, so opt in when the agent should also fetch logos, make 3D models or answer product and billing questions; the plugin does.
+Both come in two toolsets. The default, `core`, is the seven core tools an agent needs to find a vehicle, render it and watch the balance: `resolve_vehicle`, `search_vehicles`, `decode_vin`, `check_vehicles`, `get_car_image`, `create_car_image_urls` and `get_account`. Make logos, 3D models, image options, the API reference, pricing, help and billing links are thirteen more with `?toolset=all` on the hosted URL or `--toolset all` for `car-image mcp`, twenty-nine tools in all. Fewer tools cost the agent less context and make the right one easier to pick, so opt in when the agent should also fetch logos, make 3D models or answer product and billing questions; the plugin does.
 
 ## Plugin installs: sign in with your browser
 
@@ -28,7 +28,7 @@ Upgrading from a release before 1.10.1? Update the plugin, restart the host, and
 
 ## Chat apps: add it as a connector
 
-A chat app that takes remote MCP servers (custom connectors in Claude, connectors or apps in ChatGPT) needs only the URL: `https://carimage.dev/api/mcp`, or `https://carimage.dev/api/mcp?toolset=all` for all twenty-six tools (make logos, 3D models, pricing and help too). The app discovers the sign-in itself (`/.well-known/oauth-protected-resource`), opens Car Image in the browser, and the human approves `images:read` and `account:read` on the consent screen. There is no key to paste, and a connected app can never buy anything: it holds no `billing:write`.
+A chat app that takes remote MCP servers (custom connectors in Claude, connectors or apps in ChatGPT) needs only the URL: `https://carimage.dev/api/mcp`, or `https://carimage.dev/api/mcp?toolset=all` for all twenty-nine tools (make logos, 3D models, pricing and help too). The app discovers the sign-in itself (`/.well-known/oauth-protected-resource`), opens Car Image in the browser, and the human approves `images:read` and `account:read` on the consent screen. There is no key to paste, and a connected app can never buy anything: it holds no `billing:write`.
 
 Once connected, a request for a picture of a car is two tool calls: `resolve_vehicle` (free), then `create_car_image_urls` with the id it returned (1 credit); paste the returned `markdown` directly into the final reply. The `car-image` skill has the conversation workflow.
 
@@ -46,7 +46,7 @@ Then open `/mcp` and authenticate. Recent Claude Code versions also support `cla
 claude mcp add --transport http car-image-catalog https://carimage.dev/api/mcp/catalog
 ```
 
-For all twenty-six tools, use `"https://carimage.dev/api/mcp?toolset=all"` as the URL (quote it: the shell would otherwise treat `?` as a glob).
+For all twenty-nine tools, use `"https://carimage.dev/api/mcp?toolset=all"` as the URL (quote it: the shell would otherwise treat `?` as a glob).
 
 ### Other OAuth-capable hosts
 
@@ -78,7 +78,7 @@ Local stdio instead, using the key `car-image login` saved:
 claude mcp add car-image-local -- npx -y @meterapp/car-image@latest mcp
 ```
 
-Append `--toolset all` after `mcp` for all twenty-six tools.
+Append `--toolset all` after `mcp` for all twenty-nine tools.
 
 ## The tools
 
@@ -96,7 +96,7 @@ Append `--toolset all` after `mcp` for all twenty-six tools.
 
 Two cost credits. The four lookups come first in the table because they come first in use: `resolve_vehicle` turns what was asked for into the catalog vehicle and its id, with a confidence of `high`, `medium` or `low`; `search_vehicles` lists a make's models and a model's years; `decode_vin` turns a full or partial VIN into the catalog vehicle; `check_vehicles` checks a list of up to 100 at once and answers each entry as a match with its id, a suggestion, a miss or an invalid entry (longer lists: `car-image check <file>` or `client.checkVehicles`). `get_car_image` and `create_car_image_urls` then take `vehicle` (that stable `veh_…` id) in place of make, model and year, `color` as a preset or any hex, and `fit`, `background`, `framing` (`consistent`, `tight` or `balanced`, a preset for `trim`/`padding`), `trim`, `padding` and `shadow` alongside width and height, so an agent can ask for exactly the box a layout needs, and `format` accepts `auto` (a signed URL negotiates WebP or PNG per viewer; an inline `get_car_image` delivers PNG for it). `create_car_image_urls` also honors `renew` and `renew_days`, and takes `idempotency_key`: pass one whenever the call might be repeated, because a retry with the same key and arguments replays the first result (`idempotent_replayed: true`) instead of billing again. `get_account` reports the balance, the plan in force (`data.plan`) and the key's scopes, whichever credential the connection holds.
 
-### Ten more with `?toolset=all` or `--toolset all`
+### Thirteen more with `?toolset=all` or `--toolset all`
 
 | Tool | Costs |
 | --- | --- |
@@ -110,12 +110,15 @@ Two cost credits. The four lookups come first in the table because they come fir
 | `search_help` | free |
 | `create_checkout_link` | free; a link the human completes in the browser |
 | `get_billing_link` | free; a link the human completes in the browser |
+| `checkout_status` | free; polls a Checkout session from `create_checkout_link` until it completes |
+| `purchase_plan` | charges a payment token (`spt_…`) for Pro or Business, only under the owner's agent spending limit and a key with `billing:purchase`; dry run first |
+| `pay_invoice` | charges a fresh payment token for an open plan invoice (a renewal), under the same limit |
 
-`get_make_logo` takes a make and the image transforms and returns an inline logo: no model, view or paint, no signed URL and no trademark license. `create_3d_model` is 100 credits at creation, free for a vehicle and color the account already owns (`billing.already_owned`), and takes `publish`; `get_3d_model` polls it and returns `public` once published; `publish_3d_model` hosts a model at key-free URLs with a two-line `<car-3d>` embed, or takes it down with `unpublish: true` (the `car-3d` skill). `list_image_options` lists every valid view, color, size, fit mode, background and format, and `describe_api` explains any REST endpoint from the OpenAPI document. `get_pricing` and `search_help` answer product questions from the published sources, and the two link tools prepare a purchase or open billing settings without charging anything (the `car-image-support` skill). The plugin connects with `?toolset=all`, so its skills can name these; on the bare URL an agent has the core seven, and its instructions tell it to say so and stop when the catalog lacks a vehicle.
+`get_make_logo` takes a make and the image transforms and returns an inline logo: no model, view or paint, no signed URL and no trademark license. `create_3d_model` is 100 credits at creation, free for a vehicle and color the account already owns (`billing.already_owned`), and takes `publish`; `get_3d_model` polls it and returns `public` once published; `publish_3d_model` hosts a model at key-free URLs with a two-line `<car-3d>` embed, or takes it down with `unpublish: true` (the `car-3d` skill). `list_image_options` lists every valid view, color, size, fit mode, background and format, and `describe_api` explains any REST endpoint from the OpenAPI document. `get_pricing` and `search_help` answer product questions from the published sources, the two link tools prepare a purchase or open billing settings without charging anything, and `purchase_plan` and `pay_invoice` pay with a payment token only where the owner set an agent spending limit and allowed the key (the `car-image-support` skill). The plugin connects with `?toolset=all`, so its skills can name these; on the bare URL an agent has the core seven, and its instructions tell it to say so and stop when the catalog lacks a vehicle.
 
 ## Verifying
 
-Ask the host to list tools (`/mcp` in Claude Code and Codex). With the bare hosted URL or a plain `car-image mcp` you should see **seven** tools under `car-image`; with `?toolset=all` (what the plugin ships) or `--toolset all`, **twenty-six** tools. Seven where you expected twenty-six is not a fault — the URL simply has no `?toolset=all`. A plugin install also shows `car-image-catalog` as connected, with `resolve_vehicle`, `search_vehicles`, `preview_car_image`, `list_image_options`, `get_pricing` and `describe_api`, whether or not anyone has signed in.
+Ask the host to list tools (`/mcp` in Claude Code and Codex). With the bare hosted URL or a plain `car-image mcp` you should see **seven** tools under `car-image`; with `?toolset=all` (what the plugin ships) or `--toolset all`, **twenty-nine** tools. Seven where you expected twenty-nine is not a fault — the URL simply has no `?toolset=all`. A plugin install also shows `car-image-catalog` as connected, with `resolve_vehicle`, `search_vehicles`, `preview_car_image`, `list_image_options`, `get_pricing` and `describe_api`, whether or not anyone has signed in.
 
 A free end-to-end check that spends nothing:
 

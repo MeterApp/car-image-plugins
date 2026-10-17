@@ -5,7 +5,7 @@
       "url": "https://carimage.dev/api/mcp?toolset=all",
       "headers": {
         "X-CarImage-Integration": "plugin",
-        "X-CarImage-Plugin-Version": "1.19.0",
+        "X-CarImage-Plugin-Version": "1.20.0",
         "X-CarImage-Plugin-Channel": "mcp-json"
       }
     },
@@ -14,7 +14,7 @@
       "url": "https://carimage.dev/api/mcp/catalog",
       "headers": {
         "X-CarImage-Integration": "plugin",
-        "X-CarImage-Plugin-Version": "1.19.0",
+        "X-CarImage-Plugin-Version": "1.20.0",
         "X-CarImage-Plugin-Channel": "mcp-json"
       }
     }
