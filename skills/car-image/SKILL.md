@@ -119,7 +119,7 @@ Twenty images cost 20 credits (20¢). Tell the user the number before rendering 
 | Human-requested checkout or billing settings | `create_checkout_link`, `get_billing_link` (free links; the human confirms in the browser) → see the `car-image-support` skill |
 | API reference | `describe_api` (free) |
 
-The rows from `get_make_logo` down exist only when the server was connected with `?toolset=all` (the plugin does this) or `car-image mcp --toolset all`; a bare `https://carimage.dev/api/mcp` exposes the seven core tools above them. The `car-image-mcp` skill explains both.
+The rows from `get_make_logo` down exist only when the server was connected with `?toolset=all` (the plugin does this) or `car-image mcp --toolset all`; a bare `https://carimage.dev/api/mcp` exposes the eleven core tools above them. The `car-image-mcp` skill explains both.
 
 Without MCP tools connected, the same operations are REST endpoints — `POST /api/v1/images/resolve`, `GET /api/v1/vehicles`, `GET /api/v1/vehicles/{id}`, `POST /api/v1/vehicles/check`, `GET /api/v1/vin/{vin}`, `GET /api/v1/images/car`, `GET /api/v1/images/logo`, `POST /api/v1/image-urls`, `POST /api/v1/3d`, `GET /api/v1/3d/{id}`, `GET /api/v1/3d/{id}/files/{kind}`, `POST|DELETE /api/v1/3d/{id}/publish`, `GET /api/v1/3d/public/{public_id}` (no key), `GET /api/v1/images/options` and `GET /api/v1/account`. The `car-image-sdk` skill covers calling them from code; the CLI equivalents are `car-image resolve …`, `car-image check …`, `car-image vin …`, `car-image get …`, `car-image logo …` and `car-image 3d …`. Base URL `https://carimage.dev`; docs at [`/docs`](https://carimage.dev/docs?ref=plugin), [`/agents.md`](https://carimage.dev/agents.md) and [`/openapi.json`](https://carimage.dev/openapi.json).
 
@@ -180,9 +180,11 @@ Every JSON failure is an RFC 9457 `application/problem+json` document with `deta
 | 402 | Out of credits, or `code: "plan_vehicle_limit"` (the request named more new distinct vehicles than the plan's monthly cap allows; `scope`, `plan`, `vehicles_this_month`, `vehicles_per_month`, `requested`) | **Stop and ask the human** to top up at [the dashboard](https://carimage.dev/dashboard?ref=plugin#billing) or with `car-image billing`, or, for a plan limit, tell them the plan and the cap. Never buy credits or change a plan on your own. |
 | 404 | Vehicle not in the catalog under that name (`code: "vehicle_not_found"`), or an unknown vehicle id | You rendered by name: look the vehicle up instead. Read the problem's `suggestions` first (up to five real catalog vehicles with ids, closest first) and retry with `vehicle: <id>` when one is plainly the car, or show them to the user; call `resolve_vehicle` when they are empty. Do not send the same name again in another view or color. If it is really missing, say so and stop. Do not invent vehicles or substitute a different one. |
 | 429 | Rate limited (per key, or per account with `code: "account_rate_limited"`), or `code: "account_generation_cap"` (the account used its plan's share of today's render budget; cached images keep serving) | Wait `Retry-After` seconds, retry once. Never hammer; a generation cap resets at midnight UTC (`reset_at`), so do not retry cold renders before then. |
-| 502/503 | Render or upstream failure | Credits are refunded. Retry once later; report with the `request_id`. |
+| 502/503 | Render or upstream failure | Credits are refunded. Retry once later; if it fails again, offer the human `report_issue` with the `request_id` (and `endpoint`, `vehicle`, `view`, `color` in `context`). |
 
 The full table, including every `type` URI, is in [references/errors.md](references/errors.md).
+
+**Feedback.** A render that is wrong or a call that fails in a way that looks like a Car Image bug: with the human's agreement, `report_issue` with the failed call's `request_id`; it is private to them and the team, and they are emailed when it is fixed. When the human wishes the API did something it does not, `request_feature`. Both answer with `similar` items first: `upvote_feedback` the one that matches instead of filing it again. A vehicle the catalog lacks is not an issue: say so and stop. Offer `submit_review` only after real use, with their own rating and words.
 
 ## Never do these on your own
 

@@ -5,7 +5,7 @@ description: Answer questions about Car Image API pricing, credits, subscription
 
 # Product help and billing
 
-`search_help` and `get_pricing` are also on the plugin's `car-image-catalog` server, so pricing, licensing and what-happens-when-a-plan-ends questions can be answered before anyone signs in; `create_checkout_link` and `get_billing_link` need the account server on `?toolset=all`, which the plugin configures (a connection on the bare URL has the core seven only; the `car-image-mcp` skill).
+`search_help` and `get_pricing` are also on the plugin's `car-image-catalog` server, so pricing, licensing and what-happens-when-a-plan-ends questions can be answered before anyone signs in; `create_checkout_link` and `get_billing_link` need the account server on `?toolset=all`, which the plugin configures (a connection on the bare URL has the core eleven only; the `car-image-mcp` skill).
 
 1. Call `search_help` with one product question at a time. Do not paste full customer emails, signatures, personal information, keys or payment details. Queries are privately recorded to improve articles.
 2. Read the returned paragraphs and sources. Cite the relevant article or original terms. An `articles_found` result means related reading, not that every part of the question is answered. Split multi-part questions and search each one.
@@ -25,6 +25,10 @@ description: Answer questions about Car Image API pricing, credits, subscription
 Then call it again with the same `purchase_id` and `dry_run: false`; a repeat never charges twice. Every refusal (`no_mandate`, `mandate_exceeded`, `scope_missing`, `payment_failed`, `requires_action` for 3D Secure, `already_subscribed`, `price_changed`) carries `checkout_url`: give it to the human and stop. Paying in the browser with an agent card or Link instead: `create_checkout_link`, then poll `checkout_status` with its `session_id` until `complete`. Only the owner sets or raises the limit, in the dashboard's Let agents buy card; never try to change it.
 
 A 402 never authorizes a purchase by itself. It carries `checkout_url` and `pricing`: tell the human the price and hand them the link. Complete Checkout or change billing only when the human asks you to, or a spending mandate they set up covers the amount; never enter card details.
+
+## Requests, issues and reviews
+
+A product question the help center cannot answer may be a feature request or a bug. When the human wishes Car Image did something, `request_feature`; when something is broken, `report_issue` with the failed call's `request_id` (private to them and the team). Both return `similar` items first: `upvote_feedback` the one that matches. `list_my_feedback` tells them where their requests stand. A review (`submit_review`) is the human's own rating and words, never one you suggest. The [feedback docs](https://carimage.dev/docs/feedback?ref=plugin) cover the REST and CLI equivalents.
 
 ## Drafting customer replies
 

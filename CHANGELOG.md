@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.21.0 — 2026-10-17
+
+- Feedback tools: `request_feature`, `report_issue`, `upvote_feedback` and `submit_review` are in the default toolset now (eleven core tools), and `list_feedback`, `get_feedback`, `list_my_feedback`, `remove_feedback_vote`, `comment_on_feedback` and `list_reviews` come with `?toolset=all`. `car-image-mcp` lists them; `car-image` and `car-image-support` say when to use them: offer `report_issue` with the failed call's `request_id` after an error that looks like a Car Image bug, `request_feature` when the human wishes the API did something, upvote a similar item instead of filing a duplicate, and a review only in the human's own words.
+
 ## 1.20.0 — 2026-10-17
 
 - Agents can pay, within limits the owner sets. `purchase_plan` buys Pro or Business and `pay_invoice` pays an open plan invoice with a Stripe Shared Payment Token (never a card number), only for a key the owner allowed and within the owner's monthly agent spending limit; `checkout_status` polls a hosted Checkout session for agents paying in the browser. `car-image-support` says when to buy and when to hand over the link (dry run first, confirm the amount), and `car-image-mcp` lists the three tools (twenty-nine with `?toolset=all`).
