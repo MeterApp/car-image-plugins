@@ -51,7 +51,7 @@ import { CarImageError } from "@meterapp/car-image-sdk";
 
 `CarImageError` exposes `status`, `title`, `detail`, `requestId` and the raw RFC 9457 problem document. Everything else throws normally (network failures, aborts).
 
-Built-in retry: `429` and `503` with full jitter, honoring `Retry-After`. **`402` is never retried.** Do not wrap calls in your own retry loop — you would fight the built-in backoff and risk re-billing.
+Built-in retry: `429` and `503` with full jitter, honoring `Retry-After`; a `Retry-After` longer than `maxRetryDelayMs` (30 s) is not retried and throws with `retryAfterSeconds` (a `503` `generation_at_capacity` resumes at midnight UTC). **`402` is never retried.** Do not wrap calls in your own retry loop — you would fight the built-in backoff and risk re-billing.
 
 `createImageUrls` validates the batch locally and throws `RangeError` for an empty array or more than 50 images, before spending anything.
 
@@ -103,7 +103,7 @@ The SDK is `fetch`-based with no Node built-ins, so it runs unchanged on Vercel 
 
 `@meterapp/car-image-sdk/mcp` exports the shared tool definitions used by both the hosted and the stdio MCP servers — names, descriptions, JSON schemas and annotations. Import them if you are building your own agent surface and want the tool contracts to match the official ones exactly.
 
-Tools come in two sets: `MCP_TOOLSETS.core` (`DEFAULT_MCP_TOOLSET`, `"core"`) is the eleven core tools (`resolve_vehicle`, `search_vehicles`, `decode_vin`, `check_vehicles`, `get_car_image`, `create_car_image_urls`, `get_account`, `request_feature`, `report_issue`, `upvote_feedback`, `submit_review`) and `MCP_TOOLSETS.all` adds make logos, 3D models, image options, the API reference, pricing, help and billing links (`MCP_DOCUMENTED_EXTRAS` names them), thirty-eight tools in all; `McpToolset` is the type, `isMcpToolset(value)` validates a name from a URL or flag, and `mcpInstructions(toolset)` returns the server instructions for either set (they open with `mcpInstructionsHead(toolset)`, the part every host shows a model, kept under `MCP_INSTRUCTIONS_HEAD_LIMIT`). The hosted server serves `core` at `https://carimage.dev/api/mcp` and `all` at `https://carimage.dev/api/mcp?toolset=all`.
+Tools come in two sets: `MCP_TOOLSETS.core` (`DEFAULT_MCP_TOOLSET`, `"core"`) is the eleven core tools (`resolve_vehicle`, `search_vehicles`, `decode_vin`, `check_vehicles`, `get_car_image`, `create_car_image_urls`, `get_account`, `request_feature`, `report_issue`, `upvote_feedback`, `submit_review`) and `MCP_TOOLSETS.all` adds make logos, 3D models, image options, the API reference, pricing, help and billing links (`MCP_DOCUMENTED_EXTRAS` names them), thirty-nine tools in all; `McpToolset` is the type, `isMcpToolset(value)` validates a name from a URL or flag, and `mcpInstructions(toolset)` returns the server instructions for either set (they open with `mcpInstructionsHead(toolset)`, the part every host shows a model, kept under `MCP_INSTRUCTIONS_HEAD_LIMIT`). The hosted server serves `core` at `https://carimage.dev/api/mcp` and `all` at `https://carimage.dev/api/mcp?toolset=all`.
 
 ## Make logos
 

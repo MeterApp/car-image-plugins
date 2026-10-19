@@ -40,15 +40,12 @@ Only a `200` that delivers an image or mints signed URLs costs credits. Every er
 | 409 | A `POST /api/v1/image-urls` or `POST /api/v1/3d` with the same `Idempotency-Key` is still being processed; or `3D model not ready`: a file of a 3D model was asked for before its `status` reached `ready`. | Wait the seconds in `Retry-After`, then repeat the identical request (you receive the first request's response, marked `Idempotent-Replayed: true`, and pay nothing more), or poll `get_3d_model` until it is ready. |
 | 429 | Rate limited — 120 requests per minute per key by default. `RateLimit-Limit`, `RateLimit-Remaining` and `RateLimit-Reset` are on every authenticated response. | Wait the integer seconds in `Retry-After`, then retry with exponential backoff and jitter. Never hammer. |
 | 500 | Unexpected server failure. Nothing was charged. | Retry once with backoff. Include the `request_id` when reporting. |
-| 502 | The render failed (the credit was refunded), or `VIN decoder unavailable` (nothing charged). | Check the `code` extension member first — see below. For a VIN, retry later. |
-| 503 | A dependency is temporarily unavailable; or, on `POST /api/v1/3d`, `3D generation at capacity` (`"code": "model_3d_at_capacity"`, `retry_after_seconds`) or `3D models unavailable` — nothing charged, images unaffected. | Honor `Retry-After`. For a delivery URL, a 503 means the URL was not consumed; just retry it. For 3D, tell the user when it resumes; do not loop. |
+| 502 | The render failed (the credit was refunded), or `VIN decoder unavailable` (nothing charged). | Retry once after a pause, or try a different view. For a VIN, retry later. |
+| 503 | A dependency is temporarily unavailable; new image renders are at the day's capacity (`"code": "generation_at_capacity"`, see below); or, on `POST /api/v1/3d`, `3D generation at capacity` (`"code": "model_3d_at_capacity"`, `retry_after_seconds`) or `3D models unavailable` — nothing charged, images unaffected. | Honor `Retry-After`. For a delivery URL, a 503 means the URL was not consumed; just retry it. For 3D, tell the user when it resumes; do not loop. |
 
-### The two kinds of 502
+### A 503 at render capacity
 
-Tell them apart by the `code` member on the problem document:
-
-- **No `code`** — the render itself failed. An immediate retry is reasonable, or try a different view.
-- **`"code": "generation_at_capacity"`** — new renders have hit a daily ceiling. The problem also carries `retry_after_seconds` and `reset_at`. Already-rendered images keep serving normally, so cached variants still work. **Retrying before `reset_at` cannot succeed** — do not loop. Tell the user when capacity resets, and offer vehicles that are already cached if they need something now.
+- **`"code": "generation_at_capacity"`** (a `503` with `Retry-After`) — new renders have hit the service's daily ceiling. The problem also carries `retry_after_seconds` and `reset_at`. Already-rendered images keep serving normally, so cached variants still work. **Retrying before `reset_at` cannot succeed** — do not loop. Tell the user when capacity resets, and offer vehicles that are already cached if they need something now.
 
 ## Reporting a problem
 

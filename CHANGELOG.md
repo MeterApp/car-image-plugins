@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.22.0 — 2026-10-19
+
+- Errors: reaching the daily render capacity is now a `503` with `Retry-After` until midnight UTC (`code: generation_at_capacity`), not a `502`; a `502` is always a failed, refunded render. `car-image` and its error reference tell them apart, and SDK 1.28.0 does not retry a `Retry-After` longer than `maxRetryDelayMs`.
+- Organizations: `get_account` reports `data.organization` (the organization the connection acts for, with your role), and `list_members` (with `?toolset=all`, free, read only) lists its members and teams. `car-image-mcp` counts twenty extra tools on `all`, thirty-nine in total. The stdio server needs SDK 1.27.0 / CLI 1.20.0.
+- The README opens with a link to the product site, carimage.dev.
+
 ## 1.21.0 — 2026-10-17
 
 - Feedback tools: `request_feature`, `report_issue`, `upvote_feedback` and `submit_review` are in the default toolset now (eleven core tools), and `list_feedback`, `get_feedback`, `list_my_feedback`, `remove_feedback_vote`, `comment_on_feedback` and `list_reviews` come with `?toolset=all`. `car-image-mcp` lists them; `car-image` and `car-image-support` say when to use them: offer `report_issue` with the failed call's `request_id` after an error that looks like a Car Image bug, `request_feature` when the human wishes the API did something, upvote a similar item instead of filing a duplicate, and a review only in the human's own words.
