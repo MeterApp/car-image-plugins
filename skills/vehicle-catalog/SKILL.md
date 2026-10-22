@@ -9,7 +9,7 @@ When no view is specified, use **Front three-quarter (facing left)**, `view=fron
 
 Renders are addressed by **make, model, year** — or by the one **vehicle id** that stands for the three. The lookup comes first, every time: the catalog files cars under its own names, a render of the wrong car still costs a credit, and a 3D model of the wrong car costs a hundred.
 
-The catalog is the open [`@meterapp/vehicle-db`](https://github.com/MeterApp/vehicle-db) — 1,608 makes and 42,294 models across model years 1990-2027, built from public sources (NHTSA vPIC, UK DfT/DVLA, NZTA, Malaysia JPJ and others). It covers cars, motorcycles, trucks, buses, MPVs and more, internationally — not just the US market. Every make, model and model year also has a public page under the same slugs, from [carimage.dev/cars](https://carimage.dev/cars?ref=plugin) down to `/cars/<make>/<model>/<year>`: link it when a person wants to browse what the catalog holds.
+The catalog is the open [`@meterapp/vehicle-db`](https://github.com/MeterApp/vehicle-db) — 1,608 makes and 42,296 models across model years 1990-2027, built from public sources (NHTSA vPIC, UK DfT/DVLA, NZTA, Malaysia JPJ and others). It covers cars, motorcycles, trucks, buses, MPVs and more, internationally — not just the US market. Every make, model and model year also has a public page under the same slugs, from [carimage.dev/cars](https://carimage.dev/cars?ref=plugin) down to `/cars/<make>/<model>/<year>`: link it when a person wants to browse what the catalog holds.
 
 All the lookups below are **free**. Use them liberally.
 
