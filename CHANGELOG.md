@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.23.0 — 2026-10-22
+
+- Anthropic Directory readiness: a 1024 px listing icon, `.claude-plugin/icon.png` (rendered from `assets/logo.svg`), named by `icon` in the Claude manifest. The README gives the one-step Claude Code install (`/plugin install car-image --marketplace MeterApp/car-image-plugins`) beside the marketplace route, and "What the plugin sends" now names every header and what comes back. `scripts/validate_repo.py` checks the icon (square PNG, 512-2048 px, under 2 MB) and refuses symlinks, `.DS_Store` and files of 256 KiB or more. No tool, scope or sign-in change.
+
 ## 1.22.0 — 2026-10-19
 
 - Errors: reaching the daily render capacity is now a `503` with `Retry-After` until midnight UTC (`code: generation_at_capacity`), not a `502`; a `502` is always a failed, refunded render. `car-image` and its error reference tell them apart, and SDK 1.28.0 does not retry a `Retry-After` longer than `maxRetryDelayMs`.

@@ -141,6 +141,37 @@ for field, (codex_field, required) in LISTING_URLS.items():
     elif value != codex_interface.get(codex_field):
         error(f"claude manifest {field} must match the codex interface {codex_field}")
 
+# The Directory's listing icon: a square PNG of 512-2048 px under 2 MB (no SVG or
+# WebP), named by the Claude manifest's `icon`, relative to the plugin root.
+ICON = ".claude-plugin/icon.png"
+if manifests["claude"].get("icon") != ICON:
+    error(f"claude manifest icon must be {ICON!r}, got {manifests['claude'].get('icon')!r}")
+icon_path = ROOT / ICON
+if not icon_path.is_file():
+    error(f"{ICON}: missing (render it from assets/logo.svg)")
+else:
+    data = icon_path.read_bytes()
+    if data[:8] != b"\x89PNG\r\n\x1a\n" or data[12:16] != b"IHDR":
+        error(f"{ICON}: not a PNG")
+    else:
+        width, height = int.from_bytes(data[16:20], "big"), int.from_bytes(data[20:24], "big")
+        if width != height or not 512 <= width <= 2048:
+            error(f"{ICON}: must be square, 512-2048 px; got {width}x{height}")
+    if len(data) >= 2 * 1024 * 1024:
+        error(f"{ICON}: must be under 2 MB, got {len(data)} bytes")
+
+# The Directory refuses symlinks, .DS_Store and any file of 256 KiB or more.
+for path in sorted(ROOT.rglob("*")):
+    if ".git" in path.relative_to(ROOT).parts or "node_modules" in path.parts:
+        continue
+    relative = path.relative_to(ROOT)
+    if path.is_symlink():
+        error(f"{relative}: symlinks are not accepted by the plugin directory")
+    elif path.name == ".DS_Store":
+        error(f"{relative}: remove .DS_Store")
+    elif path.is_file() and path.stat().st_size >= 256 * 1024:
+        error(f"{relative}: {path.stat().st_size} bytes; every file must be under 256 KiB")
+
 # --- MCP server ------------------------------------------------------------
 
 # Keep authentication client-managed: any configured Authorization header

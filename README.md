@@ -15,6 +15,14 @@ For vehicle images in chat, resolve the vehicle, call `create_car_image_urls` on
 
 ### Claude Code
 
+In one step:
+
+```text
+/plugin install car-image --marketplace MeterApp/car-image-plugins
+```
+
+Or add the marketplace first, then install from it:
+
 ```text
 /plugin marketplace add MeterApp/car-image-plugins
 /plugin install car-image@meterapp
@@ -105,7 +113,7 @@ The plugin never sets an `Authorization` header: Claude Code turns off OAuth fal
 
 ### What the plugin sends
 
-The plugin runs no local commands or hooks. Its MCP tools call two servers: `https://carimage.dev/api/mcp`, with your sign-in token or the key you saved, and `https://carimage.dev/api/mcp/catalog`, with no credential; each receives the arguments of its tool calls. The MCP configuration also sends `X-CarImage-Integration: plugin` for usage attribution. This declares the integration; it contains no user identity, prompt, or conversation text. The calling host may separately identify itself through MCP client information. How Car Image handles this data is in the [privacy policy](https://carimage.dev/privacy?ref=plugin).
+The plugin runs no local commands or hooks. Its MCP tools call two servers: `https://carimage.dev/api/mcp`, with your sign-in token or the key you saved, and `https://carimage.dev/api/mcp/catalog`, with no credential; each receives the arguments of its tool calls (vehicle names, VINs, view, color and size options, and the text of any help question, feedback or review you choose to send). The MCP configuration also sends `X-CarImage-Integration: plugin`, `X-CarImage-Plugin-Version` (this release) and `X-CarImage-Plugin-Channel` (which manifest configured the server) for usage attribution. These name the integration; they contain no user identity, prompt, or conversation text. What comes back is catalog data, account details (credit balance, plan, usage), signed image URLs on carimage.dev that your host or browser then fetches, and, when you ask for one, a 3D model's files. The calling host may separately identify itself through MCP client information. How Car Image handles this data is in the [privacy policy](https://carimage.dev/privacy?ref=plugin).
 
 ## Safety model
 
