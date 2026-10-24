@@ -270,7 +270,7 @@ def authorization_headers(node: object, owner: str) -> None:
 for relative in [*MANIFESTS.values(), ".mcp.json"]:
     authorization_headers(load_json(relative), relative)
 
-# The setup skill documents both toolsets; a skill that promises all thirty-nine
+# The setup skill documents both toolsets; a skill that promises all forty
 # tools on the bare URL sends users to a server with only the core set. The pattern is the
 # wording earlier releases used for that promise.
 mcp_skill = ROOT / "skills" / "car-image-mcp" / "SKILL.md"

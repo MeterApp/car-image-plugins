@@ -24,7 +24,7 @@ description: Answer questions about Car Image API pricing, credits, subscription
 
 Then call it again with the same `purchase_id` and `dry_run: false`; a repeat never charges twice. Every refusal (`no_mandate`, `mandate_exceeded`, `scope_missing`, `payment_failed`, `requires_action` for 3D Secure, `already_subscribed`, `price_changed`) carries `checkout_url`: give it to the human and stop. Paying in the browser with an agent card or Link instead: `create_checkout_link`, then poll `checkout_status` with its `session_id` until `complete`. Only the owner sets or raises the limit, in the dashboard's Let agents buy card; never try to change it.
 
-A 402 never authorizes a purchase by itself. It carries `checkout_url` and `pricing`: tell the human the price and hand them the link. Complete Checkout or change billing only when the human asks you to, or a spending mandate they set up covers the amount; never enter card details.
+A 402 never authorizes a purchase by itself. It carries `checkout_url` and `pricing`: tell the human the price and hand them the link. With `code: "subscription_required_for_credits"` the account buys credits only with an active subscription: `checkout_url` is the Pro plan and `pack_url` the Image Packs, and credits it already holds stay spendable. On such an account `get_pricing` also lists `image_packs`: one-time packs of images at one quality, self-hosted forever, with 30 days of updates; each offer's `checkout_url` is for the human. Complete Checkout or change billing only when the human asks you to, or a spending mandate they set up covers the amount; never enter card details.
 
 ## Requests, issues and reviews
 

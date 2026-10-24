@@ -76,4 +76,24 @@ VIN decoding is free. Resolve or decode before creating a 3D model, then use the
 
 `client.getMakeLogo({ make: "toyota", width: 256, trim: true })` returns image bytes and billing metadata, 1 credit per successful delivery including cache hits. Generated logos can be inaccurate; inspect them. Logos are third-party trademarks for referential display, with no trademark license, outside VehiclesDB indemnity. [Logo docs](https://carimage.dev/docs/logos?ref=plugin) · [API terms](https://carimage.dev/terms?ref=plugin#logos).
 
+## Account webhooks
+
+To hear when something the account uses is ready (a new render stored, a 3D model built, a paid upgrade delivered), register an endpoint once instead of passing a `webhook_url` on every request: `client.createWebhook({ url, events })` returns the `whsec_…` secret once; store it as a server-side secret. Verify each delivery over the raw body before parsing it, and dedupe on the event `id`, because deliveries repeat:
+
+```ts
+import { verifyWebhook } from "@meterapp/car-image-sdk";
+
+/** `webhookSecret` is the endpoint's whsec_ secret, from the app's own secret settings. */
+const event = await verifyWebhook(await request.text(), request.headers.get("X-CarImage-Signature"), webhookSecret);
+if (event.type === "image.ready") {
+  // event.data: vehicle, view, color, quality and url
+}
+```
+
+Answer any 2xx within 10 seconds. Endpoints are free; events other than `webhook.test` need a paid plan in force. An app that keeps its own copies of images should also handle the image updates: every vehicle and view billed while the plan is in force is watched, and `image.upgraded`, `image.issue_reported`, `image.issue_resolved` and `image.replaced` carry `data.url` to fetch the new version (billed as any image request); `vehicle.available` says a vehicle the account asked for joined the catalog. A server without inbound requests polls `client.listEvents({ since })` (30 days) instead. CLI: `car-image webhooks`. [Webhook docs](https://carimage.dev/docs/webhooks?ref=plugin).
+
+## Image Packs
+
+Some accounts can buy an Image Pack: a number of images at one quality (Standard, Enhanced or Premium) paid once, generated over 30 days and self-hosted forever. One image is one vehicle in one view, in any color, size and format; every pack call is free. `client.listPacks()` returns the account's packs and the `offers` it may buy, each with a `checkout_url` to hand the human (never pay it yourself). To fill a pack, send the whole list in one call: `client.createPackBatch(packId, { items: [{ vehicle: "veh_…", views: ["front-3-4", "rear-3-4"] }, …] })`. Every vehicle is resolved first; an unknown one refuses the whole batch with `vehicles_not_found` and its suggestions, so fix the list rather than substituting a car. Batches take a while because each car gets a paint mask, and Enhanced and Premium a second pass: the answer's `eta` and `why_it_takes_time` say so, and `image.ready` per car and `pack.batch.completed` arrive as webhooks (or poll `client.getPackBatch`). Download with `client.downloadPackImage(packId, itemId, { color, width, format })`, take everything with `client.getPackManifest` or `client.createPackExport` (ZIP files, 10 a month), and store the files on your own servers. `client.quotePack(items)` says beforehand what is stored and which pack fits. CLI: `car-image packs`. [Pack docs](https://carimage.dev/docs/packs?ref=plugin).
+
 Renders are generated product visuals, not OEM photography. Do not claim that an exact trim or an individual listed vehicle is depicted.

@@ -3,7 +3,7 @@
   "name": "car-image",
   "displayName": "Car Image API",
   "icon": ".claude-plugin/icon.png",
-  "version": "1.23.0",
+  "version": "1.26.0",
   "description": "Studio-quality, transparent-background vehicle images for any project. Render any make, model and year in 8 camera views and any paint color, mint signed URLs a browser can load without a key, fetch catalog make logos, decode VINs for free, or build a 3D model of any vehicle.",
   "author": {
     "name": "Meter",
@@ -41,7 +41,7 @@
       "url": "https://carimage.dev/api/mcp?toolset=all",
       "headers": {
         "X-CarImage-Integration": "plugin",
-        "X-CarImage-Plugin-Version": "1.23.0",
+        "X-CarImage-Plugin-Version": "1.26.0",
         "X-CarImage-Plugin-Channel": "claude-code",
         "X-Api-Key": "${user_config.api_key}"
       }
@@ -51,7 +51,7 @@
       "url": "https://carimage.dev/api/mcp/catalog",
       "headers": {
         "X-CarImage-Integration": "plugin",
-        "X-CarImage-Plugin-Version": "1.23.0",
+        "X-CarImage-Plugin-Version": "1.26.0",
         "X-CarImage-Plugin-Channel": "claude-code"
       }
     }

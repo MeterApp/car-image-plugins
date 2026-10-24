@@ -100,7 +100,7 @@ if (!signatureIsValid(rawBody, request.headers.get("x-carimage-signature") ?? ""
 }
 ```
 
-Use a webhook when the user's app has a public HTTPS endpoint; poll otherwise. Never send a `webhook_secret` anywhere but the request body.
+Use a webhook when the user's app has a public HTTPS endpoint; poll otherwise. Never send a `webhook_secret` anywhere but the request body. An app that already has an account webhook endpoint also receives `3d_model.ready` and `3d_model.failed` there, signed differently (`t=…,sha256=…`; [account webhooks](https://carimage.dev/docs/webhooks?ref=plugin)), so it needs no `webhook_url` per request.
 
 ## In a conversation
 

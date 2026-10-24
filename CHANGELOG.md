@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.26.0 — 2026-10-23
+
+- Image Packs: `car-image-sdk` covers buying a pack (hand the human the offer's `checkout_url`), sending one batch for a whole list, why it takes a while, the `image.ready` and `pack.batch.completed` webhooks, downloads, the manifest and ZIP exports; `car-image-support` reads the `image_packs` offers `get_pricing` lists for accounts that may buy them. No tool, scope or sign-in change.
+
+## 1.25.0 — 2026-10-22
+
+- Errors: on accounts whose credit top-ups need an active subscription, a `402` for an empty balance carries `code: "subscription_required_for_credits"` with the Pro plan's `checkout_url` and `pack_url` (Image Packs) instead of a credit pack. `car-image` and `car-image-support` say to hand both links to the human and stop; credits already held stay spendable. No tool, scope or sign-in change.
+
+## 1.24.0 — 2026-10-22
+
+- Account webhooks: register an endpoint once and receive signed `image.ready`, `3d_model.ready`/`3d_model.failed` and `image_upgrade.succeeded`/`image_upgrade.failed` events (paid plans; `webhook.test` on every plan). `car-image-sdk` shows `createWebhook` and `verifyWebhook()`, `car-3d` says account endpoints receive 3D events without a `webhook_url`, and `car-image-mcp` lists `list_webhooks` (free, read only, with `?toolset=all`): twenty-one extra tools on `all`, forty in total. The stdio server needs SDK 1.31.0 / CLI 1.22.0.
+
 ## 1.23.0 — 2026-10-22
 
 - Anthropic Directory readiness: a 1024 px listing icon, `.claude-plugin/icon.png` (rendered from `assets/logo.svg`), named by `icon` in the Claude manifest. The README gives the one-step Claude Code install (`/plugin install car-image --marketplace MeterApp/car-image-plugins`) beside the marketplace route, and "What the plugin sends" now names every header and what comes back. `scripts/validate_repo.py` checks the icon (square PNG, 512-2048 px, under 2 MB) and refuses symlinks, `.DS_Store` and files of 256 KiB or more. No tool, scope or sign-in change.
