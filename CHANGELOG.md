@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.28.0 — 2026-10-29
+
+- Car pictures show inline in chat: `car-image`, `vehicle-catalog` and `car-image-mcp` show a vehicle with `get_car_image`, whose picture a chat app (claude.ai, Claude Desktop) displays inline with the tool result, instead of minting a signed URL. `create_car_image_urls` and the `car-image-urls` skill are for pages, apps, emails and documents, and the fallback where a tool's image does not reach the person (a terminal such as Claude Code or Codex): one URL, linked. The Codex skill prompts say the same. Still one vehicle image per image. No tool, scope or sign-in change.
+
+## 1.27.2 — 2026-10-26
+
+- First images in any view: `car-image` and `car-image-mcp` say a vehicle's first image takes about 25 seconds when it is not the default front-3-4 (the front-3-4 is drawn first and that view from it), and that the front-3-4 is the view redrawn at enhanced quality in the background; a further view of a vehicle already drawn now takes about 15 seconds (drawn in the color asked for, its paint overlay made in the background). No tool, scope or sign-in change.
+
+## 1.27.1 — 2026-10-26
+
+- First images: `car-image`, `car-image-mcp` and `car-image-sdk` say a vehicle's first image (front-3-4, in a color) typically comes back in under 20 seconds at standard quality and that view is redrawn at enhanced quality in the background, usually within a day, at no charge (`image.upgraded` with `reason: "first_view"` on account webhooks); other new views take about 40 seconds and stay standard. No tool, scope or sign-in change.
+
+## 1.27.0 — 2026-10-25
+
+- Vehicle-image plans: a plan counts vehicle images (one vehicle in one color from one view, once per UTC month, delivered as often as needed at any size and format) and, within them, new vehicle views (a view the catalog has not prepared yet, which takes a little time). Free 100 images and 10 new views a month; Pro $49/month 2,500 and 1,000; Business $99/month 10,000 and 4,000. No overage, and credits are no longer sold: they pay only for 3D models (100), make logos (1) and quality upgrades (20). `car-image`, `car-image-urls`, `car-image-mcp` and `car-image-sdk` say what a call counts instead of a credit per image, read `billing.vehicle_images` and the `X-Vehicle-Images-*` headers, and point at `POST /api/v1/images/availability` (free) to check a catalog first; every skill stops on the new `402` codes `plan_image_limit` and `plan_new_view_limit` (and `subscription_required_for_credits`) and hands the human `checkout_url` or `pack_url`. `car-image-support` and `car-3d` drop credit packs; the license is commercial while a paid plan is active, stored copies are deleted within 30 days after it ends, and Image Pack images may be self-hosted for good. Accounts that paid before 2026-10-25 keep their credit meter and terms until the cutover date in their notice. No tool, scope or sign-in change.
+
 ## 1.26.0 — 2026-10-23
 
 - Image Packs: `car-image-sdk` covers buying a pack (hand the human the offer's `checkout_url`), sending one batch for a whole list, why it takes a while, the `image.ready` and `pack.batch.completed` webhooks, downloads, the manifest and ZIP exports; `car-image-support` reads the `image_packs` offers `get_pricing` lists for accounts that may buy them. No tool, scope or sign-in change.

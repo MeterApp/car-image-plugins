@@ -30,7 +30,7 @@ Upgrading from a release before 1.10.1? Update the plugin, restart the host, and
 
 A chat app that takes remote MCP servers (custom connectors in Claude, connectors or apps in ChatGPT) needs only the URL: `https://carimage.dev/api/mcp`, or `https://carimage.dev/api/mcp?toolset=all` for all forty tools (make logos, 3D models, pricing and help too). The app discovers the sign-in itself (`/.well-known/oauth-protected-resource`), opens Car Image in the browser, and the human approves `images:read` and `account:read` on the consent screen. There is no key to paste, and a connected app can never buy anything: it holds no `billing:write`.
 
-Once connected, a request for a picture of a car is two tool calls: `resolve_vehicle` (free), then `create_car_image_urls` with the id it returned (1 credit); paste the returned `markdown` directly into the final reply. The `car-image` skill has the conversation workflow.
+Once connected, a request for a picture of a car is two tool calls: `resolve_vehicle` (free), then `get_car_image` with the id it returned (one vehicle image of the plan's month); a chat app shows the returned picture inline. In a terminal, where a tool's image does not reach the person, `create_car_image_urls` instead, with the URL as a link. The `car-image` skill has the conversation workflow.
 
 ## Manual hosted setup with OAuth
 
@@ -90,15 +90,15 @@ Append `--toolset all` after `mcp` for all forty tools.
 | `search_vehicles` | free |
 | `decode_vin` | free |
 | `check_vehicles` | free |
-| `get_car_image` | 1 credit |
-| `create_car_image_urls` | 1 credit per URL |
+| `get_car_image` | 1 vehicle image a month (each vehicle, color and view once a month) |
+| `create_car_image_urls` | 1 vehicle image a month per image; loads included |
 | `get_account` | free |
 | `request_feature` | free |
 | `report_issue` | free |
 | `upvote_feedback` | free |
 | `submit_review` | free |
 
-Two cost credits. The four lookups come first in the table because they come first in use: `resolve_vehicle` turns what was asked for into the catalog vehicle and its id, with a confidence of `high`, `medium` or `low`; `search_vehicles` lists a make's models and a model's years; `decode_vin` turns a full or partial VIN into the catalog vehicle; `check_vehicles` checks a list of up to 100 at once and answers each entry as a match with its id, a suggestion, a miss or an invalid entry (longer lists: `car-image check <file>` or `client.checkVehicles`). `get_car_image` and `create_car_image_urls` then take `vehicle` (that stable `veh_…` id) in place of make, model and year, `color` as a preset or any hex, and `fit`, `background`, `framing` (`consistent`, `tight` or `balanced`, a preset for `trim`/`padding`), `trim`, `padding` and `shadow` alongside width and height, so an agent can ask for exactly the box a layout needs, and `format` accepts `auto` (a signed URL negotiates WebP or PNG per viewer; an inline `get_car_image` delivers PNG for it). `create_car_image_urls` also honors `renew` and `renew_days`, and takes `idempotency_key`: pass one whenever the call might be repeated, because a retry with the same key and arguments replays the first result (`idempotent_replayed: true`) instead of billing again. `get_account` reports the balance, the plan in force (`data.plan`) and the key's scopes, whichever credential the connection holds. The four feedback tools are free: `request_feature` files a feature request and `report_issue` a problem with Car Image itself (with the failed call's `request_id` and what you know in `context`; private to the human and the team); both return `similar` items first and file nothing until `force: true`, so `upvote_feedback` a match instead of filing a duplicate. `submit_review` posts the human's own review, in their words. Every one is thanked by email and followed up at each status change.
+Two count against the plan's monthly vehicle images (and, for a view the catalog has not prepared yet, its new vehicle views); no credit is charged for an image, and accounts that paid before 2026-10-25 stay on 1 credit per image until their cutover. The four lookups come first in the table because they come first in use: `resolve_vehicle` turns what was asked for into the catalog vehicle and its id, with a confidence of `high`, `medium` or `low`; `search_vehicles` lists a make's models and a model's years; `decode_vin` turns a full or partial VIN into the catalog vehicle; `check_vehicles` checks a list of up to 100 at once and answers each entry as a match with its id, a suggestion, a miss or an invalid entry (longer lists: `car-image check <file>` or `client.checkVehicles`). `get_car_image` and `create_car_image_urls` then take `vehicle` (that stable `veh_…` id) in place of make, model and year, `color` as a preset or any hex, and `fit`, `background`, `framing` (`consistent`, `tight` or `balanced`, a preset for `trim`/`padding`), `trim`, `padding` and `shadow` alongside width and height, so an agent can ask for exactly the box a layout needs, and `format` accepts `auto` (a signed URL negotiates WebP or PNG per viewer; an inline `get_car_image` delivers PNG for it). `create_car_image_urls` also honors `renew` and `renew_days`, and takes `idempotency_key`: pass one whenever the call might be repeated, because a retry with the same key and arguments replays the first result (`idempotent_replayed: true`) instead of counting again. `get_account` reports the plan in force (`data.plan`), the month's usage (`limits_usage.vehicle_images_this_month`, `new_views_this_month`), the credit balance and the key's scopes, whichever credential the connection holds. The four feedback tools are free: `request_feature` files a feature request and `report_issue` a problem with Car Image itself (with the failed call's `request_id` and what you know in `context`; private to the human and the team); both return `similar` items first and file nothing until `force: true`, so `upvote_feedback` a match instead of filing a duplicate. `submit_review` posts the human's own review, in their words. Every one is thanked by email and followed up at each status change.
 
 ### Twenty-one more with `?toolset=all` or `--toolset all`
 
@@ -136,11 +136,11 @@ A free end-to-end check that spends nothing:
 
 > "Use search_vehicles to list the model years of the Porsche 911."
 
-Then a real one, which costs 1 credit:
+Then a real one, which counts one vehicle image of the month:
 
 > "Show me a red 2024 Porsche 911, front three-quarter."
 
-A working connection answers it in two calls, `resolve_vehicle` and then `create_car_image_urls` with the vehicle id, and the image is in the reply. `get_account` (free) says which account and plan the connection is using, whichever credential it holds.
+A working connection answers it in two calls, `resolve_vehicle` and then `get_car_image` with the vehicle id, and the picture shows in the chat (in a terminal, a signed URL from `create_car_image_urls`). `get_account` (free) says which account and plan the connection is using, whichever credential it holds.
 
 To check that the server is reachable at all, with no credential, from a terminal:
 
@@ -167,7 +167,7 @@ A `401` with `WWW-Authenticate: Bearer realm="Car Image API", resource_metadata=
 
 **`400 Unknown toolset`.** The query value must be `core` or `all`; anything else is rejected before any tool is listed.
 
-**Tools appear but every call fails with 402.** The account is out of credits (a 3D model needs 100 at once, so it is the usual cause), or the problem carries `code: "plan_vehicle_limit"` and the request named more new distinct vehicles than the plan allows this month (Free 100, Pro 2,500, Business 15,000). Report the balance, or the plan and the cap, and let the human decide; never buy credits or change a plan automatically.
+**Tools appear but every call fails with 402.** The problem's `code` says why, and nothing was charged. `plan_image_limit` or `plan_new_view_limit`: the month's vehicle images (Free 100, Pro 2,500, Business 10,000) or new vehicle views (Free 10, Pro 1,000, Business 4,000) are used up until `resets_at`, the 1st (UTC); images already received keep serving. `subscription_required_for_credits`: the balance is short for a 3D model (100 credits), a logo or an upgrade, and credits are not sold. On an account still on the credit meter, the balance or `plan_vehicle_limit`. Report the plan and what it includes, hand the human `checkout_url` or `pack_url`, and let them decide; never retry, buy anything or change a plan automatically.
 
 **A call fails with `Input validation error`.** The tool refused an argument before the API saw it, and nothing was charged. The message names the argument and the rule. A host that holds no typed schema for a tool sends every argument as text, and both servers read that as it was meant: `"960"` is the number, `"true"` the flag, and the JSON of `images` the list. A `car-image mcp` server older than CLI 1.9.4 refuses a flag or a list sent that way (`expected boolean, received string`; `expected array, received string`): update the CLI.
 
@@ -175,7 +175,7 @@ A `401` with `WWW-Authenticate: Bearer realm="Car Image API", resource_metadata=
 
 **Calls fail with 403.** The key lacks `images:read`. Create a correctly scoped key.
 
-**Everything is slow the first time.** The first render of a given make/model/year/view/color takes a few seconds; after that it is cached and instant. This is expected, not a connection problem.
+**Everything is slow the first time.** A vehicle's first image typically takes under 20 seconds (about 25 in a view other than the default front-3-4), and a further view nobody has asked for yet about 15; after that it is stored and comes back in about a second, in any color. This is expected, not a connection problem.
 
 **A tool returns 429.** The per-key limit is 120 requests per minute on Free and Pro, 600 on Business and 1,200 on Enterprise, and every account also has a limit across all its keys (`code: "account_rate_limited"`). Wait the `Retry-After` seconds. If a batch job triggers this repeatedly, lower its concurrency. A 429 with `code: "account_generation_cap"` is different: the account has used its plan's share of today's render budget, cached images keep serving, and new renders resume at midnight UTC.
 
@@ -189,4 +189,4 @@ A `401` with `WWW-Authenticate: Bearer realm="Car Image API", resource_metadata=
 
 ## Product help and billing links
 
-Pricing, licensing and terms questions, and a human's request to buy credits or open billing settings, belong to the `car-image-support` skill (`search_help`, `get_pricing`, `create_checkout_link`, `get_billing_link`). [Help center](https://carimage.dev/help?ref=plugin).
+Pricing, licensing and terms questions, and a human's request to subscribe, buy an Image Pack or open billing settings, belong to the `car-image-support` skill (`search_help`, `get_pricing`, `create_checkout_link`, `get_billing_link`). [Help center](https://carimage.dev/help?ref=plugin).

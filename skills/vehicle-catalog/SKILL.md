@@ -7,9 +7,9 @@ When no view is specified, use **Front three-quarter (facing left)**, `view=fron
 
 # Finding the right vehicle
 
-Renders are addressed by **make, model, year** — or by the one **vehicle id** that stands for the three. The lookup comes first, every time: the catalog files cars under its own names, a render of the wrong car still costs a credit, and a 3D model of the wrong car costs a hundred.
+Renders are addressed by **make, model, year** — or by the one **vehicle id** that stands for the three. The lookup comes first, every time: the catalog files cars under its own names, a render of the wrong car still counts against the plan's month, and a 3D model of the wrong car costs a hundred.
 
-The catalog is the open [`@meterapp/vehicle-db`](https://github.com/MeterApp/vehicle-db) — 1,608 makes and 42,311 models across model years 1990-2027, built from public sources (NHTSA vPIC, UK DfT/DVLA, NZTA, Malaysia JPJ and others). It covers cars, motorcycles, trucks, buses, MPVs and more, internationally — not just the US market. Every make, model and model year also has a public page under the same slugs, from [carimage.dev/cars](https://carimage.dev/cars?ref=plugin) down to `/cars/<make>/<model>/<year>`: link it when a person wants to browse what the catalog holds.
+The catalog is the open [`@meterapp/vehicle-db`](https://github.com/MeterApp/vehicle-db) — 1,608 makes and 42,312 models across model years 1990-2027, built from public sources (NHTSA vPIC, UK DfT/DVLA, NZTA, Malaysia JPJ and others). It covers cars, motorcycles, trucks, buses, MPVs and more, internationally — not just the US market. Every make, model and model year also has a public page under the same slugs, from [carimage.dev/cars](https://carimage.dev/cars?ref=plugin) down to `/cars/<make>/<model>/<year>`: link it when a person wants to browse what the catalog holds.
 
 All the lookups below are **free**. Use them liberally.
 
@@ -25,7 +25,7 @@ All the lookups below are **free**. Use them liberally.
 | Nothing named ("a random car", "something sporty") | choose a year, make and model yourself, then `resolve_vehicle`; name your pick in the reply | as above |
 | A list of vehicles (a catalog, a spreadsheet, a feed) | `check_vehicles({ vehicles: [{ make, model, year, ref? }] })`, up to 100 a call; `car-image check <file>` or `client.checkVehicles` for more | `results[].vehicle.id` of each match |
 
-Then render with the id: `create_car_image_urls` with the id, view and color in its `images` array for chat (paste the returned Markdown inline), a page or document (`car-image-urls`); `get_car_image({ vehicle, view, color })` for explicit files or bytes, `create_3d_model` for a model (`car-3d`). One lookup serves every view, paint and size of that car.
+Then render with the id: `get_car_image({ vehicle, view, color })` to show it in chat (the picture appears inline; the `car-image` skill), `create_car_image_urls` with the id in its `images` array for a page, app, email or document (`car-image-urls`) or as a link in a terminal, `create_3d_model` for a model (`car-3d`). One lookup serves every view, paint and size of that car.
 
 ## Words in, a vehicle out
 

@@ -11,18 +11,18 @@ With MCP connected the tools are `create_3d_model`, `get_3d_model` and `publish_
 
 ## The order of work
 
-1. **Look the vehicle up** (free; the `vehicle-catalog` skill): `resolve_vehicle` for a name, `decode_vin` for a VIN. Keep the vehicle id. A model of the wrong car costs a hundred times an image of it, so this step is never skipped, and a lookup that is not `high` confidence in the year asked for goes back to the user first.
-2. **Say what it is and what it costs, and wait for a yes**: the year, make and model the lookup named, the paint, 100 credits ($1.00) unless the account already owns it, and ten to twenty minutes for a first model. A preview image of that vehicle in that paint (1 credit; the `car-image` skill shows one in the reply) is a cheap way to agree on both before the larger charge.
+1. **Look the vehicle up** (free; the `vehicle-catalog` skill): `resolve_vehicle` for a name, `decode_vin` for a VIN. Keep the vehicle id. A model of the wrong car costs 100 credits, so this step is never skipped, and a lookup that is not `high` confidence in the year asked for goes back to the user first.
+2. **Say what it is and what it costs, and wait for a yes**: the year, make and model the lookup named, the paint, 100 credits unless the account already owns it, and ten to twenty minutes for a first model. A preview image of that vehicle in that paint (one vehicle image of the plan's month, no credits; the `car-image` skill shows one in the reply) is a cheap way to agree on both before the charge.
 3. **Create it by id**: `create_3d_model({ vehicle: "veh_…", color, publish: true })`. Keep the request `id`.
 4. **Wait without hammering**, then hand over the files or the embed.
 
 ## What it costs — say this first
 
-- **100 credits ($1.00) per vehicle and color**, charged at creation whether the model is cached, in progress or new. Cache state never changes the price, exactly as with images.
+- **100 credits per vehicle and color**, charged at creation whether the model is cached, in progress or new. Cache state never changes the price, exactly as with images.
 - **Free once owned.** An account that already holds a live request for a vehicle in a color owns it: ordering it again creates a new request for nothing (`billing.credits_charged: 0`, `billing.already_owned: true`), whatever spelling, whether the model is ready or still being made, and even after Car Image rebuilds models with a better recipe. So a re-order is never a second bill; only a failed model (refunded, not owned) makes the next attempt a charged one.
 - Polling, listing, downloads, webhook deliveries, **publishing and every load of a published model are free**.
 - A model that **fails is refunded** in full. A `503` at capacity charges nothing.
-- A request is a hundred times an image: **tell the user the price and confirm before calling `create_3d_model`** for a vehicle and color the account does not own yet, and call `get_account` first when the balance may be short. Never retry a `402`.
+- Credits are not sold: a paid plan includes some each month (Pro 1,000, Business 4,000) and every account gets 100 at signup. **Tell the user the price and confirm before calling `create_3d_model`** for a vehicle and color the account does not own yet, and call `get_account` first when the balance may be short. Never retry a `402`.
 
 ## How long it takes
 
@@ -145,7 +145,7 @@ Never put the API key, or the hour-long signed URL, in a page. Publishing exists
 | Status | Meaning | Do |
 | --- | --- | --- |
 | 400 | Bad body: `vehicle` with make/model/year, an unparseable `color`, a `publish` that is not a boolean, a `webhook_url` that is not public HTTPS, a `webhook_secret` without a URL. | Fix and retry once. Nothing was charged. |
-| 402 | Fewer than 100 credits. | **Stop and ask the human** to top up. Never buy credits on your own. |
+| 402 | Fewer than 100 credits (`code: "subscription_required_for_credits"`, `balance`, `required_credits`, `checkout_url`, `pack_url`). Nothing was charged. | **Stop and ask the human.** Credits are not sold: `checkout_url` is the next plan, which includes credits every month. Never retry or buy anything on your own. |
 | 404 | Vehicle not in the catalog under that name, unknown vehicle id, a request id that is not the user's, or an unpublished public id. Nothing was charged. | Look the vehicle up (`resolve_vehicle`; the problem's `suggestions` carry ids) and create by `vehicle`; check the id. |
 | 409 | A file was asked for before `ready`, a failed model was asked to publish, or an `Idempotency-Key` retry overtook the first request. | Wait `Retry-After`, then poll `get_3d_model`. |
 | 503 | 3D generation is at its daily capacity (`code: model_3d_at_capacity`, `retry_after_seconds`) or switched off. Nothing charged; images are unaffected. | Tell the user when it resumes; do not loop. |

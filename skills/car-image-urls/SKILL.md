@@ -1,6 +1,6 @@
 ---
 name: car-image-urls
-description: Share a vehicle image in chat (clickable links and browser viewing in ChatGPT/Codex, inline images in Claude) or put it into a web page, React component, email, Markdown file, PDF or slide deck using signed delivery URLs, so the browser loads the image without ever holding an API key. Use whenever the output is HTML, JSX, Markdown, CSS, an email template, a document or a spreadsheet rather than bytes on disk; covers looking each vehicle up once and minting by its id, TTL and use caps, batching up to 50, inventory grids from a list of VINs, caching, alt text and expiry. Do not use for downloading bytes in a script (car-image), or for finding which vehicle to render (vehicle-catalog).
+description: Put a vehicle image into a web page, React component, app, email, Markdown file, PDF or slide deck using signed delivery URLs, so the browser loads the image without ever holding an API key, or share one as a link where a conversation cannot show a tool's image (a terminal such as Claude Code or Codex) or the person asks for a link. Use whenever the output is HTML, JSX, Markdown, CSS, an email template, a document or a spreadsheet rather than a picture shown in the chat; covers looking each vehicle up once and minting by its id, TTL and use caps, batching up to 50, inventory grids from a list of VINs, caching, alt text and expiry. Do not use to show a car in a chat app (car-image shows it inline with get_car_image), for downloading bytes in a script (car-image), or for finding which vehicle to render (vehicle-catalog).
 ---
 
 When no view is specified, use **Front three-quarter (facing left)**, `view=front-3-4` (35°). Preserve any view the user explicitly requests.
@@ -11,11 +11,11 @@ A signed URL is a key-free link to one rendered vehicle image. You mint it serve
 
 ## Chat replies
 
-For a chat image, resolve the vehicle first, then mint once with `ttl_seconds: 604800`, `max_uses: 0` and renewal off unless requested. The `car-image` skill covers random-car selection and the chat workflow.
+To show a vehicle in a chat app, do not mint a URL: `get_car_image` returns the picture and the host displays it inline (the `car-image` skill covers that and random-car selection). Mint a signed URL in a conversation only when the person will not see a tool's image (a terminal such as Claude Code or Codex, or a host that hands tool images to the model alone) or when they ask for a link. Then resolve the vehicle first and mint once with `ttl_seconds: 604800`, `max_uses: 0` and renewal off unless requested.
 
 In ChatGPT and Codex, show each exact returned `data[].url` as a normal clickable Markdown link, for example `[View the vehicle image](https://example.com/image.png)` with the returned URL substituted. Do not use Markdown image syntax or paste the tool's image `markdown` into these chats, even if generic tool text recommends it. Open that same URL with an available browser-opening tool, preferably in the in-app browser (for example, `open_in_codex` with a browser target). Retain the clickable link in the final reply whether opening succeeds or not. If no browser tool is available, just provide the link. Do not claim the browser opened unless the tool confirms it.
 
-In Claude, keep rendering inline: paste each returned `data[].markdown` outside code fences. If only `url` is returned, use `![year make model, view, color](https://example.com/image.png)` with the exact returned URL. Do not automatically open a browser. Other hosts may use inline images when supported, otherwise a clickable link.
+In a terminal (Claude Code), put the plain `data[].url` on its own line, which the terminal makes clickable; Markdown image syntax does not render there. In Claude's apps, when the person asked for a link, paste each returned `data[].markdown` outside code fences; if only `url` is returned, use `![year make model, view, color](https://example.com/image.png)` with the exact returned URL. Do not automatically open a browser. Other hosts may use inline images when supported, otherwise a clickable link.
 
 Include a short vehicle caption and expiry. Reuse unexpired URLs; do not download the image or make another paid image call to work around chat display. These host-specific rules apply to chat replies; website and document embeds still use image markup.
 
@@ -58,14 +58,14 @@ The MCP tool also returns ready-to-display `markdown` for each image. Each REST 
 - **`images`** — 1 to 50 per call. Body limit is 64 KiB; split larger jobs into batches of 50. Each entry takes the same sizing options as `get_car_image`: `size` or `width`/`height` (delivered up to 1024, a larger size clamped; both together return exactly that box), `fit` (`contain` default, `cover`, `inside`), `background` (`transparent` default, a CSS color name such as `white`, or hex), `trim` with `padding` (0–50 %) or the `framing` preset for them (`balanced` for grids and listings, `tight` for thumbnails, `consistent` for galleries), `shadow` (a soft ground shadow under the car), and `format` (`png`, `webp`, `jpg`, `auto`). The `car-image` skill has the full table.
 - **`ttl_seconds`** — 60 to 604800 (7 days). Default 3600.
 - **`max_uses`** — `0` means unlimited loads until expiry. A positive number caps redemptions and returns `410` afterwards.
-- **`renew`** — `true` makes the URL auto-renew: the first load in each further window of `ttl_seconds` bills one more credit and keeps it alive, until `renew_days` (1–365, default 365) from creation. Requires `max_uses: 0`. See "Surfaces that outlive a TTL" below.
+- **`renew`** — `true` makes the URL auto-renew: the first load in each further window of `ttl_seconds` renews it (counting the image in the month that window falls in, if that month has not counted it yet) and keeps it alive, until `renew_days` (1–365, default 365) from creation. Requires `max_uses: 0`. See "Surfaces that outlive a TTL" below.
 - **`Idempotency-Key` header** — send one (1–255 characters of letters, digits, `.` `_` `:` `-`) whenever the call might be repeated: a job queue, a build step, a retried request. The same key with the same body within 24 hours replays the first response (`Idempotent-Replayed: true`) instead of minting and billing a second batch; the same key with a different body is a `422`; a retry that overtakes the original still in flight is a `409` with `Retry-After`. The SDK sends a generated key on every `createImageUrls` call (pass `idempotencyKey` to choose it), the CLI takes `--idempotency-key`, and the MCP tool takes `idempotency_key` as an argument (a replay comes back with `idempotent_replayed: true`).
 
-## What it costs
+## What it counts
 
-**1 credit per URL, charged when the URL is created.** Loading it is free, however many times, until it expires. Ten URLs cost 10 credits (1¢) whether they are loaded once or a million times.
+**Each image counts one vehicle image of the plan's month when its URL is created**: one vehicle in one color from one view, once a month however many URLs, sizes and loads it gets. Loading a URL adds nothing, however many times, until it expires. Ten URLs for ten cars count 10 vehicle images whether they are loaded once or a million times; ten URLs of one car in one color and view, at different sizes, count 1. No credit is charged (`billing.credits_charged: 0`; `billing.vehicle_images` and `billing.new_views` give the month's `used` and `included`). A view the catalog has not prepared yet is also a **new vehicle view**: we prepare the vehicle in that view so it can be shown in any color, which takes a little time, and plans bound those separately. Past an allowance the call answers `402` and mints nothing. Accounts that paid before 2026-10-25 stay on 1 credit per URL until the cutover date in their notice.
 
-So: mint once, cache the URL, reuse it. Do not re-mint the same image on every page render — that bills a credit every time.
+So: mint once, cache the URL, reuse it. Re-minting the same image on every page render costs nothing extra that month, but it is a request per render and a new URL each time.
 
 ## Choosing a TTL
 
@@ -76,11 +76,11 @@ The TTL is a cache lifetime, not a security boundary — anyone with the URL can
 | Static site, build-time generation | 7 days (`604800`), re-mint on each build | Longest window; the build owns the refresh. |
 | Server-rendered page, cached in your DB | 1-7 days | Store `url` and `expires_at`; re-mint when `expires_at` is near. |
 | Per-request SSR with no storage | 1 hour (default) | The page outlives the URL only if the user leaves the tab open. |
-| Email | 7 days, `max_uses: 0`, `renew: true` | Mail is opened days, months or a year later. A renewable URL keeps working at one credit per opened week; a plain 7-day URL is a broken image by week two. |
+| Email | 7 days, `max_uses: 0`, `renew: true` | Mail is opened days, months or a year later. A renewable URL keeps working, renewing on the first load of each opened week; a plain 7-day URL is a broken image by week two. |
 | CMS page or PDF nobody re-publishes | 7 days, `renew: true` | Same reasoning as email: the surface is rendered once and read for a long time. |
 | One-off share link | Short TTL plus `max_uses` | The only case where a use cap helps. |
 
-**Never mint a URL inside a React render, a `useEffect`, or a hot request path without caching.** That is a credit per call.
+**Never mint a URL inside a React render, a `useEffect`, or a hot request path without caching.** That is a paid API call per render.
 
 ## Surfaces that outlive a TTL
 
@@ -90,10 +90,10 @@ An email, a PDF or a page in a CMS nobody re-publishes is rendered once and open
 { "images": [{ "make": "Porsche", "model": "911", "year": 2024, "view": "front-3-4", "color": "red", "width": 480 }], "ttl_seconds": 604800, "renew": true }
 ```
 
-- The URL is created and charged like any other. When it is loaded after `expires_at`, the first load in each new window of `ttl_seconds` bills **one more credit** and renews it; every further load in that window is free and cacheable, exactly like the first window. Windows nobody opens cost nothing.
-- With the 7-day maximum TTL the ceiling is one credit per image per opened week, about five cents for an image opened every week for a year.
-- Billing is once per window whatever the open count: the ledger reference `renew:<id>:<window>` is unique, so two mail proxies racing on the first open pay once.
-- An account that cannot pay a renewal gets `402` on that load and the image shows as broken until credits land; the URL itself stays valid and resumes on its next load. Suggest auto-reload for production accounts.
+- The URL is created and counted like any other. When it is loaded after `expires_at`, the first load in each new window of `ttl_seconds` renews it; every further load in that window is free and cacheable, exactly like the first window. Windows nobody opens count nothing.
+- A renewal counts the image as a vehicle image of the month it falls in, once: an image opened every week of a year counts once in each month someone opened it, never per week.
+- A renewal is counted once per window whatever the open count: the reference `renew:<id>:<window>` is unique, so two mail proxies racing on the first open count once.
+- A renewal in a month whose allowance is used up gets `402` (`plan_image_limit`) on that load and the image shows as broken until the allowance resets on the 1st (UTC) or the plan is raised; the URL itself stays valid and resumes on its next load. On the credit meter the same happens when the balance is empty.
 - Revoking the key still ends the URL (`403`), renewals included.
 - `renew` cannot be combined with a use cap (`max_uses` must be 0).
 
@@ -133,7 +133,7 @@ const { data } = await client.createImageUrls(
 );
 ```
 
-One call, three credits. Results come back in request order.
+One call, three vehicle images. Results come back in request order.
 
 ### An inventory grid from a list of VINs
 
@@ -141,7 +141,7 @@ A dealer page, a marketplace import, a fleet dashboard: the input is a spreadshe
 
 1. **Look up every row for free.** `decode_vin` for a VIN (`vehicle.id`), `resolve_vehicle` for a name (`params.vehicle_id`). Set aside the rows that do not resolve and report them; do not guess.
 2. **Deduplicate by vehicle id.** Forty Camrys of one model year are one image. The cost is distinct vehicles × views × paints, not rows.
-3. **Say the count and the cost, and get a yes.** "212 rows, 37 distinct vehicles, one view each: 37 credits."
+3. **Say the count, and get a yes.** "212 rows, 37 distinct vehicles, one view each: 37 vehicle images of this month's allowance." For a large list, `POST /api/v1/images/availability` (free, up to 200 image objects a call, REST or the SDK; there is no MCP tool for it) says which views are prepared and whether the batch fits the month.
 4. **Mint in batches of 50** with an `idempotency_key` per batch, so a retried import does not pay twice.
 5. **Store `url`, `expires_at` and the `vehicle_id` next to each row**, and re-mint by id before expiry. A page nobody rebuilds wants `renew: true`.
 
@@ -155,7 +155,7 @@ When the image never changes, a signed URL that expires is more machinery than t
 npx @meterapp/car-image get --vehicle veh_78qtwrgh37bkr --view front-3-4 --color red --width 1024 --height 576 --trim --padding 6 --format webp --out public/hero-911.webp
 ```
 
-One credit, no expiry to track, no request at page load. Keeping copies on your own servers or CDN to serve your own product is part of a paid plan's license, for as long as the plan is active; the Free plan is for evaluation and personal projects, and a standalone library or bulk export needs a written agreement. `search_help` has the terms when the user asks (the `car-image-support` skill). Use signed URLs when the set of vehicles is open-ended: a catalog, a search result, a listing feed.
+One vehicle image, no expiry to track, no request at page load. Keeping copies on your own servers or CDN to serve your own product is part of a paid plan's license, for as long as the plan is active (within 30 days after it ends, stored copies are deleted; an Image Pack's images may be kept for good); the Free plan is for evaluation and personal projects, and a standalone library or bulk export needs a written agreement. `search_help` has the terms when the user asks (the `car-image-support` skill). Use signed URLs when the set of vehicles is open-ended: a catalog, a search result, a listing feed.
 
 ### Markdown and email
 
@@ -178,13 +178,13 @@ Transparent PNG sits on any background, which is what you want in a document. Fo
 `expires_at` comes back with every URL. Whatever stores the URL must store that too.
 
 - Re-mint before expiry, not after a user reports a broken image.
-- A `403` on a delivery URL means expired, invalid, the key that created it was revoked, or `code: "origin_not_allowed"`: the page loading it is on a site the issuing key's allowed origins (set on the key in the dashboard) do not list; loads without a `Referer` or `Origin`, such as email clients, pass. A `410` means a use-capped URL hit its cap. Both are fixed by minting a fresh URL, not by retrying the old one. A `402` means a renewable URL entered a new window the account could not pay for; add credits and the same URL resumes.
-- In chat, follow the host-specific display rules above and state expiry: ChatGPT/Codex gets a clickable link and browser opening when available; Claude keeps inline Markdown. Reuse the same URL without another paid call.
+- A `403` on a delivery URL means expired, invalid, the key that created it was revoked, or `code: "origin_not_allowed"`: the page loading it is on a site the issuing key's allowed origins (set on the key in the dashboard) do not list; loads without a `Referer` or `Origin`, such as email clients, pass. A `410` means a use-capped URL hit its cap. Both are fixed by minting a fresh URL, not by retrying the old one. A `402` means a renewable URL entered a new window in a month whose allowance is used up; the same URL resumes once the allowance resets or the plan is raised.
+- In chat, a URL is the fallback where a tool's image does not reach the person: follow the host-specific display rules above and state expiry (ChatGPT/Codex get a clickable link and browser opening when available, a terminal the plain URL, Claude's apps inline Markdown). Reuse the same URL without another paid call.
 
 ## Do not
 
 - Mint a URL for a vehicle you have not looked up. One `404` fails the whole batch before anything is charged; it carries `suggestions` (and, over REST, the `index` of the entry), so fix that entry and send the batch again.
 - Put an API key in client-side code, an `<img src>`, or a committed config file. Mint a signed URL instead.
-- Mint a URL per request or per render without caching — each one is a credit.
+- Mint a URL per request or per render without caching — each one is a paid API call.
 - Treat a signed URL as private. It is unguessable, not access-controlled.
 - Present a render as a photograph of one specific listed vehicle. It represents the model.

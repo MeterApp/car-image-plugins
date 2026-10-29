@@ -27,15 +27,21 @@ nested plugin directory, which is why one repository serves all four channels.
 - **Manifest versions move together.** All four `plugin.json` files carry the
   same `version`, and `CHANGELOG.md` gains a `## <version> ` heading in the same
   commit. `scripts/validate_repo.py` fails otherwise.
-- **Product facts do not drift.** 1 credit per image; a plan carries the
-  license and a monthly credit allowance (Free: 100 credits once at signup,
-  evaluation and personal projects; Pro $29/month: 25,000 credits a month and a
-  commercial license that the renders keep after the plan ends; Business $99/month: 150,000; Enterprise:
-  custom), $1 per 100 credits on any plan (including Free), no subscription or monthly
-purchase cap; subscription credits are spent first, purchased credits never
-  expire; 8 views, any paint color (15 named presets or any hex), PNG/WebP/JPG
-  up to 1024 px; stable vehicle ids (`veh_…`); VIN decoding free; a 3D model
-  100 credits, charged at creation. Prices, plans, allowances and credit
+- **Product facts do not drift.** A plan counts vehicle images: one vehicle
+  in one color from one view, once per UTC month, delivered as often as
+  needed at any size and format, and within that new vehicle views (a view
+  the catalog has not prepared yet). Free: $0, 100 images and 10 new views a
+  month, 100 credits once at signup, evaluation and personal projects; Pro
+  $49/month: 2,500 images, 1,000 new views and 1,000 credits a month, a
+  commercial license while subscribed (stored copies deleted within 30 days
+  after the plan ends); Business $99/month: 10,000, 4,000 and 4,000;
+  Enterprise: custom. No overage (a `402` until the 1st); credits are not
+  sold and pay only for 3D models (100 each, charged at creation), make logos
+  (1) and quality upgrades (20); one-time Image Packs may be self-hosted for
+  good. Accounts that paid before 2026-10-25 keep the credit meter (1 credit
+  per image) until the cutover date in their notice. 8 views, any paint color
+  (15 named presets or any hex), PNG/WebP/JPG up to 1024 px; stable vehicle
+  ids (`veh_…`); VIN decoding free. Prices, plans, allowances and credit
   values change only with a human decision.
 - **Every `carimage.dev` link carries `?ref=`.** npm and GitHub strip referrers
   and terminals never had one, so an untagged link is permanently
@@ -84,7 +90,7 @@ purchase cap; subscription credits are spent first, purchased credits never
 ## Safety
 
 - A `402` is a question for a human. Nothing here may tell an agent to buy
-  credits, change a plan, or touch billing on its own.
+  anything, change a plan, or touch billing on its own.
 - Renders are generated product visuals, not OEM photography. No skill may
   suggest claiming a specific trim or an individual listed vehicle is depicted.
 - A signed delivery URL is unguessable, not access-controlled. Never describe
@@ -92,7 +98,7 @@ purchase cap; subscription credits are spent first, purchased credits never
 - Batches cost real money. Skills must tell the agent to confirm the count and
   the cost before rendering a batch the user did not size.
 - A lookup that is ambiguous, or that answers in another year than the one
-  asked for, is a question for the human before a credit is spent. No skill
+  asked for, is a question for the human before anything is rendered. No skill
   may tell an agent to render the nearest vehicle and mention it afterwards.
 
 ## Validation

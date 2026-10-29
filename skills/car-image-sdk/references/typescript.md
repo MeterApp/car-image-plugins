@@ -18,10 +18,10 @@ On a server, `apiKey` comes from the deployment's `CAR_IMAGE_API_KEY` secret, se
 
 | Method | Returns | Costs |
 | --- | --- | --- |
-| `getImage(params, options?)` | `ImageResult` — `bytes`, `contentType`, `width`, `height`, `creditsCharged`, `creditsRemaining`, `source`, `etag`, `requestId` | 1 credit |
-| `getImageUrl(params, options?)` | One signed delivery URL | 1 credit |
+| `getImage(params, options?)` | `ImageResult` — `bytes`, `contentType`, `width`, `height`, `creditsCharged` (0 on the vehicle-image meter), `source`, `etag`, `requestId` | 1 vehicle image a month |
+| `getImageUrl(params, options?)` | One signed delivery URL | 1 vehicle image a month |
 | `getMakeLogo({ make, …transforms }, options?)` | `ImageResult` for a catalog make logo; no signed URL mode | 1 credit |
-| `createImageUrls(images, { ttlSeconds, maxUses, renew, renewDays, idempotencyKey }?)` | `data[]` of `{ id, url, expires_at, max_uses, renews_until, … }` — 1 to 50 images; `renew: true` keeps a URL alive past the TTL at 1 credit per opened window (email, CMS, PDFs); an `Idempotency-Key` (generated unless `idempotencyKey` is given) makes a retry replay instead of re-bill | 1 credit per URL, plus 1 per opened renewal window |
+| `createImageUrls(images, { ttlSeconds, maxUses, renew, renewDays, idempotencyKey }?)` | `data[]` of `{ id, url, expires_at, max_uses, renews_until, … }` — 1 to 50 images; `renew: true` keeps a URL alive past the TTL (email, CMS, PDFs); an `Idempotency-Key` (generated unless `idempotencyKey` is given) makes a retry replay instead of re-bill | 1 vehicle image a month per image; loads and renewals included |
 | `resolve(query, options?)` | The lookup to make before rendering a name someone typed: `data.params` (with `vehicle_id`, the id to render by), `candidates`, `confidence` (`"high"`, `"medium"` or `"low"`) and `extracted` (what the phrase said; compare its `year` with `params.year`) | free |
 | `searchVehicles(query, options?)` | Canonical makes, models, available years and a vehicle id per year | free |
 | `checkVehicles(entries, { batchSize?, onProgress? }?)` | Which of a list the catalog carries: `data.summary` counts and `data.results` in order, each `match` (`vehicle.id`), `suggestion` (`suggestions`), `miss` or `invalid` (`error`); any length, 2,000 per request | free |
@@ -34,12 +34,12 @@ On a server, `apiKey` comes from the deployment's `CAR_IMAGE_API_KEY` secret, se
 | `download3dModel(id, "glb" \| "glb_web" \| "usdz" \| "fbx" \| "thumbnail", options?)` | The file's bytes (follows the one-hour signed redirect) with `contentType` | free |
 | `publish3dModel(id, options?)` / `unpublish3dModel(id, options?)` | The request with `data.public` (`id`, key-free `url` and `files`, `embed.html` to paste) or with `public: null` again | free |
 | `options(options?)` | Views with yaw angles, colors with hex, sizes, fit modes (`fits`, `default_fit`), `backgrounds`, `trim` limits, formats, pricing | free |
-| `account(options?)` | `data.credits`, `auto_reload`, `has_payment_method`, `pricing`, `usage_30d`, `key.scopes` | free |
+| `account(options?)` | `data.plan` (`meter`, `limits.images_per_month`, `limits.new_views_per_month`), `limits_usage` (`vehicle_images_this_month`, `new_views_this_month`), `data.credits`, `usage_30d`, `key.scopes` | free |
 | `health(options?)` / `openapi(options?)` | Service status / the OpenAPI document | free |
 
 `vehicles()` is overloaded: no filter returns years, `{ year }` returns makes, `{ year, makeId }` returns models.
 
-`ImageParams`: `make`, `model`, `year` (or `vehicle`, a stable `veh_…` id in place of the three), and optionally `view`, `color` (a preset name, a CSS color name such as `"navy"`, or any hex such as `"#1a2b3c"`), `size` (`thumb|small|medium|large`) or `width`/`height` (delivered up to 1024 each; the server clamps a larger size, a box keeping its shape), `fit` (`contain` default, `cover`, `inside` — only matters with both dimensions, which return exactly `width`×`height`), `background` (`transparent` default, a CSS color name such as `white`, or hex as `rrggbb`, `#rrggbb`, `rgb`, `#rgb`; `jpg` defaults to white), `trim` (crop to the car's bounds before sizing) with `padding` (0–50 % of its longer side, only with `trim`), or `framing` in their place (`"consistent"` default, `"tight"` = trim with padding 0, `"balanced"` = trim with padding 6; never with `trim` or `padding`), `shadow` (a soft ground shadow under the car, drawn from its cut-out; same credit), and `format` (`png|webp|jpg|auto`; `auto` negotiates WebP or PNG from `Accept`). `assertImageParams` throws before any request for a dimension that is not a whole number of pixels from 1, a `padding` without `trim`, or a `framing` beside `trim` or `padding`. The constants `FITS`, `FRAMINGS`, `REQUEST_FORMATS`, `MAX_DIMENSION` and `MAX_PADDING_PERCENT` are exported for validation and UI.
+`ImageParams`: `make`, `model`, `year` (or `vehicle`, a stable `veh_…` id in place of the three), and optionally `view`, `color` (a preset name, a CSS color name such as `"navy"`, or any hex such as `"#1a2b3c"`), `size` (`thumb|small|medium|large`) or `width`/`height` (delivered up to 1024 each; the server clamps a larger size, a box keeping its shape), `fit` (`contain` default, `cover`, `inside` — only matters with both dimensions, which return exactly `width`×`height`), `background` (`transparent` default, a CSS color name such as `white`, or hex as `rrggbb`, `#rrggbb`, `rgb`, `#rgb`; `jpg` defaults to white), `trim` (crop to the car's bounds before sizing) with `padding` (0–50 % of its longer side, only with `trim`), or `framing` in their place (`"consistent"` default, `"tight"` = trim with padding 0, `"balanced"` = trim with padding 6; never with `trim` or `padding`), `shadow` (a soft ground shadow under the car, drawn from its cut-out; same count), and `format` (`png|webp|jpg|auto`; `auto` negotiates WebP or PNG from `Accept`). `assertImageParams` throws before any request for a dimension that is not a whole number of pixels from 1, a `padding` without `trim`, or a `framing` beside `trim` or `padding`. The constants `FITS`, `FRAMINGS`, `REQUEST_FORMATS`, `MAX_DIMENSION` and `MAX_PADDING_PERCENT` are exported for validation and UI.
 
 Retrying `createImageUrls` is safe by construction: every call carries an `Idempotency-Key` (`sdk_<uuid>`), so a `POST` whose connection dropped is retried like a `GET` and the server replays the first answer rather than minting again. Pass `idempotencyKey` yourself when the retry may come from another process; the server keeps a key for 24 hours, answers `422` to the same key with a different body and `409` (`Retry-After`) while the original is still running.
 
@@ -89,7 +89,7 @@ export async function POST(request: Request) {
 }
 ```
 
-Cache the result keyed on the vehicle parameters. Without a cache, every request to this route bills a credit.
+Cache the result keyed on the vehicle parameters. Each vehicle in each color and view counts once a month however often it is fetched, but a cache still saves the round trip.
 
 When the three strings come from free text rather than from a picker backed by the catalog, resolve them first (`carImage.resolve(...)`, free) and mint with `{ vehicle: data.params.vehicle_id, view: "side" }`: a name the catalog files differently is a `404` here, and the id is the better cache key.
 
@@ -110,7 +110,7 @@ Tools come in two sets: `MCP_TOOLSETS.core` (`DEFAULT_MCP_TOOLSET`, `"core"`) is
 For application code, use the existing SDK client to retrieve logo image data.
 Each successful delivery costs 1 credit, including cache hits. There is no signed
 logo URL: host the returned image data for a site. On 402, stop and ask the human;
-never buy credits.
+never buy anything.
 
 SDK: `client.getMakeLogo({ make: "toyota", width: 256, trim: true })` returns bytes and billing metadata.
 
