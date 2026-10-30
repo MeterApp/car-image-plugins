@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.31.1 — 2026-10-30
+
+- Wording: the `car-image` and `car-image-support` descriptions say a plan counts vehicle images, with no mention of the new-view allowance removed in 1.29.0, and the `generation_paused` guidance in `car-image` tells the user that views not prepared yet will be available again shortly. No tool, scope or sign-in change.
+
 ## 1.31.0 — 2026-10-29
 
 - A ninth view, `top`: straight down from above, nose up, a bird's-eye plan view for maps, ride-share and fleet apps and parking layouts (aliases `top-down`, `overhead`, `birds-eye`, `aerial`). `car-image`, `car-image-urls`, `car-image-sdk`, `car-image-mcp` and `car-3d` list nine views; local stdio needs SDK 1.38.0 / CLI 1.29.0. No tool, scope or sign-in change.

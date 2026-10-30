@@ -1,6 +1,6 @@
 ---
 name: car-image-support
-description: Answer questions about Car Image API pricing, plans and what they count (vehicle images, new vehicle views), credits, Image Packs, subscriptions, commercial licenses, terms, privacy, vehicle coverage and Enterprise agreements using source-linked help. Prepare checkout and billing links on the human's request, buy a plan or pay a renewal with a payment token only under the owner's agent spending limit, or draft customer support replies. Do not use for generating images (car-image), embedding images (car-image-urls), or changing a customer's account on their behalf.
+description: Answer questions about Car Image API pricing, plans and what they count (vehicle images), credits, Image Packs, subscriptions, commercial licenses, terms, privacy, vehicle coverage and Enterprise agreements using source-linked help. Prepare checkout and billing links on the human's request, buy a plan or pay a renewal with a payment token only under the owner's agent spending limit, or draft customer support replies. Do not use for generating images (car-image), embedding images (car-image-urls), or changing a customer's account on their behalf.
 ---
 
 # Product help and billing

@@ -45,7 +45,7 @@ Only a `200` that delivers an image or mints signed URLs counts a vehicle image 
 
 ### A 503 at render capacity
 
-- **`"code": "generation_paused"`** (a `503` with `Retry-After`) — new renders are paused service-wide while render capacity is restored (`reason`: `capacity_exhausted`, `capacity_busy` or `upstream_unavailable`). Nothing was charged; vehicle views already prepared keep serving in every color. Retry once after `Retry-After`, never in a loop, and tell the user new vehicle views resume shortly.
+- **`"code": "generation_paused"`** (a `503` with `Retry-After`) — new renders are paused service-wide while render capacity is restored (`reason`: `capacity_exhausted`, `capacity_busy` or `upstream_unavailable`). Nothing was charged; vehicle views already prepared keep serving in every color. Retry once after `Retry-After`, never in a loop, and tell the user that views not prepared yet will be available again shortly.
 - **`"code": "generation_at_capacity"`** (a `503` with `Retry-After`) — new renders have hit the service's daily ceiling. The problem also carries `retry_after_seconds` and `reset_at`. Already-rendered images keep serving normally, so cached variants still work. **Retrying before `reset_at` cannot succeed** — do not loop. Tell the user when capacity resets, and offer vehicles that are already cached if they need something now.
 
 ## Reporting a problem
