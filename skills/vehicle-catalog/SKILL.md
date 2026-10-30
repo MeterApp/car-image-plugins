@@ -15,6 +15,10 @@ All the lookups below are **free**. Use them liberally.
 
 `resolve_vehicle` and `search_vehicles` also work before anyone signs in: the plugin's `car-image-catalog` server serves them with no account, together with `preview_car_image`, the picture a vehicle's page already shows (the `car-image` skill, "Before the account is connected"). `decode_vin` and `check_vehicles` are on the account server, like every render.
 
+## Check readiness and quality
+
+When the human asks whether an image is already prepared/cached or what quality it has, resolve the vehicle first, then call `get_image_availability({ vehicle, view, color })`. Omit `view` for all nine. **Prepared means cached and quick to serve from storage without waiting for a new render.** Report `cached` and `quality` (`standard`, `enhanced`, `premium`, or null), and `render_eta` when uncached. The check is free: it renders, queues and counts nothing. Checking never authorizes generating or upgrading. A missing public preview is not proof that an authenticated view needs generation.
+
 ## Look up, then hand over the id
 
 | You have | Call | Take |

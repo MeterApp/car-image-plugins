@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.31.0 — 2026-10-29
+
+- A ninth view, `top`: straight down from above, nose up, a bird's-eye plan view for maps, ride-share and fleet apps and parking layouts (aliases `top-down`, `overhead`, `birds-eye`, `aerial`). `car-image`, `car-image-urls`, `car-image-sdk`, `car-image-mcp` and `car-3d` list nine views; local stdio needs SDK 1.38.0 / CLI 1.29.0. No tool, scope or sign-in change.
+
+## 1.30.0 — 2026-10-29
+
+- `get_image_availability` checks prepared/cached views, quality (`standard`, `enhanced`, `premium`, or null), upgrade state and render estimates for free before an image request. Prepared means cached and quick to serve from storage; the check renders, queues and counts nothing. Available in both MCP servers, including the core toolset: twelve core tools, forty-one in all (SDK 1.36.0 / CLI 1.27.0 for local stdio).
+- The setup skill distinguishes the marketplace plugin from a curated app snapshot: the registered MCP URL and published tool inventory must both be refreshed in the app publisher portal.
+
+
+## 1.29.0 — 2026-10-29
+
+- No new-view allowance: a plan counts vehicle images only. A view the catalog has not prepared yet counts as one vehicle image like any other (it still takes a little longer the first time). Free 100 vehicle images a month, Pro 2,500, Business 10,000. `car-image`, `car-image-urls`, `car-image-mcp`, `car-image-sdk` and `car-image-support` drop the `plan_new_view_limit` code, the `X-New-Views-*` headers and `billing.new_views`; the only allowance refusal is `plan_image_limit`. No tool, scope or sign-in change.
+
 ## 1.28.0 — 2026-10-29
 
 - Car pictures show inline in chat: `car-image`, `vehicle-catalog` and `car-image-mcp` show a vehicle with `get_car_image`, whose picture a chat app (claude.ai, Claude Desktop) displays inline with the tool result, instead of minting a signed URL. `create_car_image_urls` and the `car-image-urls` skill are for pages, apps, emails and documents, and the fallback where a tool's image does not reach the person (a terminal such as Claude Code or Codex): one URL, linked. The Codex skill prompts say the same. Still one vehicle image per image. No tool, scope or sign-in change.

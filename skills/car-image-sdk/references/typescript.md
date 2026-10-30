@@ -34,7 +34,7 @@ On a server, `apiKey` comes from the deployment's `CAR_IMAGE_API_KEY` secret, se
 | `download3dModel(id, "glb" \| "glb_web" \| "usdz" \| "fbx" \| "thumbnail", options?)` | The file's bytes (follows the one-hour signed redirect) with `contentType` | free |
 | `publish3dModel(id, options?)` / `unpublish3dModel(id, options?)` | The request with `data.public` (`id`, key-free `url` and `files`, `embed.html` to paste) or with `public: null` again | free |
 | `options(options?)` | Views with yaw angles, colors with hex, sizes, fit modes (`fits`, `default_fit`), `backgrounds`, `trim` limits, formats, pricing | free |
-| `account(options?)` | `data.plan` (`meter`, `limits.images_per_month`, `limits.new_views_per_month`), `limits_usage` (`vehicle_images_this_month`, `new_views_this_month`), `data.credits`, `usage_30d`, `key.scopes` | free |
+| `account(options?)` | `data.plan` (`meter`, `limits.images_per_month`), `limits_usage` (`vehicle_images_this_month`), `data.credits`, `usage_30d`, `key.scopes` | free |
 | `health(options?)` / `openapi(options?)` | Service status / the OpenAPI document | free |
 
 `vehicles()` is overloaded: no filter returns years, `{ year }` returns makes, `{ year, makeId }` returns models.
@@ -103,7 +103,7 @@ The SDK is `fetch`-based with no Node built-ins, so it runs unchanged on Vercel 
 
 `@meterapp/car-image-sdk/mcp` exports the shared tool definitions used by both the hosted and the stdio MCP servers — names, descriptions, JSON schemas and annotations. Import them if you are building your own agent surface and want the tool contracts to match the official ones exactly.
 
-Tools come in two sets: `MCP_TOOLSETS.core` (`DEFAULT_MCP_TOOLSET`, `"core"`) is the eleven core tools (`resolve_vehicle`, `search_vehicles`, `decode_vin`, `check_vehicles`, `get_car_image`, `create_car_image_urls`, `get_account`, `request_feature`, `report_issue`, `upvote_feedback`, `submit_review`) and `MCP_TOOLSETS.all` adds make logos, 3D models, image options, the API reference, pricing, help and billing links (`MCP_DOCUMENTED_EXTRAS` names them), forty tools in all; `McpToolset` is the type, `isMcpToolset(value)` validates a name from a URL or flag, and `mcpInstructions(toolset)` returns the server instructions for either set (they open with `mcpInstructionsHead(toolset)`, the part every host shows a model, kept under `MCP_INSTRUCTIONS_HEAD_LIMIT`). The hosted server serves `core` at `https://carimage.dev/api/mcp` and `all` at `https://carimage.dev/api/mcp?toolset=all`.
+Tools come in two sets: `MCP_TOOLSETS.core` (`DEFAULT_MCP_TOOLSET`, `"core"`) is the twelve core tools (`resolve_vehicle`, `search_vehicles`, `decode_vin`, `check_vehicles`, `get_car_image`, `create_car_image_urls`, `get_account`, `request_feature`, `report_issue`, `upvote_feedback`, `submit_review`) and `MCP_TOOLSETS.all` adds make logos, 3D models, image options, the API reference, pricing, help and billing links (`MCP_DOCUMENTED_EXTRAS` names them), forty-one tools in all; `McpToolset` is the type, `isMcpToolset(value)` validates a name from a URL or flag, and `mcpInstructions(toolset)` returns the server instructions for either set (they open with `mcpInstructionsHead(toolset)`, the part every host shows a model, kept under `MCP_INSTRUCTIONS_HEAD_LIMIT`). The hosted server serves `core` at `https://carimage.dev/api/mcp` and `all` at `https://carimage.dev/api/mcp?toolset=all`.
 
 ## Make logos
 

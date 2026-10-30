@@ -1,7 +1,7 @@
 {
   "name": "car-image",
-  "version": "1.28.0",
-  "description": "Studio-quality, transparent-background vehicle images for any project. Render any make, model and year in 8 camera views and any paint color, mint signed URLs a browser can load without a key, fetch catalog make logos, decode VINs for free, or build a 3D model of any vehicle.",
+  "version": "1.31.0",
+  "description": "Studio-quality, transparent-background vehicle images for any project. Render any make, model and year in 9 camera views and any paint color, mint signed URLs a browser can load without a key, fetch catalog make logos, decode VINs for free, or build a 3D model of any vehicle.",
   "author": {
     "name": "Meter",
     "email": "support@carimage.dev",
@@ -25,7 +25,7 @@
   "interface": {
     "displayName": "Car Image API",
     "shortDescription": "Vehicle images in your chat",
-    "longDescription": "Show a vehicle directly in your conversation or add it to a page, email or document. Find a make, model and year in the catalog, then render it on a transparent background in eight camera views and any paint color. Signed image URLs load without an API key in the browser. Decode VINs, fetch catalog make logos, or create textured 3D models in GLB, USDZ and FBX formats.",
+    "longDescription": "Show a vehicle directly in your conversation or add it to a page, email or document. Find a make, model and year in the catalog, then render it on a transparent background in nine camera views and any paint color. Signed image URLs load without an API key in the browser. Decode VINs, fetch catalog make logos, or create textured 3D models in GLB, USDZ and FBX formats.",
     "developerName": "Meter",
     "category": "Developer Tools",
     "capabilities": [
