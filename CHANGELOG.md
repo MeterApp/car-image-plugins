@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.31.2 — 2026-11-04
+
+- Nothing in the plugin reads a credential from the user's machine, again: the Anthropic Directory held 1.31.1 for review ("Uses a credential from the user's machine"). `car-image-urls` no longer has the agent run the CLI to save a fixed hero image (the CLI signs in with the key its login saved on the machine); it mints one signed URL with `create_car_image_urls` and downloads that, which needs no key. `car-image` and its error reference send a user without a key to the dashboard instead of the CLI login. The plugin's only credential is still the optional, sensitive `user_config.api_key`, sent only to `https://carimage.dev/api/mcp` as `X-Api-Key`.
+- The release validator no longer ships in the plugin: it is a development tool of the source repository, run on every change and before every publish. The mirror's own workflow keeps the install checks. No tool, scope or sign-in change.
+
 ## 1.31.1 — 2026-10-30
 
 - Wording: the `car-image` and `car-image-support` descriptions say a plan counts vehicle images, with no mention of the new-view allowance removed in 1.29.0, and the `generation_paused` guidance in `car-image` tells the user that views not prepared yet will be available again shortly. No tool, scope or sign-in change.
@@ -48,7 +53,7 @@
 
 ## 1.23.0 — 2026-10-22
 
-- Anthropic Directory readiness: a 1024 px listing icon, `.claude-plugin/icon.png` (rendered from `assets/logo.svg`), named by `icon` in the Claude manifest. The README gives the one-step Claude Code install (`/plugin install car-image --marketplace MeterApp/car-image-plugins`) beside the marketplace route, and "What the plugin sends" now names every header and what comes back. `scripts/validate_repo.py` checks the icon (square PNG, 512-2048 px, under 2 MB) and refuses symlinks, `.DS_Store` and files of 256 KiB or more. No tool, scope or sign-in change.
+- Anthropic Directory readiness: a 1024 px square listing icon, rendered from the plugin's logo and named by `icon` in the Claude manifest. The README gives the one-step Claude Code install (`/plugin install car-image --marketplace MeterApp/car-image-plugins`) beside the marketplace route, and "What the plugin sends" now names every header and what comes back. The validator checks the icon (square PNG, 512-2048 px, under 2 MB) and refuses symlinks, `.DS_Store` and files of 256 KiB or more. No tool, scope or sign-in change.
 
 ## 1.22.0 — 2026-10-19
 

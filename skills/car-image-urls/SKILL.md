@@ -106,7 +106,7 @@ Store `renews_until` next to the URL. The story at https://carimage.dev/customer
 ```tsx
 import { CarImageClient } from "@meterapp/car-image-sdk";
 
-const client = new CarImageClient(); // server only: the key stays in the deployment's secrets (car-image-sdk)
+const client = new CarImageClient(); // server code: the SDK takes the key from the deployment's own secret settings (car-image-sdk)
 
 export default async function Hero() {
   const { data } = await client.createImageUrls(
@@ -149,10 +149,10 @@ Show the decoded trim, body and engine as text beside the image; the render repr
 
 ### One fixed image: a hero, a card, a slide
 
-When the image never changes, a signed URL that expires is more machinery than the job needs. Download the file once and serve it from the project's own assets:
+When the image never changes, a signed URL that expires is more machinery than the job needs. Save the file once and serve it from the project's own assets: mint one URL with `create_car_image_urls` (for example `vehicle: "veh_78qtwrgh37bkr"`, `view: "front-3-4"`, `color: "red"`, `width: 1024`, `height: 576`, `trim: true`, `padding: 6`, `format: "webp"`), then download that signed URL, which needs no key:
 
 ```bash
-npx @meterapp/car-image get --vehicle veh_78qtwrgh37bkr --view front-3-4 --color red --width 1024 --height 576 --trim --padding 6 --format webp --out public/hero-911.webp
+curl -fsSL -o public/hero-911.webp '<data[0].url from create_car_image_urls>'
 ```
 
 One vehicle image, no expiry to track, no request at page load. Keeping copies on your own servers or CDN to serve your own product is part of a paid plan's license, for as long as the plan is active (within 30 days after it ends, stored copies are deleted; an Image Pack's images may be kept for good); the Free plan is for evaluation and personal projects, and a standalone library or bulk export needs a written agreement. `search_help` has the terms when the user asks (the `car-image-support` skill). Use signed URLs when the set of vehicles is open-ended: a catalog, a search result, a listing feed.

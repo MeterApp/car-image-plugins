@@ -26,7 +26,7 @@ nested plugin directory, which is why one repository serves all four channels.
 
 - **Manifest versions move together.** All four `plugin.json` files carry the
   same `version`, and `CHANGELOG.md` gains a `## <version> ` heading in the same
-  commit. `scripts/validate_repo.py` fails otherwise.
+  commit. The source repository's release validator fails otherwise.
 - **Product facts do not drift.** A plan counts vehicle images: one vehicle
   in one color from one view, once per UTC month, delivered as often as
   needed at any size and format; a view the catalog has not prepared yet
@@ -85,7 +85,14 @@ nested plugin directory, which is why one repository serves all four channels.
   connection the host authenticated; code for the user's own server leaves the
   key to the deployment (`new CarImageClient()` finds it); REST examples are
   HTTP requests with `cimg_…` standing for the key; a webhook secret is a
-  parameter. The validator enforces it.
+  parameter. No skill has the agent run the CLI for an image, a URL or a
+  model: the CLI signs in with the key its login saved on the machine. The
+  validator enforces it.
+- **Only what an install uses ships.** Skills, manifests, docs and the listing
+  art; no scripts. The release validator and the publish script are
+  development tools of the source repository, because the plugin directory
+  reads every shipped file as part of the plugin, and a validator full of the
+  credential patterns it bans reads as a plugin that uses them.
 
 ## Safety
 
@@ -104,7 +111,6 @@ nested plugin directory, which is why one repository serves all four channels.
 ## Validation
 
 ```bash
-python3 scripts/validate_repo.py
 claude plugin validate . --strict
 claude plugin validate .claude-plugin/plugin.json --strict
 CODEX_HOME="$(mktemp -d)" codex plugin marketplace add . --json
@@ -112,7 +118,8 @@ npx -y skills@latest add . --list
 ```
 
 CI runs all of these on every push, plus a scheduled check that the hosted MCP
-URL in `.mcp.json` still answers. `claude plugin validate --strict` needs
+URL in `.mcp.json` still answers. The source repository also runs its release
+validator on every change and before every publish. `claude plugin validate --strict` needs
 Claude Code 2.1.281 or later: earlier releases report the listing URLs in
 `plugin.json` (`privacyPolicyUrl`, `termsOfServiceUrl`, `supportUrl`) as
 unknown fields.

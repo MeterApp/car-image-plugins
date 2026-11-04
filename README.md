@@ -134,7 +134,6 @@ CLI: `car-image pricing`, `car-image support "question" [--report-gap]`, `car-im
 ## Development
 
 ```bash
-python3 scripts/validate_repo.py
 claude plugin validate . --strict
 codex plugin marketplace add . --json
 ```
