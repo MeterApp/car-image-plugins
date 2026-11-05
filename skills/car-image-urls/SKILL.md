@@ -9,6 +9,8 @@ When no view is specified, use **Front three-quarter (facing left)**, `view=fron
 
 A signed URL is a key-free link to one rendered vehicle image. You mint it server-side; the browser, email client or PDF reader loads it directly. **The API key never goes where a browser can read it: a page gets a signed URL, or a copy of the file you serve yourself.**
 
+Do not read credentials from the user's machine. Minting goes through the connected `create_car_image_urls` tool, or through server code whose deployment manages authentication (the `car-image-sdk` skill). `cimg_…` in HTTP examples is a placeholder.
+
 ## Chat replies
 
 To show a vehicle in a chat app, do not mint a URL: `get_car_image` returns the picture and the host displays it inline (the `car-image` skill covers that and random-car selection). Mint a signed URL in a conversation only when the person will not see a tool's image (a terminal such as Claude Code or Codex, or a host that hands tool images to the model alone) or when they ask for a link. Then resolve the vehicle first and mint once with `ttl_seconds: 604800`, `max_uses: 0` and renewal off unless requested.
@@ -106,7 +108,7 @@ Store `renews_until` next to the URL. The story at https://carimage.dev/customer
 ```tsx
 import { CarImageClient } from "@meterapp/car-image-sdk";
 
-const client = new CarImageClient(); // server only: the key stays in the deployment's secrets (car-image-sdk)
+const client = new CarImageClient(); // server deployment manages authentication (car-image-sdk)
 
 export default async function Hero() {
   const { data } = await client.createImageUrls(

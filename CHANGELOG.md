@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.31.4 — 2026-11-05
+
+- Wording only, for the Anthropic Directory review of 1.31.3 (still held as "Uses a credential from the user's machine" on `car-image-urls`): `car-image-urls` now says what `car-image-sdk` says, that the agent does not read credentials from the user's machine and that minting goes through the connected tool or server code whose deployment manages authentication, and its server-component comment uses the same wording as `car-image-sdk`. No tool, scope or sign-in change.
+
 ## 1.31.3 — 2026-11-05
 
 - Wording only, for the Anthropic Directory review of 1.31.2 (still held as "Uses a credential from the user's machine" on `car-image-urls`): the server-component example's comment is back to the 1.15.0 wording ("the key stays in the deployment's secrets"), and the fixed-image pattern describes saving the signed URL's file instead of showing a shell download. No tool, scope or sign-in change.
