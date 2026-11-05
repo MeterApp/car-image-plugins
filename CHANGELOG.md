@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.31.3 — 2026-11-05
+
+- Wording only, for the Anthropic Directory review of 1.31.2 (still held as "Uses a credential from the user's machine" on `car-image-urls`): the server-component example's comment is back to the 1.15.0 wording ("the key stays in the deployment's secrets"), and the fixed-image pattern describes saving the signed URL's file instead of showing a shell download. No tool, scope or sign-in change.
+
 ## 1.31.2 — 2026-11-04
 
 - Nothing in the plugin reads a credential from the user's machine, again: the Anthropic Directory held 1.31.1 for review ("Uses a credential from the user's machine"). `car-image-urls` no longer has the agent run the CLI to save a fixed hero image (the CLI signs in with the key its login saved on the machine); it mints one signed URL with `create_car_image_urls` and downloads that, which needs no key. `car-image` and its error reference send a user without a key to the dashboard instead of the CLI login. The plugin's only credential is still the optional, sensitive `user_config.api_key`, sent only to `https://carimage.dev/api/mcp` as `X-Api-Key`.
