@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.15.7 — 2026-11-05
+
+- The plugin contact in every manifest is now jonathan@carimage.dev. Support requests still go to support@carimage.dev.
+
 ## 1.32.0 — 2026-11-05
 
 - **The plugin does no authentication of its own.** The optional API key setting in Claude Code is gone, and Claude Code's copy of the MCP servers is now identical to `.mcp.json`: a URL and the `X-CarImage-*` attribution headers, nothing else. Every host, Claude Code included, signs you in with your browser through the server's OAuth sign-in, as Codex, Cursor and the Claude and ChatGPT apps already did. The Anthropic Directory held earlier releases for review ("Uses a credential from the user's machine").
