@@ -3,7 +3,7 @@
   "name": "car-image",
   "displayName": "Car Image API",
   "icon": ".claude-plugin/icon.png",
-  "version": "1.31.4",
+  "version": "1.32.0",
   "description": "Studio-quality, transparent-background vehicle images for any project. Render any make, model and year in 9 camera views and any paint color, mint signed URLs a browser can load without a key, fetch catalog make logos, decode VINs for free, or build a 3D model of any vehicle.",
   "author": {
     "name": "Meter",
@@ -26,24 +26,14 @@
     "png",
     "transparent"
   ],
-  "userConfig": {
-    "api_key": {
-      "type": "string",
-      "title": "Car Image API key (optional)",
-      "description": "Leave empty to sign in with your browser (/mcp). Or paste a cimg_… key from https://carimage.dev/dashboard?ref=plugin for a machine without a browser: Claude Code keeps it in your system's secure credential store and sends it only to the Car Image MCP server, in the X-Api-Key header.",
-      "sensitive": true,
-      "default": ""
-    }
-  },
   "mcpServers": {
     "car-image": {
       "type": "http",
       "url": "https://carimage.dev/api/mcp?toolset=all",
       "headers": {
         "X-CarImage-Integration": "plugin",
-        "X-CarImage-Plugin-Version": "1.31.4",
-        "X-CarImage-Plugin-Channel": "claude-code",
-        "X-Api-Key": "${user_config.api_key}"
+        "X-CarImage-Plugin-Version": "1.32.0",
+        "X-CarImage-Plugin-Channel": "mcp-json"
       }
     },
     "car-image-catalog": {
@@ -51,8 +41,8 @@
       "url": "https://carimage.dev/api/mcp/catalog",
       "headers": {
         "X-CarImage-Integration": "plugin",
-        "X-CarImage-Plugin-Version": "1.31.4",
-        "X-CarImage-Plugin-Channel": "claude-code"
+        "X-CarImage-Plugin-Version": "1.32.0",
+        "X-CarImage-Plugin-Channel": "mcp-json"
       }
     }
   }

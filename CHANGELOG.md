@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.32.0 — 2026-11-05
+
+- **The plugin does no authentication of its own.** The optional API key setting in Claude Code is gone, and Claude Code's copy of the MCP servers is now identical to `.mcp.json`: a URL and the `X-CarImage-*` attribution headers, nothing else. Every host, Claude Code included, signs you in with your browser through the server's OAuth sign-in, as Codex, Cursor and the Claude and ChatGPT apps already did. The Anthropic Directory held earlier releases for review ("Uses a credential from the user's machine").
+- **If you saved a key in the plugin's settings in Claude Code:** after updating, the plugin no longer sends it. Open `/mcp`, select `plugin:car-image:car-image` and sign in with your browser. On a machine with no browser, sign the CLI in with `npx @meterapp/car-image login` and use its local server, or add the hosted server yourself with `claude mcp add` and your key as a header, as [the install page](https://carimage.dev/install?ref=plugin) shows. Your key keeps working for the SDK, the CLI and CI.
+- Skills and the README describe sign-in in one way, and say that an API key is created in the dashboard for code and CI and kept as a secret there, with a link to [the authentication docs](https://carimage.dev/docs/authentication?ref=plugin#environment) for how code loads it. No tool or scope change.
+
 ## 1.31.4 — 2026-11-05
 
 - Wording only, for the Anthropic Directory review of 1.31.3 (still held as "Uses a credential from the user's machine" on `car-image-urls`): `car-image-urls` now says what `car-image-sdk` says, that the agent does not read credentials from the user's machine and that minting goes through the connected tool or server code whose deployment manages authentication, and its server-component comment uses the same wording as `car-image-sdk`. No tool, scope or sign-in change.
@@ -10,7 +16,7 @@
 
 ## 1.31.2 — 2026-11-04
 
-- Nothing in the plugin reads a credential from the user's machine, again: the Anthropic Directory held 1.31.1 for review ("Uses a credential from the user's machine"). `car-image-urls` no longer has the agent run the CLI to save a fixed hero image (the CLI signs in with the key its login saved on the machine); it mints one signed URL with `create_car_image_urls` and downloads that, which needs no key. `car-image` and its error reference send a user without a key to the dashboard instead of the CLI login. The plugin's only credential is still the optional, sensitive `user_config.api_key`, sent only to `https://carimage.dev/api/mcp` as `X-Api-Key`.
+- Nothing in the plugin reads a credential from the user's machine, again: the Anthropic Directory held 1.31.1 for review ("Uses a credential from the user's machine"). `car-image-urls` no longer has the agent run the CLI to save a fixed hero image (the CLI signs in with the key its login saved on the machine); it mints one signed URL with `create_car_image_urls` and downloads that, which needs no key. `car-image` and its error reference send a user without a key to the dashboard instead of the CLI login. The plugin's only credential was still the optional key setting, sent only to `https://carimage.dev/api/mcp` (removed in 1.32.0).
 - The release validator no longer ships in the plugin: it is a development tool of the source repository, run on every change and before every publish. The mirror's own workflow keeps the install checks. No tool, scope or sign-in change.
 
 ## 1.31.1 — 2026-10-30
@@ -155,8 +161,8 @@
 
 ## 1.12.0 — 2026-09-30
 
-- Claude Code: an optional **Car Image API key** in the plugin's options, for a machine without a browser or a shared service account. Claude Code asks for it when the plugin is enabled (later: `/plugin` → the Car Image plugin → **Configure options**), keeps it in the system's secure credential store and sends it only to the Car Image MCP server, as `X-Api-Key`. Left empty, sign-in works as before: the plugin still sets no `Authorization` header, so OAuth fallback stays on, a signed-in token wins when both are present, and a wrong saved key falls back to browser sign-in. Codex, Cursor and `.mcp.json` are unchanged.
-- Nothing in the plugin reads a credential from the machine it runs on any more, in instructions, examples or configuration. The Anthropic Directory held the plugin for review over that ("Uses a credential from the user's machine"): up to 1.10.0 the MCP configuration sent an environment variable, and the skills and the README still showed one read in commands and code. An agent now uses the connection the host authenticated and never handles a key; code for the user's own server leaves the key to the deployment's secrets (`new CarImageClient()`); REST examples are HTTP requests with `cimg_…` standing for the key; the webhook example takes its secret as a parameter; connection checks use free tool calls, or a request with no credential. The validator fails on a key read from an environment variable or a key file, and on any `Authorization` header in an MCP configuration.
+- Claude Code: an optional API key setting, for a machine without a browser or a shared service account, sent only to the Car Image MCP server. Left empty, sign-in worked as before. Removed in 1.32.0. Codex, Cursor and `.mcp.json` were unchanged.
+- Nothing in the plugin reads a credential from the machine it runs on any more, in instructions, examples or configuration. The Anthropic Directory held the plugin for review over that ("Uses a credential from the user's machine"): up to 1.10.0 the MCP configuration sent a key from the machine, and the skills and the README still showed one being read in commands and code. An agent now uses the connection the host authenticated and never handles a key; code for the user's own server leaves the key to the deployment's secrets (`new CarImageClient()`); REST examples are HTTP requests with `cimg_…` standing for the key; the webhook example takes its secret as a parameter; connection checks use free tool calls, or a request with no credential. The validator fails on a key read from the machine, and on any `Authorization` header in an MCP configuration.
 - `plugin.json` gives the directory listing a privacy policy, terms and support page (`privacyPolicyUrl`, `termsOfServiceUrl`, `supportUrl`), and the README says what the plugin sends and links the privacy policy.
 
 ## 1.11.4 — 2026-09-30
@@ -203,7 +209,7 @@ Look the vehicle up, then render it by id.
 
 ## 1.10.1 — 2026-09-29
 
-- Let the host sign in through OAuth without an API-key environment variable. Remove the static Authorization header that prevented Claude Code directory installs from offering sign-in; retain plugin attribution and all twenty-five tools.
+- Let the host sign in through OAuth without a key on the machine. Remove the static Authorization header that prevented Claude Code directory installs from offering sign-in; retain plugin attribution and all twenty-five tools.
 - Update installation and authentication troubleshooting; keep manual API-key and local stdio setup available. Existing plugin users should update, restart their host, and sign in to the Car Image server.
 
 ## 1.10.0 — 2026-09-28
@@ -325,7 +331,7 @@ Ask for what is missing.
 First public release.
 
 - Five skills: `car-image`, `car-image-urls`, `vehicle-catalog`, `car-image-sdk`, `car-image-mcp`.
-- Hosted MCP server at `https://carimage.dev/api/mcp`, authenticated with `CAR_IMAGE_API_KEY` as a Bearer header.
+- Hosted MCP server at `https://carimage.dev/api/mcp`, authenticated with an API key as a Bearer header.
 - Native manifests for Claude Code, Codex and Cursor, plus the vendor-neutral Open Plugins manifest.
 - Installable by name: `/plugin marketplace add MeterApp/car-image-plugins` (Claude Code),
   `codex plugin marketplace add MeterApp/car-image-plugins` (Codex),

@@ -11,7 +11,7 @@ agent-visible.
 | Path | Consumed by |
 | --- | --- |
 | `.claude-plugin/marketplace.json` | `/plugin marketplace add MeterApp/car-image-plugins` |
-| `.claude-plugin/plugin.json` | `/plugin install car-image@meterapp`; also the Anthropic Directory listing (privacy, terms and support URLs), the optional `api_key` option and Claude Code's copy of the MCP server, which replaces the `.mcp.json` entry of the same name |
+| `.claude-plugin/plugin.json` | `/plugin install car-image@meterapp`; also the Anthropic Directory listing (privacy, terms and support URLs) and Claude Code's copy of the MCP servers, identical to `.mcp.json` |
 | `.agents/plugins/marketplace.json` | `codex plugin marketplace add MeterApp/car-image-plugins` |
 | `.codex-plugin/plugin.json` | `codex plugin add car-image@meterapp` (also the directory listing) |
 | `.cursor-plugin/plugin.json` | Cursor |
@@ -67,27 +67,27 @@ nested plugin directory, which is why one repository serves all four channels.
   dependency only for skills that actually call MCP tools (`car-image`,
   `car-image-urls`, `vehicle-catalog`, `car-3d`, `car-image-support`); the SDK and setup skills must
   not.
-- **OAuth by default, no embedded credentials.** No MCP configuration here
-  sets an `Authorization` header or requires an environment variable: any
-  configured `Authorization` header disables Claude Code OAuth sign-in on
-  directory installs, whatever its value. The host manages tokens. The one key
-  the plugin takes is the optional, `sensitive` `api_key` in
-  `.claude-plugin/plugin.json`, which only Claude Code's copy of the server
-  sends, as `X-Api-Key: ${user_config.api_key}`; left empty it is an empty
-  header and OAuth applies. `.mcp.json`, which Codex and Cursor read too, stays
-  OAuth-only. Nothing here contains a literal key or puts one in a URL or
-  browser code.
-- **Nothing reads a credential from the user's machine, not even an example.**
+- **The plugin does no authentication.** Every MCP entry carries a URL and
+  the `X-CarImage-*` attribution headers, nothing else: no plugin settings,
+  no key or `Authorization` header, no `${...}` expansion, no `env` block.
+  The host discovers OAuth from the server's 401 challenge, signs the person
+  in with the browser and manages the token. The Claude manifest's
+  `mcpServers` equal `.mcp.json` exactly. Nothing here contains a literal key
+  or puts one in a URL or browser code.
+- **No file shows a credential being read, not even an example or a denial.**
   The Anthropic Directory holds a plugin for review ("Uses a credential from
-  the user's machine") when a skill, the README or a config reads a key or
-  secret from environment variables or files and sends it on: `$VAR` in a
-  command, `process.env.X` in code, a CLI's config file. An agent uses the
-  connection the host authenticated; code for the user's own server leaves the
-  key to the deployment (`new CarImageClient()` finds it); REST examples are
-  HTTP requests with `cimg_…` standing for the key; a webhook secret is a
-  parameter. No skill has the agent run the CLI for an image, a URL or a
-  model: the CLI signs in with the key its login saved on the machine. The
-  validator enforces it.
+  the user's machine") when any shipped text looks like it reads a key from
+  the machine and sends it on, and it cannot tell an example or a sentence
+  that denies it from real code. An agent uses the connection the host
+  authenticated. Keys are for code and CI: a skill may say a key is created in
+  the dashboard and kept as a deployment or CI secret, and links to
+  `https://carimage.dev/docs/authentication?ref=plugin#environment` for how code loads it. REST
+  examples are HTTP requests with `cimg_…` standing for the key; a webhook
+  secret is a parameter. No skill has the agent run the CLI for an image, a
+  URL or a model: the CLI signs in with its own saved login. A machine with no
+  browser connects the server itself with `claude mcp add` and a header, as the
+  install page shows; the plugin never repeats that command. The source
+  repository's validator enforces all of this.
 - **Only what an install uses ships.** Skills, manifests, docs and the listing
   art; no scripts. The release validator and the publish script are
   development tools of the source repository, because the plugin directory

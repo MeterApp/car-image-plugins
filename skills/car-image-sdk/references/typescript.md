@@ -12,7 +12,7 @@ import { CarImageClient } from "@meterapp/car-image-sdk";
 const client = new CarImageClient();
 ```
 
-On a server, `apiKey` comes from the deployment's `CAR_IMAGE_API_KEY` secret, set by whoever runs the deployment in its platform's secret settings or CI, and `baseUrl` from `CAR_IMAGE_API_URL`, otherwise `https://carimage.dev`. Pass `{ apiKey }` or `{ baseUrl }` to take them from anywhere else, such as a secret manager. Construct it once per process, at module scope. It holds no connection state, so a single instance is safe to share.
+On a server, the client finds the key from your secret store, set by whoever runs the deployment in its platform's secret settings or CI; how code reads it is in [the authentication docs](https://carimage.dev/docs/authentication?ref=plugin#environment). Pass `{ apiKey }` or `{ baseUrl }` to take them from anywhere else, such as a secret manager; the base URL defaults to `https://carimage.dev`. Construct it once per process, at module scope. It holds no connection state, so a single instance is safe to share.
 
 ## Methods
 
@@ -93,7 +93,7 @@ Cache the result keyed on the vehicle parameters. Each vehicle in each color and
 
 When the three strings come from free text rather than from a picker backed by the catalog, resolve them first (`carImage.resolve(...)`, free) and mint with `{ vehicle: data.params.vehicle_id, view: "side" }`: a name the catalog files differently is a `404` here, and the id is the better cache key.
 
-The key belongs in the platform's secret settings for the deployment, as `CAR_IMAGE_API_KEY` — never in `NEXT_PUBLIC_*`, never in a committed `.env`, never in a client component.
+The key is created in [the dashboard](https://carimage.dev/dashboard?ref=plugin) and belongs in the platform's secret settings for the deployment ([authentication docs](https://carimage.dev/docs/authentication?ref=plugin#environment)): never in a public build variable, never in a committed file, never in a client component.
 
 ## Edge runtimes
 

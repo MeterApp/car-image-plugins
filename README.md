@@ -53,9 +53,9 @@ npx skills add MeterApp/car-image-plugins
 
 ### Then sign in, when you want an image
 
-The plugin works before you sign in: its catalog server looks vehicles up and shows the picture a vehicle's page already has, free and with no account. Sign in when you first want an image in the view, paint and size you asked for. In Claude Code the agent can start it for you and hand you a link, or open `/mcp`, select `plugin:car-image:car-image`, and authenticate in your browser. The plugin uses OAuth: no API key or environment variable is required. Codex and Cursor use their MCP connection controls to sign in.
+The plugin works before you sign in: its catalog server looks vehicles up and shows the picture a vehicle's page already has, free and with no account. Sign in when you first want an image in the view, paint and size you asked for: your agent opens a Car Image sign-in in the browser and keeps the connection. In Claude Code the agent can start it for you and hand you a link, and `/mcp` (select `plugin:car-image:car-image`) shows the connection and signs in again if needed. Codex, Cursor and the Claude and ChatGPT apps sign in the same way from their connector settings. The plugin itself takes no key.
 
-On a machine without a browser, use an API key instead. Claude Code offers an optional **Car Image API key** field when you enable the plugin: leave it empty for browser sign-in, or paste a key from [the dashboard](https://carimage.dev/dashboard?ref=plugin). To set, change or clear it later, open `/plugin`, select the Car Image plugin, choose **Configure options**, then restart. Claude Code keeps the key in your system's secure credential store and sends it only to the Car Image MCP server.
+For scripts, CI and the SDK, create an API key in [the dashboard](https://carimage.dev/dashboard?ref=plugin) and keep it as a secret in that environment; the plugin never uses it. On a machine with no browser at all, connect the server yourself with your key as a header, as [the install page](https://carimage.dev/install?ref=plugin) shows, instead of using the plugin's connection.
 
 Updating from an older release? Update the plugin ([Keep it up to date](#keep-it-up-to-date)) and restart the host before signing in.
 
@@ -104,16 +104,15 @@ The catalog server at `https://carimage.dev/api/mcp/catalog` needs no account an
 | --- | --- |
 | Plugin / catalog server | None: it serves nothing that belongs to an account |
 | Plugin / hosted MCP | Browser OAuth sign-in; the host stores and refreshes the token |
-| Plugin in Claude Code, optionally | The API key you saved in the plugin's options, kept in your system's secure credential store and sent as `X-Api-Key` |
-| Manually configured MCP without OAuth | A key entered in that host's own MCP settings, sent as an `X-Api-Key` or `Authorization: Bearer` header |
+| MCP you add yourself, without OAuth | A key entered in that host's own MCP settings, sent as an `X-Api-Key` header ([install page](https://carimage.dev/install?ref=plugin)) |
 | SDK and CLI | A key your application keeps with its other secrets, or the one `car-image login` stores for the CLI |
 | Browsers | **Never a key** — signed delivery URLs only |
 
-The plugin never sets an `Authorization` header: Claude Code turns off OAuth fallback when one is configured, so a saved key travels as `X-Api-Key`, and a signed-in token takes precedence when both are present. Nothing in the plugin reads a key from your environment variables or files. For manual API-key connections, send the key as a header, never in a URL, and keep it out of committed config files.
+The plugin's MCP entries carry a URL and the attribution headers below, nothing else: the host discovers OAuth from the server's sign-in challenge, signs you in with the browser and stores and refreshes the token. For a connection you add yourself with a key, send the key as a header, never in a URL, and keep it out of committed config files.
 
 ### What the plugin sends
 
-The plugin runs no local commands or hooks. Its MCP tools call two servers: `https://carimage.dev/api/mcp`, with your sign-in token or the key you saved, and `https://carimage.dev/api/mcp/catalog`, with no credential; each receives the arguments of its tool calls (vehicle names, VINs, view, color and size options, and the text of any help question, feedback or review you choose to send). The MCP configuration also sends `X-CarImage-Integration: plugin`, `X-CarImage-Plugin-Version` (this release) and `X-CarImage-Plugin-Channel` (which manifest configured the server) for usage attribution. These name the integration; they contain no user identity, prompt, or conversation text. What comes back is catalog data, account details (credit balance, plan, usage), signed image URLs on carimage.dev that your host or browser then fetches, and, when you ask for one, a 3D model's files. The calling host may separately identify itself through MCP client information. How Car Image handles this data is in the [privacy policy](https://carimage.dev/privacy?ref=plugin).
+The plugin runs no local commands or hooks. Its MCP tools call two servers: `https://carimage.dev/api/mcp`, with the token your host got when you signed in, and `https://carimage.dev/api/mcp/catalog`, with no credential; each receives the arguments of its tool calls (vehicle names, VINs, view, color and size options, and the text of any help question, feedback or review you choose to send). The MCP configuration also sends `X-CarImage-Integration: plugin`, `X-CarImage-Plugin-Version` (this release) and `X-CarImage-Plugin-Channel` for usage attribution. These name the integration; they contain no user identity, prompt, or conversation text. What comes back is catalog data, account details (credit balance, plan, usage), signed image URLs on carimage.dev that your host or browser then fetches, and, when you ask for one, a 3D model's files. The calling host may separately identify itself through MCP client information. How Car Image handles this data is in the [privacy policy](https://carimage.dev/privacy?ref=plugin).
 
 ## Safety model
 
