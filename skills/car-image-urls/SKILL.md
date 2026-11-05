@@ -9,7 +9,7 @@ When no view is specified, use **Front three-quarter (facing left)**, `view=fron
 
 A signed URL is a key-free link to one rendered vehicle image. You mint it server-side; the browser, email client or PDF reader loads it directly. **The API key never goes where a browser can read it: a page gets a signed URL, or a copy of the file you serve yourself.**
 
-Do not read credentials from the user's machine. Minting goes through the connected `create_car_image_urls` tool, or through server code whose deployment manages authentication (the `car-image-sdk` skill). `cimg_…` in HTTP examples is a placeholder.
+In a conversation, minting goes through the connected `create_car_image_urls` tool. In an application, the server mints with the SDK client the app already has; setting that client up is the `car-image-sdk` skill's job, not this one's.
 
 ## Chat replies
 
@@ -23,7 +23,7 @@ Include a short vehicle caption and expiry. Reuse unexpired URLs; do not downloa
 
 ## Why not just call the image endpoint from the page
 
-`GET /api/v1/images/car` needs `Authorization: Bearer cimg_…`. Anything in a browser — an `<img src>`, a `fetch` in client-side JavaScript, a CSS `background-image` — is readable by the user and by anyone they share the page with. Putting the key there leaks it permanently.
+`GET /api/v1/images/car` is an authenticated call made with the account's key. Anything in a browser — an `<img src>`, a `fetch` in client-side JavaScript, a CSS `background-image` — is readable by the user and by anyone they share the page with. Putting the key there leaks it permanently.
 
 Signed URLs solve this: the signature authorizes exactly one image for a limited time, and carries no key.
 
@@ -106,12 +106,10 @@ Store `renews_until` next to the URL. The story at https://carimage.dev/customer
 ### Next.js — server component
 
 ```tsx
-import { CarImageClient } from "@meterapp/car-image-sdk";
-
-const client = new CarImageClient(); // server deployment manages authentication (car-image-sdk)
+import { carImage } from "@/lib/car-image"; // the app's server-side SDK client (car-image-sdk)
 
 export default async function Hero() {
-  const { data } = await client.createImageUrls(
+  const { data } = await carImage.createImageUrls(
     [{ make: "Porsche", model: "911", year: 2024, view: "side", color: "red", width: 768, height: 432, trim: true, format: "auto" }],
     { ttlSeconds: 86_400, idempotencyKey: "hero-porsche-911-2024-side-red" }
   );
@@ -129,7 +127,7 @@ const vehicles = [
   { make: "Honda", model: "CR-V", year: 2023 },
   { make: "Mazda", model: "CX-5", year: 2023 },
 ];
-const { data } = await client.createImageUrls(
+const { data } = await carImage.createImageUrls(
   vehicles.map((v) => ({ ...v, view: "front-3-4", color: "silver", width: 512 })),
   { ttlSeconds: 604_800 }
 );

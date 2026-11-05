@@ -83,7 +83,9 @@ nested plugin directory, which is why one repository serves all four channels.
   the dashboard and kept as a deployment or CI secret, and links to
   `https://carimage.dev/docs/authentication?ref=plugin#environment` for how code loads it. REST
   examples are HTTP requests with `cimg_…` standing for the key; a webhook
-  secret is a parameter. No skill has the agent run the CLI for an image, a
+  secret is a parameter. Only `car-image-sdk` and `car-image-mcp` show a
+  credential header or build an SDK client; every other skill uses the
+  connected tools or a client the application already has (1.32.1). No skill has the agent run the CLI for an image, a
   URL or a model: the CLI signs in with its own saved login. A machine with no
   browser connects the server itself with `claude mcp add` and a header, as the
   install page shows; the plugin never repeats that command. The source
