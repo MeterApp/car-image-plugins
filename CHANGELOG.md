@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.15.7 — 2026-11-05
+## 1.32.1 — 2026-11-05
 
 - The plugin contact in every manifest is now jonathan@carimage.dev. Support requests still go to support@carimage.dev.
 
