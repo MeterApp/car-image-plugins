@@ -1,7 +1,7 @@
 interface:
   display_name: "Car Image URLs"
   short_description: "Embed car renders without leaking a key"
-  default_prompt: "Use $car-image-urls to embed a signed vehicle image URL in a website, app, email or document, or to share a clickable link where the chat cannot show the image and open it in the browser if available. Use front-3-4 (35 degrees, facing left) when no view is requested."
+  default_prompt: "Use $car-image-urls to look up a vehicle and embed its signed image URL in a website, app, email or document. For a requested image in ChatGPT, create_car_image_urls shows the inline card. Reuse URLs and never render twice. Default to front-3-4 when no view is requested."
 dependencies:
   tools:
     - type: "mcp"

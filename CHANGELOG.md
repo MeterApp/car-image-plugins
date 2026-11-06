@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.33.1 — 2026-11-06
+
+- Route ChatGPT image requests through `create_car_image_urls`, whose hosted MCP result displays the inline image card. Align skill prompts with the card, retain clickable links when it is unavailable, and reuse existing URLs without rendering twice.
+
 ## 1.33.0 — 2026-11-05
 
 - Skills and the README state sizes as the API now delivers them: up to the stored image's own size, a 1024 px square for older renders and a view-shaped canvas of up to 2560 px for new ones. They name the new `aspect_ratio` and `resolution` presets for the box, and `padding` without `trim`.

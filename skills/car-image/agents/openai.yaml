@@ -1,7 +1,7 @@
 interface:
   display_name: "Car Image API"
   short_description: "Vehicle renders and catalog make logos"
-  default_prompt: "Use $car-image to look up a random vehicle and show its picture inline in the chat with get_car_image; where a tool image cannot reach the person, such as a terminal, share a clickable signed image link instead. Use front-3-4 (35 degrees, facing left) when no view is requested."
+  default_prompt: "Look the vehicle up first. In ChatGPT call create_car_image_urls with its id to show the inline image card; reuse existing URLs and never render twice. In other hosts follow $car-image display instructions. Default to front-3-4 when no view is requested."
 dependencies:
   tools:
     - type: "mcp"

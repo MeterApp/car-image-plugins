@@ -3,6 +3,8 @@ name: vehicle-catalog
 description: Look a vehicle up before it is rendered - turn what someone asked for ("a 2018 Miata", "the new 911 GT3", a VIN) into the exact catalog make, model and year the Car Image API can render and the stable vehicle id (veh_…) that names it, or check what a make offers and which years exist, or which of a whole list of vehicles the catalog carries. Covers resolve_vehicle, search_vehicles, check_vehicles for lists and free VIN decoding (full or partial VINs), reading confidence and year mismatches, trims and body styles, picking a car when none was named, missing vehicles, and the open @meterapp/vehicle-db package for offline lookups, dropdowns and validation. Use first, before any image, signed URL or 3D model of a vehicle, and when building a vehicle picker or validating user input; do not use for fetching the image itself (car-image), embedding it in a page (car-image-urls) or making a 3D model (car-3d).
 ---
 
+**ChatGPT image card:** For a requested image, after the free vehicle lookup, use `create_car_image_urls` with the returned `vehicle` id, `ttl_seconds: 604800`, `max_uses: 0`, and renewal off. ChatGPT displays the returned images in an inline card. Do not call `get_car_image` first or make another image call to fix display. Reuse an unexpired URL. If the card is unavailable, show the exact returned URL as a clickable link and state expiry. These ChatGPT instructions take precedence over the general chat examples below. Other hosts keep their own display workflow.
+
 When no view is specified, use **Front three-quarter (facing left)**, `view=front-3-4` (35°). Preserve any view the user explicitly requests.
 
 # Finding the right vehicle

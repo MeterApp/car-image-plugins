@@ -3,6 +3,8 @@ name: car-image-mcp
 description: Connect an agent, IDE or chat app to the Car Image API over MCP, and fix it when the tools do not appear. Covers the hosted HTTP server, the catalog server that needs no sign-in (lookups and free previews), the local stdio alternative, browser OAuth sign-in for plugin installs and chat-app connectors (the plugin takes no key), API-key setup for connections a person adds themselves in Claude Code, Codex, Cursor, Claude Desktop and generic MCP hosts, what each of the twelve core tools costs (catalog lookups, VIN decoding, images, signed URLs, the account) and which twenty-one more ?toolset=all adds (make logos, 3D models, image options, the API reference, pricing, help and billing links), and how to diagnose a 401, a missing server or an empty tool list. Use for setup, configuration and connection troubleshooting; do not use for calling the API from code (car-image-sdk) or for image workflows once the tools already work (car-image).
 ---
 
+**ChatGPT image card:** For a requested image, after the free vehicle lookup, use `create_car_image_urls` with the returned `vehicle` id, `ttl_seconds: 604800`, `max_uses: 0`, and renewal off. ChatGPT displays the returned images in an inline card. Do not call `get_car_image` first or make another image call to fix display. Reuse an unexpired URL. If the card is unavailable, show the exact returned URL as a clickable link and state expiry. These ChatGPT instructions take precedence over the general chat examples below. Other hosts keep their own display workflow.
+
 When no view is specified, use **Front three-quarter (facing left)**, `view=front-3-4` (35°). Preserve any view the user explicitly requests.
 
 # Connecting over MCP
