@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.34.2 — 2026-11-06
+
+- For the Anthropic Directory: its credential finding followed the code 1.34.1 moved from `car-image-urls` to `car-image-sdk`, which points at the one line that assigned a literal string to a key field, an `idempotencyKey` in an example. That example now uses the key the SDK generates, and the text says how to choose one. No tool, scope or sign-in change.
+
 ## 1.34.1 — 2026-11-06
 
 - For the Anthropic Directory, which refused 1.33.1 and 1.34.0 with LOCAL_CODE_FILE_TYPE: the plugin ships no SVG. `assets/logo.svg` is gone, and the Codex and Cursor manifests use the PNG icon the Claude manifest already names.

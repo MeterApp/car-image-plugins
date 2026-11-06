@@ -99,7 +99,7 @@ import { carImage } from "@/lib/car-image";
 export default async function Hero() {
   const { data } = await carImage.createImageUrls(
     [{ make: "Porsche", model: "911", year: 2024, view: "side", color: "red", width: 768, height: 432, trim: true, format: "auto" }],
-    { ttlSeconds: 86_400, idempotencyKey: "hero-porsche-911-2024-side-red" }
+    { ttlSeconds: 86_400 }
   );
   return <img src={data[0].url} alt="2024 Porsche 911, side view, red" width={768} height={432} />;
 }
@@ -117,7 +117,7 @@ const { data } = await carImage.createImageUrls(
 );
 ```
 
-The SDK sends a generated `Idempotency-Key` on every `createImageUrls` call; pass `idempotencyKey` to choose it, as the build above does so a retried build does not pay twice.
+The SDK sends a generated `Idempotency-Key` on every `createImageUrls` call. To make a retried build replay instead of minting again, pass `idempotencyKey` with a value built from the vehicle parameters.
 
 When the three strings come from free text rather than from a picker backed by the catalog, resolve them first (`carImage.resolve(...)`, free) and mint with `{ vehicle: data.params.vehicle_id, view: "side" }`: a name the catalog files differently is a `404` here, and the id is the better cache key.
 
