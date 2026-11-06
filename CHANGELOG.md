@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.34.0 — 2026-11-06
+
+- Packs: the `car-image-sdk` and `car-image-support` skills describe packs as they are sold now: any quantity from 100, priced per unit by tier; Vehicle Packs (one make, model and year in every view per unit); every pack at the highest quality; 180 days of updates; a large batch can take one to two hours, with a webhook per car and an email when the batch is done. `get_pricing`'s `image_packs.custom` carries the rate card and a Checkout link template.
+
 ## 1.33.1 — 2026-11-06
 
 - Route ChatGPT image requests through `create_car_image_urls`, whose hosted MCP result displays the inline image card. Align skill prompts with the card, retain clickable links when it is unavailable, and reuse existing URLs without rendering twice.
