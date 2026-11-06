@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.34.1 — 2026-11-06
+
+- For the Anthropic Directory, which refused 1.33.1 and 1.34.0 with LOCAL_CODE_FILE_TYPE: the plugin ships no SVG. `assets/logo.svg` is gone, and the Codex and Cursor manifests use the PNG icon the Claude manifest already names.
+- For its MCP_FORWARDS_CREDENTIAL_ENV hold on `car-image-urls`: that skill no longer carries server client code or talks about the account's key. It works from the connected tool and the REST body, and its two code examples moved to `car-image-sdk` (`references/typescript.md`), unchanged. No tool, scope or sign-in change.
+
 ## 1.34.0 — 2026-11-06
 
 - Packs: the `car-image-sdk` and `car-image-support` skills describe packs as they are sold now: any quantity from 100, priced per unit by tier; Vehicle Packs (one make, model and year in every view per unit); every pack at the highest quality; 180 days of updates; a large batch can take one to two hours, with a webhook per car and an email when the batch is done. `get_pricing`'s `image_packs.custom` carries the rate card and a Checkout link template.

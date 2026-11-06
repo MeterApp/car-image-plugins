@@ -91,6 +91,34 @@ export async function POST(request: Request) {
 
 Cache the result keyed on the vehicle parameters. Each vehicle in each color and view counts once a month however often it is fetched, but a cache still saves the round trip.
 
+A server component mints while the page renders, and a batch is one call:
+
+```tsx
+import { carImage } from "@/lib/car-image";
+
+export default async function Hero() {
+  const { data } = await carImage.createImageUrls(
+    [{ make: "Porsche", model: "911", year: 2024, view: "side", color: "red", width: 768, height: 432, trim: true, format: "auto" }],
+    { ttlSeconds: 86_400, idempotencyKey: "hero-porsche-911-2024-side-red" }
+  );
+  return <img src={data[0].url} alt="2024 Porsche 911, side view, red" width={768} height={432} />;
+}
+```
+
+```ts
+const vehicles = [
+  { make: "Toyota", model: "RAV4", year: 2023 },
+  { make: "Honda", model: "CR-V", year: 2023 },
+  { make: "Mazda", model: "CX-5", year: 2023 },
+];
+const { data } = await carImage.createImageUrls(
+  vehicles.map((v) => ({ ...v, view: "front-3-4", color: "silver", width: 512 })),
+  { ttlSeconds: 604_800 }
+);
+```
+
+The SDK sends a generated `Idempotency-Key` on every `createImageUrls` call; pass `idempotencyKey` to choose it, as the build above does so a retried build does not pay twice.
+
 When the three strings come from free text rather than from a picker backed by the catalog, resolve them first (`carImage.resolve(...)`, free) and mint with `{ vehicle: data.params.vehicle_id, view: "side" }`: a name the catalog files differently is a `404` here, and the id is the better cache key.
 
 The key is created in [the dashboard](https://carimage.dev/dashboard?ref=plugin) and belongs in the platform's secret settings for the deployment ([authentication docs](https://carimage.dev/docs/authentication?ref=plugin#environment)): never in a public build variable, never in a committed file, never in a client component.

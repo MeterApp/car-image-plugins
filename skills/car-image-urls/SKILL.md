@@ -1,6 +1,6 @@
 ---
 name: car-image-urls
-description: Put a vehicle image into a web page, React component, app, email, Markdown file, PDF or slide deck using signed delivery URLs, so the browser loads the image without ever holding an API key, or share one as a link where a conversation cannot show a tool's image (a terminal such as Claude Code or Codex) or the person asks for a link. Use whenever the output is HTML, JSX, Markdown, CSS, an email template, a document or a spreadsheet rather than a picture shown in the chat; covers looking each vehicle up once and minting by its id, TTL and use caps, batching up to 50, inventory grids from a list of VINs, caching, alt text and expiry. Do not use to show a car in a chat app (car-image shows it inline with get_car_image), for downloading bytes in a script (car-image), or for finding which vehicle to render (vehicle-catalog).
+description: Put a vehicle image into a web page, React component, app, email, Markdown file, PDF or slide deck using signed delivery URLs, so the browser loads the image directly, or share one as a link where a conversation cannot show a tool's image (a terminal such as Claude Code or Codex) or the person asks for a link. Use whenever the output is HTML, JSX, Markdown, CSS, an email template, a document or a spreadsheet rather than a picture shown in the chat; covers looking each vehicle up once and minting by its id, TTL and use caps, batching up to 50, inventory grids from a list of VINs, caching, alt text and expiry. Do not use to show a car in a chat app (car-image shows it inline with get_car_image), for downloading bytes in a script (car-image), or for finding which vehicle to render (vehicle-catalog).
 ---
 
 **ChatGPT image card:** For a requested image, after the free vehicle lookup, use `create_car_image_urls` with the returned `vehicle` id, `ttl_seconds: 604800`, `max_uses: 0`, and renewal off. ChatGPT displays the returned images in an inline card. Do not call `get_car_image` first or make another image call to fix display. Reuse an unexpired URL. If the card is unavailable, show the exact returned URL as a clickable link and state expiry. These ChatGPT instructions take precedence over the general chat examples below. Other hosts keep their own display workflow.
@@ -9,9 +9,9 @@ When no view is specified, use **Front three-quarter (facing left)**, `view=fron
 
 # Signed delivery URLs
 
-A signed URL is a key-free link to one rendered vehicle image. You mint it server-side; the browser, email client or PDF reader loads it directly. **The API key never goes where a browser can read it: a page gets a signed URL, or a copy of the file you serve yourself.**
+A signed URL is a self-contained link to one rendered vehicle image. The browser, email client or PDF reader loads it directly, with no sign-in. **A page gets a signed URL, or a copy of the file you serve yourself; it never calls the account API.**
 
-In a conversation, minting goes through the connected `create_car_image_urls` tool. In an application, the server mints with the SDK client the app already has; setting that client up is the `car-image-sdk` skill's job, not this one's.
+In a conversation, minting goes through the connected `create_car_image_urls` tool. In an application, minting is server code, which is the `car-image-sdk` skill's job; this skill covers what to ask for and how to use the URLs it returns.
 
 ## Chat replies
 
@@ -25,9 +25,9 @@ Include a short vehicle caption and expiry. Reuse unexpired URLs; do not downloa
 
 ## Why not just call the image endpoint from the page
 
-`GET /api/v1/images/car` is an authenticated call made with the account's key. Anything in a browser — an `<img src>`, a `fetch` in client-side JavaScript, a CSS `background-image` — is readable by the user and by anyone they share the page with. Putting the key there leaks it permanently.
+`GET /api/v1/images/car` is an account call, made by servers. Anything in a browser — an `<img src>`, a `fetch` in client-side JavaScript, a CSS `background-image` — is readable by the user and by anyone they share the page with, so a page makes no account calls.
 
-Signed URLs solve this: the signature authorizes exactly one image for a limited time, and carries no key.
+Signed URLs solve this: the signature authorizes exactly one image for a limited time, and nothing else.
 
 ## The call
 
@@ -63,7 +63,7 @@ The MCP tool also returns ready-to-display `markdown` for each image. Each REST 
 - **`ttl_seconds`** — 60 to 604800 (7 days). Default 3600.
 - **`max_uses`** — `0` means unlimited loads until expiry. A positive number caps redemptions and returns `410` afterwards.
 - **`renew`** — `true` makes the URL auto-renew: the first load in each further window of `ttl_seconds` renews it (counting the image in the month that window falls in, if that month has not counted it yet) and keeps it alive, until `renew_days` (1–365, default 365) from creation. Requires `max_uses: 0`. See "Surfaces that outlive a TTL" below.
-- **`Idempotency-Key` header** — send one (1–255 characters of letters, digits, `.` `_` `:` `-`) whenever the call might be repeated: a job queue, a build step, a retried request. The same key with the same body within 24 hours replays the first response (`Idempotent-Replayed: true`) instead of minting and billing a second batch; the same key with a different body is a `422`; a retry that overtakes the original still in flight is a `409` with `Retry-After`. The SDK sends a generated key on every `createImageUrls` call (pass `idempotencyKey` to choose it), the CLI takes `--idempotency-key`, and the MCP tool takes `idempotency_key` as an argument (a replay comes back with `idempotent_replayed: true`).
+- **`Idempotency-Key` header** — send one (1–255 characters of letters, digits, `.` `_` `:` `-`) whenever the call might be repeated: a job queue, a build step, a retried request. The same key with the same body within 24 hours replays the first response (`Idempotent-Replayed: true`) instead of minting and billing a second batch; the same key with a different body is a `422`; a retry that overtakes the original still in flight is a `409` with `Retry-After`. The MCP tool takes `idempotency_key` as an argument (a replay comes back with `idempotent_replayed: true`); the `car-image-sdk` skill covers it in code.
 
 ## What it counts
 
@@ -98,41 +98,34 @@ An email, a PDF or a page in a CMS nobody re-publishes is rendered once and open
 - A renewal counts the image as a vehicle image of the month it falls in, once: an image opened every week of a year counts once in each month someone opened it, never per week.
 - A renewal is counted once per window whatever the open count: the reference `renew:<id>:<window>` is unique, so two mail proxies racing on the first open count once.
 - A renewal in a month whose allowance is used up gets `402` (`plan_image_limit`) on that load and the image shows as broken until the allowance resets on the 1st (UTC) or the plan is raised; the URL itself stays valid and resumes on its next load. On the credit meter the same happens when the balance is empty.
-- Revoking the key still ends the URL (`403`), renewals included.
+- A URL ends (`403`), renewals included, when the account revokes the access that issued it.
 - `renew` cannot be combined with a use cap (`max_uses` must be 0).
 
 Store `renews_until` next to the URL. The story at https://carimage.dev/customers/car-images-in-email?ref=plugin shows the exact email HTML.
 
 ## Patterns
 
-### Next.js — server component
+### A page: mint on the server, render the stored URL
+
+Mint when the page is built or its data is fetched, keep `url` and `expires_at`, and render plain markup. The `car-image-sdk` skill has this as server code (`references/typescript.md`, Next.js).
 
 ```tsx
-import { carImage } from "@/lib/car-image"; // the app's server-side SDK client (car-image-sdk)
-
-export default async function Hero() {
-  const { data } = await carImage.createImageUrls(
-    [{ make: "Porsche", model: "911", year: 2024, view: "side", color: "red", width: 768, height: 432, trim: true, format: "auto" }],
-    { ttlSeconds: 86_400, idempotencyKey: "hero-porsche-911-2024-side-red" }
-  );
-  return <img src={data[0].url} alt="2024 Porsche 911, side view, red" width={768} height={432} />;
-}
+<img src={image.url} alt="2024 Porsche 911, side view, red" width={768} height={432} />
 ```
 
-`width` and `height` together return exactly 768×432, so the `<img>` attributes match the bytes; `trim` makes the car fill that wide box instead of floating in a square. Wrap it in your data cache (`unstable_cache`, ISR, or your own table) keyed by the vehicle parameters so a page view does not mint a new URL — the idempotency key stops a retried build from paying twice, not a hot path from minting on every request.
+Ask for `width: 768`, `height: 432` and `trim: true` for that slot: `width` and `height` together return exactly 768×432, so the `<img>` attributes match the bytes, and `trim` makes the car fill that wide box instead of floating in a square. Key your cache by the vehicle parameters so a page view does not mint a new URL; an `Idempotency-Key` stops a retried build from paying twice, not a hot path from minting on every request.
 
 ### A batch for a comparison grid
 
-```ts
-const vehicles = [
-  { make: "Toyota", model: "RAV4", year: 2023 },
-  { make: "Honda", model: "CR-V", year: 2023 },
-  { make: "Mazda", model: "CX-5", year: 2023 },
-];
-const { data } = await carImage.createImageUrls(
-  vehicles.map((v) => ({ ...v, view: "front-3-4", color: "silver", width: 512 })),
-  { ttlSeconds: 604_800 }
-);
+```json
+{
+  "images": [
+    { "make": "Toyota", "model": "RAV4", "year": 2023, "view": "front-3-4", "color": "silver", "width": 512 },
+    { "make": "Honda", "model": "CR-V", "year": 2023, "view": "front-3-4", "color": "silver", "width": 512 },
+    { "make": "Mazda", "model": "CX-5", "year": 2023, "view": "front-3-4", "color": "silver", "width": 512 }
+  ],
+  "ttl_seconds": 604800
+}
 ```
 
 One call, three vehicle images. Results come back in request order.
@@ -176,13 +169,13 @@ Transparent PNG sits on any background, which is what you want in a document. Fo
 `expires_at` comes back with every URL. Whatever stores the URL must store that too.
 
 - Re-mint before expiry, not after a user reports a broken image.
-- A `403` on a delivery URL means expired, invalid, the key that created it was revoked, or `code: "origin_not_allowed"`: the page loading it is on a site the issuing key's allowed origins (set on the key in the dashboard) do not list; loads without a `Referer` or `Origin`, such as email clients, pass. A `410` means a use-capped URL hit its cap. Both are fixed by minting a fresh URL, not by retrying the old one. A `402` means a renewable URL entered a new window in a month whose allowance is used up; the same URL resumes once the allowance resets or the plan is raised.
+- A `403` on a delivery URL means expired, invalid, the access that issued it was revoked, or `code: "origin_not_allowed"`: the page loading it is on a site the allowed origins set in the dashboard do not list; loads without a `Referer` or `Origin`, such as email clients, pass. A `410` means a use-capped URL hit its cap. Both are fixed by minting a fresh URL, not by retrying the old one. A `402` means a renewable URL entered a new window in a month whose allowance is used up; the same URL resumes once the allowance resets or the plan is raised.
 - In chat, a URL is the fallback where a tool's image does not reach the person: follow the host-specific display rules above and state expiry (ChatGPT/Codex get a clickable link and browser opening when available, a terminal the plain URL, Claude's apps inline Markdown). Reuse the same URL without another paid call.
 
 ## Do not
 
 - Mint a URL for a vehicle you have not looked up. One `404` fails the whole batch before anything is charged; it carries `suggestions` (and, over REST, the `index` of the entry), so fix that entry and send the batch again.
-- Put an API key in client-side code, an `<img src>`, or a committed config file. Mint a signed URL instead.
+- Call the account API from client-side code or an `<img src>`. Use a signed URL instead.
 - Mint a URL per request or per render without caching — each one is a paid API call.
 - Treat a signed URL as private. It is unguessable, not access-controlled.
 - Present a render as a photograph of one specific listed vehicle. It represents the model.
