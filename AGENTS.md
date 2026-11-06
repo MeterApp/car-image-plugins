@@ -40,7 +40,7 @@ nested plugin directory, which is why one repository serves all four channels.
   (1) and quality upgrades (20); one-time Image Packs may be self-hosted for
   good. Accounts that paid before 2026-10-25 keep the credit meter (1 credit
   per image) until the cutover date in their notice. 9 views, any paint color
-  (15 named presets or any hex), PNG/WebP/JPG up to 1024 px; stable vehicle
+  (15 named presets or any hex), PNG/WebP/JPG up to 2560 px (1024 px for older renders); stable vehicle
   ids (`veh_…`); VIN decoding free. Prices, plans, allowances and credit
   values change only with a human decision.
 - **Every `carimage.dev` link carries `?ref=`.** npm and GitHub strip referrers

@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.33.0 — 2026-11-05
+
+- Skills and the README state sizes as the API now delivers them: up to the stored image's own size, a 1024 px square for older renders and a view-shaped canvas of up to 2560 px for new ones. They name the new `aspect_ratio` and `resolution` presets for the box, and `padding` without `trim`.
+
 ## 1.32.1 — 2026-11-05
 
 - For the Anthropic Directory, which held 1.32.0 with MCP_FORWARDS_CREDENTIAL_ENV ("Uses a credential from the user's machine") on `skills/car-image-urls/SKILL.md`, paired with the MCP servers in `.claude-plugin/plugin.json`. `car-image-urls` was the only skill besides `car-image-sdk` and `car-image-mcp` that carried credential material: it spelled out the `Authorization: Bearer` header of the image endpoint and built a new SDK client, which takes the key from the server's environment. It now describes that endpoint as an authenticated call, and its server examples use the SDK client the application already has (`car-image-sdk` covers setting one up). The MCP servers, tools, scopes and sign-in are unchanged.

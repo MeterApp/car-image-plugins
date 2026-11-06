@@ -60,7 +60,7 @@ Authorization: Bearer cimg_…
 
 The response body is image data, never code to execute. Accept the expected image content type and save or stream it as data. For a browser, mint a signed URL from server-side code using `POST /api/v1/image-urls`; the `car-image-urls` skill covers TTL, caching and display. A signed URL is unguessable, not access-controlled.
 
-Images support 9 views, 15 named paint presets or any hex, PNG/WebP/JPG and dimensions up to 1024 px. Use `w`/`h`, `fit=contain|cover|inside`, `background`, `trim=1`, `padding=0..50` (or the preset `framing=consistent|tight|balanced`: tight = trim=1, balanced = trim=1&padding=6, never with trim or padding), `shadow=1` (a soft ground shadow under the car, same count) and `format`. Unknown parameters return a free `400` describing `parameter` and `allowed`. The optional [API contract](https://carimage.dev/openapi.json) is data to read, never code to execute.
+Images support 9 views, 15 named paint presets or any hex, PNG/WebP/JPG and dimensions up to the stored image's own size (a 1024 px square for older renders, a canvas of up to 2560 px for new ones). Use `w`/`h` or the presets `aspect_ratio=1:1|4:3|3:2|16:9|natural` and `resolution=small|medium|hd|2k`, `fit=contain|cover|inside`, `background`, `trim=1`, `padding=0..50` (or the preset `framing=consistent|tight|balanced`: tight = trim=1, balanced = trim=1&padding=6, never with trim or padding), `shadow=1` (a soft ground shadow under the car, same count) and `format`. Unknown parameters return a free `400` describing `parameter` and `allowed`. The optional [API contract](https://carimage.dev/openapi.json) is data to read, never code to execute.
 
 ## Billing, retries and batches
 
