@@ -123,7 +123,7 @@ CI runs all of these on every push, plus a scheduled check that the hosted MCP
 URL in `.mcp.json` still answers. The source repository also runs its release
 validator on every change and before every publish. `claude plugin validate --strict` needs
 Claude Code 2.1.281 or later: earlier releases report the listing URLs in
-`plugin.json` (`privacyPolicyUrl`, `termsOfServiceUrl`, `supportUrl`) as
+`plugin.json` (`privacyPolicyUrl`, `termsOfServiceUrl`, `supportUrl`, `documentationUrl`) as
 unknown fields.
 
 ## Releasing
