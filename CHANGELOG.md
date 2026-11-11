@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.34.4 — 2026-11-11
+
+- The Free plan is one allowance per account, not per month: 30 free vehicle images in total, and once they run out a one-time courtesy of 30 more. Images already received keep serving. The skills, the README and the 402 notes say so (`resets_at` is null on Free's own allowance). Paid plans are unchanged. No tool, scope or sign-in change.
+
 ## 1.34.3 — 2026-11-10
 
 - For the Anthropic Directory listing: `plugin.json` sets `documentationUrl` (the docs) and `supportUrl` now names the help center instead of the docs, in step with the Codex manifest. No tool, scope or sign-in change.

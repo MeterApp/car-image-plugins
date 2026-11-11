@@ -30,12 +30,14 @@ nested plugin directory, which is why one repository serves all four channels.
 - **Product facts do not drift.** A plan counts vehicle images: one vehicle
   in one color from one view, once per UTC month, delivered as often as
   needed at any size and format; a view the catalog has not prepared yet
-  counts as one vehicle image like any other. Free: $0, 100 images a month,
+  counts as one vehicle image like any other. Free: $0, 30 images per
+  account in total, not per month, then a one-time courtesy of 30 more,
   100 credits once at signup, evaluation and personal projects; Pro
   $49/month: 2,500 images and 1,000 credits a month, a commercial license
   while subscribed (stored copies deleted within 30 days after the plan
   ends); Business $99/month: 10,000 images and 4,000 credits a month;
-  Enterprise: custom. No overage (a `402` until the 1st); credits are not
+  Enterprise: custom. No overage (a `402` until the 1st; Free's images do
+  not reset); credits are not
   sold and pay only for 3D models (100 each, charged at creation), make logos
   (1) and quality upgrades (20); one-time Image Packs may be self-hosted for
   good. Accounts that paid before 2026-10-25 keep the credit meter (1 credit
