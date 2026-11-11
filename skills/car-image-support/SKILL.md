@@ -5,7 +5,7 @@ description: Answer questions about Car Image API pricing, plans and what they c
 
 # Product help and billing
 
-`search_help` and `get_pricing` are also on the plugin's `car-image-catalog` server, so pricing, licensing and what-happens-when-a-plan-ends questions can be answered before anyone signs in; `create_checkout_link` and `get_billing_link` need the account server on `?toolset=all`, which the plugin configures (a connection on the bare URL has the core twelve only; the `car-image-mcp` skill).
+`search_help` and `get_pricing` are also on the plugin's `car-image-catalog` server, so pricing, licensing and what-happens-when-a-plan-ends questions can be answered before anyone signs in; `create_checkout_link` and `get_billing_link` need the account server with its full toolset, which the hosted endpoint and the marketplace plugin use by default (see the `car-image-mcp` skill).
 
 1. Call `search_help` with one product question at a time. Do not paste full customer emails, signatures, personal information, keys or payment details. Queries are privately recorded to improve articles.
 2. Read the returned paragraphs and sources. Cite the relevant article or original terms. An `articles_found` result means related reading, not that every part of the question is answered. Split multi-part questions and search each one.

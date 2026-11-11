@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.34.5 — 2026-11-11
+
+- The hosted MCP endpoint includes all 41 tools at its base URL. Use `?toolset=core` for the twelve core tools.
+
+- Clarifies which MCP tools are available on each connection and how to verify them. Documents the difference between the Git marketplace package and the ChatGPT listing.
+
 ## 1.34.4 — 2026-11-11
 
 - The Free plan is one allowance per account, not per month: 30 free vehicle images in total, and once they run out a one-time courtesy of 30 more. Images already received keep serving. The skills, the README and the 402 notes say so (`resets_at` is null on Free's own allowance). Paid plans are unchanged. No tool, scope or sign-in change.

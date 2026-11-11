@@ -16,7 +16,7 @@ Two servers expose the same tools. Prefer the hosted one — there is nothing to
 
 A third, the **catalog server** at `https://carimage.dev/api/mcp/catalog`, needs no account at all: `resolve_vehicle`, `search_vehicles`, `list_image_options`, `get_pricing`, `search_help` and `describe_api`, plus `preview_car_image`, the picture a vehicle's page on carimage.dev already shows, free. It renders nothing and reads no account, so it never asks anyone to sign in. The plugin connects it next to the hosted server, so an install can look cars up and show previews before the user signs in.
 
-Both come in two toolsets. The default, `core`, is the twelve core tools an agent needs to find a vehicle, render it and watch the balance: `resolve_vehicle`, `search_vehicles`, `decode_vin`, `check_vehicles`, `get_car_image`, `create_car_image_urls`, `get_account`, `request_feature`, `report_issue`, `upvote_feedback` and `submit_review`. Make logos, 3D models, image options, the API reference, pricing, help and billing links are twenty-one more with `?toolset=all` on the hosted URL or `--toolset all` for `car-image mcp`, forty-one tools in all. Fewer tools cost the agent less context and make the right one easier to pick, so opt in when the agent should also fetch logos, make 3D models or answer product and billing questions; the plugin does.
+The hosted server defaults to all forty-one tools. Use `?toolset=core` for the twelve core tools an agent needs to find a vehicle, render it and watch the balance: `resolve_vehicle`, `search_vehicles`, `decode_vin`, `check_vehicles`, `get_image_availability`, `get_car_image`, `create_car_image_urls`, `get_account`, `request_feature`, `report_issue`, `upvote_feedback` and `submit_review`. Make logos, 3D models, image options, the API reference, pricing, help and billing links are twenty-one more with `?toolset=all` on the hosted URL or `--toolset all` for `car-image mcp`, forty-one tools in all. Fewer tools cost the agent less context and make the right one easier to pick, so opt in when the agent should also fetch logos, make 3D models or answer product and billing questions; the plugin does.
 
 ## Plugin installs: sign in with your browser
 
@@ -30,7 +30,7 @@ Upgrading from an older release? Update the plugin, restart the host, and sign i
 
 ## Chat apps: add it as a connector
 
-A chat app that takes remote MCP servers (custom connectors in Claude, connectors or apps in ChatGPT) needs only the URL: `https://carimage.dev/api/mcp`, or `https://carimage.dev/api/mcp?toolset=all` for all forty-one tools (make logos, 3D models, pricing and help too). The app discovers the sign-in itself (`/.well-known/oauth-protected-resource`), opens Car Image in the browser, and the human approves `images:read` and `account:read` on the consent screen. There is no key to paste, and a connected app can never buy anything: it holds no `billing:write`.
+A chat app that takes remote MCP servers (custom connectors in Claude, connectors or apps in ChatGPT) needs only the URL: `https://carimage.dev/api/mcp`, for all forty-one tools. The app discovers the sign-in itself (`/.well-known/oauth-protected-resource`), opens Car Image in the browser, and the human approves `images:read` and `account:read` on the consent screen. There is no key to paste, and payments for a connected app are completed by the user in the browser. Direct payment tools require an owner-authorized key with `billing:purchase`.
 
 Once connected, a request for a picture of a car is two tool calls: `resolve_vehicle` (free), then `get_car_image` with the id it returned (one vehicle image of the plan's month); a chat app shows the returned picture inline. In a terminal, where a tool's image does not reach the person, `create_car_image_urls` instead, with the URL as a link. The `car-image` skill has the conversation workflow.
 
@@ -48,7 +48,7 @@ Then open `/mcp` and authenticate. Recent Claude Code versions also support `cla
 claude mcp add --transport http car-image-catalog https://carimage.dev/api/mcp/catalog
 ```
 
-For all forty-one tools, use `"https://carimage.dev/api/mcp?toolset=all"` as the URL (quote it: the shell would otherwise treat `?` as a glob).
+For the core tools only, use `"https://carimage.dev/api/mcp?toolset=core"` as the URL (quote it: the shell would otherwise treat `?` as a glob).
 
 ### Other OAuth-capable hosts
 
@@ -65,7 +65,7 @@ Use this in the host’s MCP configuration, such as `.cursor/mcp.json`:
 }
 ```
 
-Sign in using the host’s MCP controls. Set `"url": "https://carimage.dev/api/mcp?toolset=all"` when the agent should also have make logos, 3D models, pricing and help. Codex plugin installs already configure that URL.
+Sign in using the host’s MCP controls. The bare URL includes make logos, 3D models, pricing and help. Add `?toolset=core` for a smaller tool list.
 
 ## Optional API-key or local stdio setup
 
@@ -133,11 +133,11 @@ After resolving the vehicle, call `get_image_availability({ vehicle, view, color
 | `list_members` | free; the organization's members and teams with their roles, read only |
 | `list_webhooks` | free; the account's webhook endpoints, their events, status and failure streak, read only |
 
-`get_make_logo` takes a make and the image transforms and returns an inline logo: no model, view or paint, no signed URL and no trademark license. `create_3d_model` is 100 credits at creation, free for a vehicle and color the account already owns (`billing.already_owned`), and takes `publish`; `get_3d_model` polls it and returns `public` once published; `publish_3d_model` hosts a model at key-free URLs with a two-line `<car-3d>` embed, or takes it down with `unpublish: true` (the `car-3d` skill). `list_image_options` lists every valid view, color, size, fit mode, background and format, and `describe_api` explains any REST endpoint from the OpenAPI document. `get_pricing` and `search_help` answer product questions from the published sources, the two link tools prepare a purchase or open billing settings without charging anything, and `purchase_plan` and `pay_invoice` pay with a payment token only where the owner set an agent spending limit and allowed the key (the `car-image-support` skill). The plugin connects with `?toolset=all`, so its skills can name these; on the bare URL an agent has the core twelve, and its instructions tell it to say so and stop when the catalog lacks a vehicle.
+`get_make_logo` takes a make and the image transforms and returns an inline logo: no model, view or paint, no signed URL and no trademark license. `create_3d_model` is 100 credits at creation, free for a vehicle and color the account already owns (`billing.already_owned`), and takes `publish`; `get_3d_model` polls it and returns `public` once published; `publish_3d_model` hosts a model at key-free URLs with a two-line `<car-3d>` embed, or takes it down with `unpublish: true` (the `car-3d` skill). `list_image_options` lists every valid view, color, size, fit mode, background and format, and `describe_api` explains any REST endpoint from the OpenAPI document. `get_pricing` and `search_help` answer product questions from the published sources, the two link tools prepare a purchase or open billing settings without charging anything, and `purchase_plan` and `pay_invoice` pay with a payment token only where the owner set an agent spending limit and allowed the key (the `car-image-support` skill). The hosted default and the marketplace plugin both include these tools.
 
 ## Verifying
 
-Ask the host to list tools (`/mcp` in Claude Code and Codex). With the bare hosted URL or a plain `car-image mcp` you should see **twelve** tools under `car-image`; with `?toolset=all` (what the plugin ships) or `--toolset all`, **forty-one** tools. Seven where you expected twenty-nine is not a fault — the URL simply has no `?toolset=all`. A plugin install also shows `car-image-catalog` as connected, with `resolve_vehicle`, `search_vehicles`, `preview_car_image`, `list_image_options`, `get_pricing` and `describe_api`, whether or not anyone has signed in.
+Ask the host to list tools (`/mcp` in Claude Code and Codex). The bare hosted URL and `?toolset=all` expose **forty-one** tools. Use `?toolset=core` for **twelve** tools. Plain `car-image mcp` uses core and takes `--toolset all` for the full set. The Git marketplace install also connects `car-image-catalog` for free lookups, previews and product reference before sign-in. The ChatGPT directory connection lists the tools OpenAI has approved for its registered URL. If a tool is missing there, check the actual tool list and explain the available options to the user.
 
 A free end-to-end check that spends nothing:
 
@@ -170,7 +170,7 @@ A `401` with `WWW-Authenticate: Bearer realm="Car Image API", resource_metadata=
 
 **A manual API-key connection in another host returns 401.** Check the key in that host's MCP settings; the host must be restarted after it changes. Create a new key in the dashboard if the old one was revoked. An unauthenticated 401 with `WWW-Authenticate: Bearer … resource_metadata="…"` is the normal start of OAuth, not by itself a failed sign-in.
 
-**Twelve tools, but no `create_3d_model`, `get_make_logo` or `search_help`.** The connection uses the default toolset, which is working as designed. Add `?toolset=all` to the URL, `https://carimage.dev/api/mcp?toolset=all` (or `--toolset all` to the stdio command), and restart the host.
+**Twelve tools, but no `create_3d_model`, `get_make_logo` or `search_help`.** Check for `?toolset=core` on the hosted URL or add `--toolset all` to the stdio command. The ChatGPT directory shows the tools approved by OpenAI.
 
 **`400 Unknown toolset`.** The query value must be `core` or `all`; anything else is rejected before any tool is listed.
 

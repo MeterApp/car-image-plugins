@@ -9,7 +9,7 @@ When no view is specified, use **Front three-quarter (facing left)**, `view=fron
 
 # Car Image API
 
-Studio-quality, transparent-background renders of any vehicle in the open [`@meterapp/vehicle-db`](https://github.com/MeterApp/vehicle-db) catalog — 1,608 makes, 42,345 models, model years 1990-2027. Nine camera views, any paint color, PNG/WebP/JPG up to 1024 px.
+Studio-quality, transparent-background renders of any vehicle in the open [`@meterapp/vehicle-db`](https://github.com/MeterApp/vehicle-db) catalog — 1,608 makes, 42,346 models, model years 1990-2027. Nine camera views, any paint color, PNG/WebP/JPG up to 1024 px.
 
 ## Check readiness and quality
 
@@ -129,7 +129,7 @@ Twenty images of new cars count 20 vehicle images. Tell the user the number befo
 | Human-requested checkout or billing settings | `create_checkout_link`, `get_billing_link` (free links; the human confirms in the browser) → see the `car-image-support` skill |
 | API reference | `describe_api` (free) |
 
-The rows from `get_make_logo` down exist only when the server was connected with `?toolset=all` (the plugin does this) or `car-image mcp --toolset all`; a bare `https://carimage.dev/api/mcp` exposes the twelve core tools above them. The `car-image-mcp` skill explains both.
+The rows from `get_make_logo` down are included by the hosted endpoint and marketplace plugin, or with `car-image mcp --toolset all` for stdio. The `car-image-mcp` skill explains both.
 
 Without MCP tools connected, the same operations are REST endpoints — `POST /api/v1/images/resolve`, `GET /api/v1/vehicles`, `GET /api/v1/vehicles/{id}`, `POST /api/v1/vehicles/check`, `GET /api/v1/vin/{vin}`, `GET /api/v1/images/car`, `GET /api/v1/images/logo`, `POST /api/v1/image-urls`, `POST /api/v1/3d`, `GET /api/v1/3d/{id}`, `GET /api/v1/3d/{id}/files/{kind}`, `POST|DELETE /api/v1/3d/{id}/publish`, `GET /api/v1/3d/public/{public_id}` (no key), `GET /api/v1/images/options` and `GET /api/v1/account`. The `car-image-sdk` skill covers calling them from code; the CLI equivalents are `car-image resolve …`, `car-image check …`, `car-image vin …`, `car-image get …`, `car-image logo …` and `car-image 3d …`. Base URL `https://carimage.dev`; docs at [`/docs`](https://carimage.dev/docs?ref=plugin), [`/agents.md`](https://carimage.dev/agents.md) and [`/openapi.json`](https://carimage.dev/openapi.json).
 
