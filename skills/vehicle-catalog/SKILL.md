@@ -37,6 +37,8 @@ Then render with the id: `get_car_image({ vehicle, view, color })` to show it in
 
 `resolve_vehicle` (REST: `POST /api/v1/images/resolve`) takes a phrase and returns `params` (with `vehicle_id`), `display`, `candidates`, `confidence` (`high`, `medium` or `low`) and `extracted`, what it read out of the phrase.
 
+When the human named a market of sale, or the list is for one, pass `market` (a two-letter country code such as `AU`) to `resolve_vehicle` or `check_vehicles`: some model years look different in different markets. Today every market gets the default appearance, and the answer's `appearance` (`{ market, scope: "default" }`) says which was served; a market never changes which vehicle matches. Omit it otherwise, and never guess it from where the human is.
+
 ```
 "red 2018 Mazda MX-5 Miata, side view"
   → params: { vehicle_id: "veh_59854qbgfvar3", make: "mazda", model: "mx-5", year: 2018, view: "side", color: "red" }
