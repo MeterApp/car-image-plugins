@@ -19,7 +19,7 @@ All the lookups below are **free**. Use them liberally.
 
 ## Check readiness and quality
 
-When the human asks whether an image is already prepared/cached or what quality it has, resolve the vehicle first, then call `get_image_availability({ vehicle, view, color })`. Omit `view` for all nine. **Prepared means cached and quick to serve from storage without waiting for a new render.** Report `cached` and `quality` (`standard`, `enhanced`, `premium`, or null), and `render_eta` when uncached. The check is free: it renders, queues and counts nothing. Checking never authorizes generating or upgrading. A missing public preview is not proof that an authenticated view needs generation.
+When the human asks whether an image is already prepared/cached or what quality it has, resolve the vehicle first, then call `get_image_availability({ vehicle, view, color })`. Omit `view` for all nine. **Prepared means cached and quick to serve from storage without waiting for a new render.** Report `cached` and `quality` (`standard`, `enhanced`, `premium`, or null), and `render_eta` when uncached. Each view also carries `verified`: true means the image served for that view was compared with the manufacturer's own material for that model year and matched. It is a separate fact from prepared, and most views are not verified yet: say so when a view is verified, and never describe one that is not as wrong or doubtful. The check is free: it renders, queues and counts nothing. Checking never authorizes generating or upgrading. A missing public preview is not proof that an authenticated view needs generation.
 
 ## Look up, then hand over the id
 
