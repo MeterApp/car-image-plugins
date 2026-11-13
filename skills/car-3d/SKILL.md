@@ -69,7 +69,7 @@ Prefer `vehicle`: the id comes from the lookup, so the model is of the car the u
 }
 ```
 
-`status` goes `queued` → `processing` → `ready` or `failed`. `progress` is 0–100; `estimated_seconds_remaining` is a rough guide, not a promise. When `ready`, `files` holds `glb`, `glb_web`, `usdz`, `fbx` and `thumbnail`, each `{url, bytes, content_type}`. When `failed`, `error` carries `{code, message}` and the credits were refunded; asking again makes a fresh attempt. `public` is `null` until the request is published.
+`status` goes `queued` → `processing` → `ready` or `failed`. `progress` is 0–100; `estimated_seconds_remaining` is a rough guide, not a promise. When `ready`, `files` holds `glb`, `glb_web`, `usdz`, `fbx`, `thumbnail` and `paint_mask`, each `{url, bytes, content_type}`. When `failed`, `error` carries `{code, message}` and the credits were refunded; asking again makes a fresh attempt. `public` is `null` until the request is published.
 
 `id` is the user's request; the shared model behind it is never exposed. Every request is its own record with its own webhook and its own publish state.
 
@@ -128,7 +128,7 @@ When the model is for a page — a listing, a product page, a configurator, a de
 
 ## Downloading the files
 
-For an app, a game engine, Blender or a pipeline, download instead. `GET /api/v1/3d/{id}/files/{glb|glb_web|usdz|fbx|thumbnail}` needs the API key and answers `302` with a signed URL on our storage that is valid for one hour and needs no key. `curl -L` and every download tool follow it; `car-image 3d download <id> --format glb --out car.glb` and `client.download3dModel(id, "glb")` do the same. Before the model is ready it answers `409` with `Retry-After`.
+For an app, a game engine, Blender or a pipeline, download instead. `GET /api/v1/3d/{id}/files/{glb|glb_web|usdz|fbx|thumbnail|paint_mask}` needs the API key and answers `302` with a signed URL on our storage that is valid for one hour and needs no key. `curl -L` and every download tool follow it; `car-image 3d download <id> --format glb --out car.glb` and `client.download3dModel(id, "glb")` do the same. Before the model is ready it answers `409` with `Retry-After`.
 
 | File | Content type | Typical size | Use |
 | --- | --- | --- | --- |
@@ -137,6 +137,7 @@ For an app, a game engine, Blender or a pipeline, download instead. `GET /api/v1
 | `usdz` | `model/vnd.usdz+zip` | about 25 MB | iOS AR Quick Look, visionOS; converted from a decimated build (about 300,000 triangles, the same 4k textures) |
 | `fbx` | `application/octet-stream` | similar to the GLB | Maya, 3ds Max, older pipelines |
 | `thumbnail` | `image/png` | a few hundred KB | A transparent still for posters and lists |
+| `paint_mask` | `image/png` | tens of KB | Grayscale, the size of the GLB's base-colour texture and aligned through the same UVs: white where the texel is paint. For recolouring the paint live in the user's own viewer: a paint texel is the ordered color times its shading in linear light, so multiply by new ÷ ordered where the mask is white (a light color, or `#ffffff`, divides cleanly). The same for every color of a vehicle. |
 
 Never put the API key, or the hour-long signed URL, in a page. Publishing exists so you never have to.
 

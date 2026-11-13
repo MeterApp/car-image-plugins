@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.34.6 — 2026-11-13
+
+- The car-3d skill documents `paint_mask`, a new file on every ready 3D model: a grayscale PNG aligned with the GLB's base-colour texture, white where the texel is paint, for recolouring the paint live in your own viewer. The SDK reference lists it for `download3dModel`. No tool, scope or sign-in change.
+
 ## 1.34.5 — 2026-11-11
 
 - The hosted MCP endpoint includes all 41 tools at its base URL. Use `?toolset=core` for the twelve core tools.

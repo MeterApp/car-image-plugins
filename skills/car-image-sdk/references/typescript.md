@@ -31,7 +31,7 @@ On a server, the client finds the key from your secret store, set by whoever run
 | `create3dModel({ make, model, year \| vehicle }, { color?, webhookUrl?, webhookSecret?, publish?, idempotencyKey? }?)` | `data` (the 3D request: `id`, `status`, `progress`, `files` once ready, `public` once published) and `billing` (`already_owned` when the account already had the vehicle and color: free); an `Idempotency-Key` is sent unless given | 100 credits at creation |
 | `get3dModel(id, options?)` | The same request, refreshed; poll every 10–15 s until `status` is `ready` or `failed` | free |
 | `list3dModels({ limit? }?, options?)` | Recent 3D requests, newest first, plus `pricing.credits_per_model` | free |
-| `download3dModel(id, "glb" \| "glb_web" \| "usdz" \| "fbx" \| "thumbnail", options?)` | The file's bytes (follows the one-hour signed redirect) with `contentType` | free |
+| `download3dModel(id, "glb" \| "glb_web" \| "usdz" \| "fbx" \| "thumbnail" \| "paint_mask", options?)` | The file's bytes (follows the one-hour signed redirect) with `contentType` | free |
 | `publish3dModel(id, options?)` / `unpublish3dModel(id, options?)` | The request with `data.public` (`id`, key-free `url` and `files`, `embed.html` to paste) or with `public: null` again | free |
 | `options(options?)` | Views with yaw angles, colors with hex, sizes, fit modes (`fits`, `default_fit`), `backgrounds`, `trim` limits, formats, pricing | free |
 | `account(options?)` | `data.plan` (`meter`, `limits.images_per_month`), `limits_usage` (`vehicle_images_this_month`), `data.credits`, `usage_30d`, `key.scopes` | free |
