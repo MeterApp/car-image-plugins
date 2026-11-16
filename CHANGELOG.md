@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.34.7 — 2026-11-16
+
+- The car-3d skill documents what a failed 3D model's `error` now says about the credits: `refunded` (`false` only while the refund is pending), `credits_refunded`, `refunded_at` and `retry`. Ordering again takes a new idempotency key, or none, and the human's agreement, since a fresh attempt is charged like any new order (and refunded if it fails); the failed order's key only replays it. No tool, scope or sign-in change.
+
 ## 1.34.6 — 2026-11-13
 
 - The car-3d skill documents `paint_mask`, a new file on every ready 3D model: a grayscale PNG aligned with the GLB's base-colour texture, white where the texel is paint, for recolouring the paint live in your own viewer. The SDK reference lists it for `download3dModel`. No tool, scope or sign-in change.

@@ -69,7 +69,7 @@ Prefer `vehicle`: the id comes from the lookup, so the model is of the car the u
 }
 ```
 
-`status` goes `queued` → `processing` → `ready` or `failed`. `progress` is 0–100; `estimated_seconds_remaining` is a rough guide, not a promise. When `ready`, `files` holds `glb`, `glb_web`, `usdz`, `fbx`, `thumbnail` and `paint_mask`, each `{url, bytes, content_type}`. When `failed`, `error` carries `{code, message}` and the credits were refunded; asking again makes a fresh attempt. `public` is `null` until the request is published.
+`status` goes `queued` → `processing` → `ready` or `failed`. `progress` is 0–100; `estimated_seconds_remaining` is a rough guide, not a promise. When `ready`, `files` holds `glb`, `glb_web`, `usdz`, `fbx`, `thumbnail` and `paint_mask`, each `{url, bytes, content_type}`. When `failed`, `error` carries `{code, message, image_url}` and says what happened to the credits: `refunded` (`false` only while the refund is pending), `credits_refunded`, `refunded_at`, and `retry`, one sentence on ordering again. Asking again with a new idempotency key, or none, makes a fresh attempt, charged like any new order (confirm with the human first) and refunded if it fails; the failed order's key only replays it. `public` is `null` until the request is published.
 
 `id` is the user's request; the shared model behind it is never exposed. Every request is its own record with its own webhook and its own publish state.
 
