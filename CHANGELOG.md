@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.34.8 — 2026-11-17
+
+- The vehicle-catalog skill sizes a backfill in vehicle images (each vehicle in each color and view; Free 30 per account, Pro 2,500 and Business 10,000 a month) instead of the distinct-vehicle limits, which agents read as the allowance. The catalog server (no sign-in) adds `check_vehicles`: a list of up to 50 in one free call, without views, so a signed-out list is one call instead of one lookup per car; vehicle-catalog, car-image-mcp and the README say so. With it, the servers now: read a phrase's trim, cab or description words the year asked for does not file a vehicle under ("2021 Tesla Model Y Long Range" is the 2021 Model Y, `read_without` says what was left out); mark which stored pictures a free preview can show; and say the update notice for releases before 1.17 on lookups only. No tool, scope or sign-in change.
+
 ## 1.34.7 — 2026-11-16
 
 - The car-3d skill documents what a failed 3D model's `error` now says about the credits: `refunded` (`false` only while the refund is pending), `credits_refunded`, `refunded_at` and `retry`. Ordering again takes a new idempotency key, or none, and the human's agreement, since a fresh attempt is charged like any new order (and refunded if it fails); the failed order's key only replays it. No tool, scope or sign-in change.

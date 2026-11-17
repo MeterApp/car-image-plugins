@@ -15,7 +15,7 @@ The catalog is the open [`@meterapp/vehicle-db`](https://github.com/MeterApp/veh
 
 All the lookups below are **free**. Use them liberally.
 
-`resolve_vehicle` and `search_vehicles` also work before anyone signs in: the plugin's `car-image-catalog` server serves them with no account, together with `preview_car_image`, the picture a vehicle's page already shows (the `car-image` skill, "Before the account is connected"). `decode_vin` and `check_vehicles` are on the account server, like every render.
+`resolve_vehicle`, `search_vehicles` and `check_vehicles` also work before anyone signs in: the plugin's `car-image-catalog` server serves them with no account (`check_vehicles` there takes up to 50 a call, without `views`), together with `preview_car_image`, the picture a vehicle's page already shows (the `car-image` skill, "Before the account is connected"). For a list, check it in one call rather than one lookup per car. `decode_vin` is on the account server, like every render.
 
 ## Check readiness and quality
 
@@ -89,7 +89,7 @@ check_vehicles({ vehicles: [
 - **`miss`**: nothing close. Skip it in every view and color and say so; never fill the gap with another vehicle.
 - **`invalid`**: `error` says what to fix (usually a missing year).
 
-`summary.distinct_vehicles` is what rendering the matches counts against the plan's distinct vehicles a month (Free 100, Pro 2,500, Business 15,000): compare before a backfill. One call takes 100 entries; for a longer list write code instead of looping the tool: `car-image check inventory.csv --out inventory-checked.csv` writes the file back with `status`, `vehicle_id` and `suggested_vehicle_id` per row, and the SDK's `client.checkVehicles(rows)` splits any length (2,000 per request, 10 requests a minute). Check again only the misses and suggestions, after a catalog release: matches do not change.
+`summary.distinct_vehicles` is how many vehicles rendering the matches covers. Each vehicle in each color and view is one vehicle image of the plan (Free 30 per account in total, Pro 2,500 a month, Business 10,000 a month), so multiply by the views and colors wanted and compare before a backfill. One call takes 100 entries; for a longer list write code instead of looping the tool: `car-image check inventory.csv --out inventory-checked.csv` writes the file back with `status`, `vehicle_id` and `suggested_vehicle_id` per row, and the SDK's `client.checkVehicles(rows)` splits any length (2,000 per request, 10 requests a minute). Check again only the misses and suggestions, after a catalog release: matches do not change.
 
 ## A VIN in, the vehicle out
 
