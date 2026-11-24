@@ -9,7 +9,7 @@ When no view is specified, use **Front three-quarter (facing left)**, `view=fron
 
 # Car Image API
 
-Studio-quality, transparent-background images of any vehicle in the open [`@meterapp/vehicle-db`](https://github.com/MeterApp/vehicle-db) catalog — 1,609 makes, 42,365 models, model years 1990-2027. Nine views, any paint color, PNG/WebP/JPG up to 2560 px (1024 px for older images).
+Studio-quality, transparent-background images of any vehicle in the open [`@meterapp/vehicle-db`](https://github.com/MeterApp/vehicle-db) catalog — 1,610 makes, 42,370 models, model years 1990-2027. Nine views, any paint color, PNG/WebP/JPG up to 2560 px (1024 px for older images).
 
 ## Check readiness and quality
 
