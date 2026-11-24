@@ -1,6 +1,6 @@
 ---
 name: car-image
-description: "Show or fetch a studio-quality, transparent-background image of a real vehicle (any make, model and year from 1990-2027), in a conversation or for a product page, a listing, a comparison, an email or a deck, and fetch catalog make logos with get_make_logo. Every image takes two steps - look the vehicle up first (resolve_vehicle, search_vehicles or decode_vin, free, the vehicle-catalog skill), then show it by its vehicle id (create_car_image_urls for the inline ChatGPT card; get_car_image in other chat hosts; one vehicle image of the plan's month). Covers the Car Image API by Meter - the chat workflow, angles, paint, sizing, what a plan counts (vehicle images), and how to handle 402, 404 and 429. Works before sign-in: lookups and a free preview of the picture a vehicle's page already shows (preview_car_image), then the account for the exact image. Use for any request involving a picture of a car, truck, motorcycle or other vehicle, including \"show me a car\" or \"a random car\"; do not use for embedding URLs in a browser or document (car-image-urls), SDK and CLI code (car-image-sdk), 3D models (car-3d), or connection setup (car-image-mcp)."
+description: "Show or fetch a studio-quality, transparent-background image of a real vehicle (any make, model and year from 1990-2027), in a conversation or for a product page, a listing, a comparison, an email or a deck. Every image takes two steps - look the vehicle up first (resolve_vehicle, search_vehicles or decode_vin, free, the vehicle-catalog skill), then show it by its vehicle id (create_car_image_urls for the inline ChatGPT card; get_car_image in other chat hosts; one vehicle image of the plan's month). Covers the Car Image API by Meter - the chat workflow, angles, paint, sizing, what a plan counts (vehicle images), and how to handle 402, 404 and 429. Works before sign-in: lookups and a free preview of the picture a vehicle's page already shows (preview_car_image), then the account for the exact image. Use for any request involving a picture of a car, truck, motorcycle or other vehicle, including \"show me a car\" or \"a random car\"; do not use for embedding URLs in a browser or document (car-image-urls), SDK and CLI code (car-image-sdk), 3D models (car-3d), or connection setup (car-image-mcp)."
 ---
 
 **ChatGPT image card:** For a requested image, after the free vehicle lookup, use `create_car_image_urls` with the returned `vehicle` id, `ttl_seconds: 604800`, `max_uses: 0`, and renewal off. ChatGPT displays the returned images in an inline card. Do not call `get_car_image` first or make another image call to fix display. Reuse an unexpired URL. If the card is unavailable, show the exact returned URL as a clickable link and state expiry. These ChatGPT instructions take precedence over the general chat examples below. Other hosts keep their own display workflow.
@@ -9,7 +9,7 @@ When no view is specified, use **Front three-quarter (facing left)**, `view=fron
 
 # Car Image API
 
-Studio-quality, transparent-background renders of any vehicle in the open [`@meterapp/vehicle-db`](https://github.com/MeterApp/vehicle-db) catalog — 1,609 makes, 42,365 models, model years 1990-2027. Nine camera views, any paint color, PNG/WebP/JPG up to 1024 px.
+Studio-quality, transparent-background images of any vehicle in the open [`@meterapp/vehicle-db`](https://github.com/MeterApp/vehicle-db) catalog — 1,609 makes, 42,365 models, model years 1990-2027. Nine views, any paint color, PNG/WebP/JPG up to 2560 px (1024 px for older images).
 
 ## Check readiness and quality
 
@@ -49,7 +49,7 @@ The rows are in order: the first one that fits decides. `candidates` lists the n
 
 ## Before the account is connected
 
-The plugin runs two servers. **`car-image-catalog`** needs no account and works from the first session: `resolve_vehicle`, `search_vehicles`, `preview_car_image`, `list_image_options`, `get_pricing` and `describe_api`. **`car-image`** is the account: the image in the view, paint and size asked for, signed URLs, VINs, lists, logos, 3D models and the balance. Until the user signs in, the host lists no `get_car_image` or `create_car_image_urls`; Claude Code shows `plugin:car-image:car-image` as needing authentication and may list an `authenticate` tool for it (`mcp__plugin_car-image_car-image__authenticate`).
+The plugin runs two servers. **`car-image-catalog`** needs no account and works from the first session: `resolve_vehicle`, `search_vehicles`, `check_vehicles`, `preview_car_image`, `list_image_options`, `get_pricing`, `search_help` and `describe_api`. **`car-image`** is the account: the image in the view, paint and size asked for, signed URLs, VINs, lists, logos, 3D models and the balance. Until the user signs in, the host lists no `get_car_image` or `create_car_image_urls`; Claude Code shows `plugin:car-image:car-image` as needing authentication and may list an `authenticate` tool for it (`mcp__plugin_car-image_car-image__authenticate`).
 
 When the user asks for a picture and `get_car_image` is not available:
 

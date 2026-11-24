@@ -102,7 +102,7 @@ nested plugin directory, which is why one repository serves all four channels.
 
 - A `402` is a question for a human. Nothing here may tell an agent to buy
   anything, change a plan, or touch billing on its own.
-- Renders are generated product visuals, not OEM photography. No skill may
+- Images are studio illustrations, not OEM photography. No skill may
   suggest claiming a specific trim or an individual listed vehicle is depicted.
 - A signed delivery URL is unguessable, not access-controlled. Never describe
   one as private or as a security boundary.

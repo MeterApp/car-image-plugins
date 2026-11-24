@@ -2,11 +2,11 @@
 
 **Website: [carimage.dev](https://carimage.dev)**
 
-Studio-quality, transparent-background renders of any vehicle, wherever your agent works. One repository, native packaging for each client, plus the vendor-neutral [Open Plugins](https://agent-plugins.org) manifest.
+Studio-quality, transparent-background images of any vehicle, wherever your agent works. One repository, native packaging for each client, plus the vendor-neutral [Open Plugins](https://agent-plugins.org) manifest.
 
-Any make, model and year from **1990 to 2027** — 1,609 makes and 42,365 models from the open [`@meterapp/vehicle-db`](https://github.com/MeterApp/vehicle-db) catalog, each make, model and year with its own page at [carimage.dev/cars](https://carimage.dev/cars?ref=plugin). Nine camera views (default: Front three-quarter facing left, `view=front-3-4`, 35°), any paint color (15 named presets or any hex), PNG/WebP/JPG up to 2560 px (1024 px for older renders), delivered at any width × height (`fit` contain, cover or inside), transparent or on a solid background, optionally trimmed to the car (or framed by a preset: consistent, tight, balanced) and grounded with a soft shadow. Plus free VIN decoding, stable vehicle ids, and textured 3D models (GLB, USDZ, FBX) of any vehicle in any paint.
+Any make, model and year from **1990 to 2027** — 1,609 makes and 42,365 models from the open [`@meterapp/vehicle-db`](https://github.com/MeterApp/vehicle-db) catalog, each make, model and year with its own page at [carimage.dev/cars](https://carimage.dev/cars?ref=plugin). Nine angles (default: Front three-quarter facing left, `view=front-3-4`, 35°), any paint color (15 named presets or any hex), PNG/WebP/JPG up to 2560 px (1024 px for older images), delivered at any width × height (`fit` contain, cover or inside), transparent or on a solid background, optionally trimmed to the car (or framed by a preset: consistent, tight, balanced) and grounded with a soft shadow. Plus free VIN decoding, stable vehicle ids, and textured 3D models (GLB, USDZ, FBX) of any vehicle in any paint.
 
-**Plans count vehicle images (one vehicle in one color from one view, once a month, delivered as often as needed at any size) · Free 30 per account, then a one-time courtesy of 30 · Pro $49/mo 2,500 · Business $99/mo 10,000 · no overage · 100 credits per 3D model, once per vehicle and color, hosted for free · VIN decoding free · one-time Image Packs to self-host for good.**
+**Plans count vehicle images (one vehicle in one color from one angle, once a month, delivered as often as needed at any size) · Free 30 per account, then a one-time courtesy of 30 · Pro $49/mo 2,500 · Business $99/mo 10,000 · no overage · 100 credits per 3D model, once per vehicle and color, hosted for free · VIN decoding free · one-time Image Packs to self-host for good.**
 
 
 For vehicle images in chat, resolve the vehicle and call `get_car_image` with its id: the host shows the returned picture inline. Where a tool's image does not reach the person (a terminal such as Claude Code or Codex), call `create_car_image_urls` once instead (7-day TTL, unlimited uses, renewal off unless requested) and link the URL. Signed URLs are for pages, apps, emails and documents. Do not call both paid tools for one chat image.
@@ -86,9 +86,9 @@ Seven skills and two hosted MCP servers: the catalog server, which needs no acco
 
 | Skill | Job |
 | --- | --- |
-| `car-image` | Show or fetch a render: the two steps (look up, then render by id), conversation use, angles, paint and sizing, costs, error handling, make logos |
+| `car-image` | Show or fetch an image: the two steps (look up, then show by id), conversation use, angles, paint and sizing, costs, error handling |
 | `vehicle-catalog` | The lookup that comes first: a name or a VIN → the exact catalog vehicle and its stable id; confidence, years, variants and body styles, offline lookups |
-| `car-image-urls` | Signed delivery URLs for pages, emails and documents — no key in the browser; inventory grids from a list of VINs |
+| `car-image-urls` | Signed URLs for pages, emails and documents — no key in the browser; inventory grids from a list of VINs |
 | `car-3d` | 3D models (GLB, USDZ, FBX) of any vehicle in any paint: cost, owning it once, waiting, webhooks, publishing and the `<car-3d>` embed |
 | `car-image-sdk` | Application code with an existing TypeScript SDK or plain HTTP |
 | `car-image-support` | Source-linked product answers, pricing, missing-context reporting and hosted billing links |
@@ -108,7 +108,7 @@ The catalog server at `https://carimage.dev/api/mcp/catalog` needs no account an
 | Plugin / hosted MCP | Browser OAuth sign-in; the host stores and refreshes the token |
 | MCP you add yourself, without OAuth | A key entered in that host's own MCP settings, sent as an `X-Api-Key` header ([install page](https://carimage.dev/install?ref=plugin)) |
 | SDK and CLI | A key your application keeps with its other secrets, or the one `car-image login` stores for the CLI |
-| Browsers | **Never a key** — signed delivery URLs only |
+| Browsers | **Never a key** — signed URLs only |
 
 The plugin's MCP entries carry a URL and the attribution headers below, nothing else: the host discovers OAuth from the server's sign-in challenge, signs you in with the browser and stores and refreshes the token. For a connection you add yourself with a key, send the key as a header, never in a URL, and keep it out of committed config files.
 
@@ -118,10 +118,10 @@ The plugin runs no local commands or hooks. Its MCP tools call two servers: `htt
 
 ## Safety model
 
-- Every vehicle is looked up before it is rendered, and a lookup that is ambiguous, or lands in another year than the one asked for, goes back to the human before anything is rendered.
+- Every vehicle is looked up before its image is requested, and a lookup that is ambiguous, or lands in another year than the one asked for, goes back to the human before anything is requested.
 - A `402` (`plan_image_limit` when the month's vehicle images are used up, `subscription_required_for_credits` when the balance is short for a 3D model, or `plan_vehicle_limit` on an account still on the credit meter) is a question for a human. Agents never buy anything or subscribe to, change or cancel a plan on their own.
-- Renders are generated product visuals, not OEM photography. Never claim a specific trim or an individual listed vehicle is depicted exactly.
-- A signed delivery URL is unguessable, not access-controlled. Treat it as public for its lifetime.
+- Images are studio illustrations, not OEM photography. Never claim a specific trim or an individual listed vehicle is depicted exactly.
+- A signed URL is unguessable, not access-controlled. Treat it as public for its lifetime.
 - Confirm the count and the cost before a batch the user did not size, and before any 3D model (100 credits each, unless the account already owns that vehicle in that color).
 
 ## Product help and billing links
