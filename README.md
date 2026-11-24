@@ -33,7 +33,10 @@ Or add the marketplace first, then install from it:
 ```bash
 codex plugin marketplace add MeterApp/car-image-plugins
 codex plugin add car-image@meterapp
+codex mcp login car-image
 ```
+
+The last line signs in with your browser. Without it Codex lists the server as "Not logged in" and starts without the tools.
 
 ### Cursor
 
