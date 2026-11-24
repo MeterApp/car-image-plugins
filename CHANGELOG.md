@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.34.9 — 2026-11-24
+
+- `report_image` replaces `rate_image` on `?toolset=all` (twenty-two documented extras, forty-one tools in all): report a wrong image, a poorly drawn one or a vehicle the catalog lacks as one tracked report (`POST /api/v1/images/reports`), with its id, status and a page private to the account. car-image-mcp, the README and the feedback lines say so; the CLI's `car-image feedback report-image` (1.36.0) is the same report. No scope or sign-in change.
+
 ## 1.34.8 — 2026-11-17
 
 - The vehicle-catalog skill sizes a backfill in vehicle images (each vehicle in each color and view; Free 30 per account, Pro 2,500 and Business 10,000 a month) instead of the distinct-vehicle limits, which agents read as the allowance. The catalog server (no sign-in) adds `check_vehicles`: a list of up to 50 in one free call, without views, so a signed-out list is one call instead of one lookup per car; vehicle-catalog, car-image-mcp and the README say so. With it, the servers now: read a phrase's trim, cab or description words the year asked for does not file a vehicle under ("2021 Tesla Model Y Long Range" is the 2021 Model Y, `read_without` says what was left out); mark which stored pictures a free preview can show; and say the update notice for releases before 1.17 on lookups only. No tool, scope or sign-in change.
