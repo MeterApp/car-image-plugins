@@ -6,7 +6,7 @@ Studio-quality, transparent-background images of any vehicle, wherever your agen
 
 Any make, model and year from **1990 to 2027** — 1,610 makes and 42,370 models from the open [`@meterapp/vehicle-db`](https://github.com/MeterApp/vehicle-db) catalog, each make, model and year with its own page at [carimage.dev/cars](https://carimage.dev/cars?ref=plugin). Nine angles (default: Front three-quarter facing left, `view=front-3-4`, 35°), any paint color (15 named presets or any hex), PNG/WebP/JPG up to 2560 px (1024 px for older images), delivered at any width × height (`fit` contain, cover or inside), transparent or on a solid background, optionally trimmed to the car (or framed by a preset: consistent, tight, balanced) and grounded with a soft shadow. Plus free VIN decoding, stable vehicle ids, and textured 3D models (GLB, USDZ, FBX) of any vehicle in any paint.
 
-**Plans count vehicle images (one vehicle in one color from one angle, once a month, delivered as often as needed at any size) · Free 30 per account, then a one-time courtesy of 30 · Pro $49/mo 2,500 · Business $99/mo 10,000 · no overage · 100 credits per 3D model, once per vehicle and color, hosted for free · VIN decoding free · one-time Image Packs to self-host for good.**
+**Plans count vehicle images (one vehicle in one color from one angle, once a month, delivered as often as needed at any size) · Free 30 per account, then a one-time courtesy of 30 · Pro $49/mo 2,500 · Business $99/mo 10,000 · no overage · 3D models in beta: $5 per vehicle and color, paid once upfront, hosted for free · VIN decoding free · one-time Image Packs to self-host for good.**
 
 
 For vehicle images in chat, resolve the vehicle and call `get_car_image` with its id: the host shows the returned picture inline. Where a tool's image does not reach the person (a terminal such as Claude Code or Codex), call `create_car_image_urls` once instead (7-day TTL, unlimited uses, renewal off unless requested) and link the URL. Signed URLs are for pages, apps, emails and documents. Do not call both paid tools for one chat image.
@@ -122,10 +122,10 @@ The plugin runs no local commands or hooks. Its MCP tools call two servers: `htt
 ## Safety model
 
 - Every vehicle is looked up before its image is requested, and a lookup that is ambiguous, or lands in another year than the one asked for, goes back to the human before anything is requested.
-- A `402` (`plan_image_limit` when the month's vehicle images are used up, `subscription_required_for_credits` when the balance is short for a 3D model, or `plan_vehicle_limit` on an account still on the credit meter) is a question for a human. Agents never buy anything or subscribe to, change or cancel a plan on their own.
+- A `402` (`plan_image_limit` when the month's vehicle images are used up, `model_3d_payment_required` when a 3D model has not been paid for, `subscription_required_for_credits` when the balance is short for a quality upgrade, or `plan_vehicle_limit` on an account still on the credit meter) is a question for a human. Agents never buy anything or subscribe to, change or cancel a plan on their own.
 - Images are studio illustrations, not OEM photography. Never claim a specific trim or an individual listed vehicle is depicted exactly.
 - A signed URL is unguessable, not access-controlled. Treat it as public for its lifetime.
-- Confirm the count and the cost before a batch the user did not size, and before any 3D model (100 credits each, unless the account already owns that vehicle in that color).
+- Confirm the count and the cost before a batch the user did not size, and before any 3D model (a beta at $5 each, paid upfront by the human in Stripe Checkout, unless the account already owns that vehicle in that color).
 
 ## Product help and billing links
 

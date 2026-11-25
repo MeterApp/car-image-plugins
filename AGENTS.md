@@ -38,10 +38,14 @@ nested plugin directory, which is why one repository serves all four channels.
   ends); Business $99/month: 10,000 images and 4,000 credits a month;
   Enterprise: custom. No overage (a `402` until the 1st; Free's images do
   not reset); credits are not
-  sold and pay only for 3D models (100 each, charged at creation), make logos
-  (1) and quality upgrades (20); one-time Image Packs may be self-hosted for
+  sold and pay only for quality upgrades (20 per view). A 3D model is a
+  beta at $5 per vehicle and color, paid upfront by a person in Stripe
+  Checkout before anything is built (credits and plans do not buy one; the
+  `402` `model_3d_payment_required` carries the link, and the same request
+  returns the model once it is paid). A make logo counts as one vehicle
+  image. One-time Image Packs may be self-hosted for
   good. Accounts that paid before 2026-10-25 keep the credit meter (1 credit
-  per image) until the cutover date in their notice. 9 views, any paint color
+  per image or logo delivery) until the cutover date in their notice. 9 views, any paint color
   (15 named presets or any hex), PNG/WebP/JPG up to 2560 px (1024 px for older renders); stable vehicle
   ids (`veh_…`); VIN decoding free. Prices, plans, allowances and credit
   values change only with a human decision.

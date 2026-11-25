@@ -118,8 +118,8 @@ After resolving the vehicle, call `get_image_availability({ vehicle, view, color
 | `remove_feedback_vote` | free |
 | `comment_on_feedback` | free |
 | `list_reviews` | free |
-| `get_make_logo` | 1 credit |
-| `create_3d_model` | 100 credits; free once the account owns the vehicle and color |
+| `get_make_logo` | 1 vehicle image a month per make |
+| `create_3d_model` | beta: $5 per vehicle and color, paid by the human in Stripe Checkout (the `402` carries `checkout_url`); free once the account owns the vehicle and color |
 | `get_3d_model` | free |
 | `publish_3d_model` | free |
 | `list_image_options` | free |
@@ -134,7 +134,7 @@ After resolving the vehicle, call `get_image_availability({ vehicle, view, color
 | `list_members` | free; the organization's members and teams with their roles, read only |
 | `list_webhooks` | free; the account's webhook endpoints, their events, status and failure streak, read only |
 
-`get_make_logo` takes a make and the image transforms and returns an inline logo: no model, view or paint, no signed URL and no trademark license. `create_3d_model` is 100 credits at creation, free for a vehicle and color the account already owns (`billing.already_owned`), and takes `publish`; `get_3d_model` polls it and returns `public` once published; `publish_3d_model` hosts a model at key-free URLs with a two-line `<car-3d>` embed, or takes it down with `unpublish: true` (the `car-3d` skill). `list_image_options` lists every valid view, color, size, fit mode, background and format, and `describe_api` explains any REST endpoint from the OpenAPI document. `get_pricing` and `search_help` answer product questions from the published sources, the two link tools prepare a purchase or open billing settings without charging anything, and `purchase_plan` and `pay_invoice` pay with a payment token only where the owner set an agent spending limit and allowed the key (the `car-image-support` skill). The hosted default and the marketplace plugin both include these tools.
+`get_make_logo` takes a make and the image transforms and returns an inline logo: no model, view or paint, no signed URL and no trademark license; it counts as one vehicle image on the plan, once per make a month. `create_3d_model` is a beta paid upfront: for a vehicle and color the account has not paid for it starts nothing and answers `402` (`model_3d_payment_required`) with a `checkout_url` for the human ($5). Once they have paid, the same call returns the model for nothing (`billing.already_owned`). It takes `publish`; `get_3d_model` polls it and returns `public` once published; `publish_3d_model` hosts a model at key-free URLs with a two-line `<car-3d>` embed, or takes it down with `unpublish: true` (the `car-3d` skill). `list_image_options` lists every valid view, color, size, fit mode, background and format, and `describe_api` explains any REST endpoint from the OpenAPI document. `get_pricing` and `search_help` answer product questions from the published sources, the two link tools prepare a purchase or open billing settings without charging anything, and `purchase_plan` and `pay_invoice` pay with a payment token only where the owner set an agent spending limit and allowed the key (the `car-image-support` skill). The hosted default and the marketplace plugin both include these tools.
 
 ## Verifying
 
@@ -175,7 +175,7 @@ A `401` with `WWW-Authenticate: Bearer realm="Car Image API", resource_metadata=
 
 **`400 Unknown toolset`.** The query value must be `core` or `all`; anything else is rejected before any tool is listed.
 
-**Tools appear but every call fails with 402.** The problem's `code` says why, and nothing was charged. `plan_image_limit`: the month's vehicle images (Pro 2,500, Business 10,000) are used up until `resets_at`, the 1st (UTC), or Free's 30 per account and its one-time courtesy of 30 are, which do not reset; images already received keep serving. `subscription_required_for_credits`: the balance is short for a 3D model (100 credits), a logo or an upgrade, and credits are not sold. On an account still on the credit meter, the balance or `plan_vehicle_limit`. Report the plan and what it includes, hand the human `checkout_url` or `pack_url`, and let them decide; never retry, buy anything or change a plan automatically.
+**Tools appear but every call fails with 402.** The problem's `code` says why, and nothing was charged. `plan_image_limit`: the month's vehicle images (Pro 2,500, Business 10,000) are used up until `resets_at`, the 1st (UTC), or Free's 30 per account and its one-time courtesy of 30 are, which do not reset; images already received keep serving. `subscription_required_for_credits`: the balance is short for a quality upgrade, and credits are not sold. `model_3d_payment_required` (only from `create_3d_model`): 3D models are a beta at $5 per vehicle and color, paid upfront through the problem's `checkout_url`. On an account still on the credit meter, the balance or `plan_vehicle_limit`. Report the plan and what it includes, hand the human `checkout_url` or `pack_url`, and let them decide; never retry, buy anything or change a plan automatically.
 
 **A call fails with `Input validation error`.** The tool refused an argument before the API saw it, and nothing was charged. The message names the argument and the rule. A host that holds no typed schema for a tool sends every argument as text, and both servers read that as it was meant: `"960"` is the number, `"true"` the flag, and the JSON of `images` the list. A `car-image mcp` server older than CLI 1.9.4 refuses a flag or a list sent that way (`expected boolean, received string`; `expected array, received string`): update the CLI.
 

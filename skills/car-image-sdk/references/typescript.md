@@ -20,7 +20,7 @@ On a server, the client finds the key from your secret store, set by whoever run
 | --- | --- | --- |
 | `getImage(params, options?)` | `ImageResult` — `bytes`, `contentType`, `width`, `height`, `creditsCharged` (0 on the vehicle-image meter), `source`, `etag`, `requestId` | 1 vehicle image a month |
 | `getImageUrl(params, options?)` | One signed delivery URL | 1 vehicle image a month |
-| `getMakeLogo({ make, …transforms }, options?)` | `ImageResult` for a catalog make logo; no signed URL mode | 1 credit |
+| `getMakeLogo({ make, …transforms }, options?)` | `ImageResult` for a catalog make logo; no signed URL mode | 1 vehicle image a month |
 | `createImageUrls(images, { ttlSeconds, maxUses, renew, renewDays, idempotencyKey }?)` | `data[]` of `{ id, url, expires_at, max_uses, renews_until, … }` — 1 to 50 images; `renew: true` keeps a URL alive past the TTL (email, CMS, PDFs); an `Idempotency-Key` (generated unless `idempotencyKey` is given) makes a retry replay instead of re-bill | 1 vehicle image a month per image; loads and renewals included |
 | `resolve(query, options?)` | The lookup to make before rendering a name someone typed: `data.params` (with `vehicle_id`, the id to render by), `candidates`, `confidence` (`"high"`, `"medium"` or `"low"`) and `extracted` (what the phrase said; compare its `year` with `params.year`) | free |
 | `searchVehicles(query, options?)` | Canonical makes, models, available years and a vehicle id per year | free |
@@ -28,9 +28,9 @@ On a server, the client finds the key from your secret store, set by whoever run
 | `vehicles(filter?, options?)` | Years, or makes for a year, or models for a year and make (with ids) | free |
 | `vehicle(id, options?)` | One catalog vehicle by its stable `veh_…` id: make, model, year, every year, image paths | free |
 | `decodeVin(vin, { year? }?, options?)` | `data.valid`, `errors`, `year`, `make`, `model`, `trim`, `engine`, `attributes` (every vPIC variable) and `vehicle` (`{ id, make, model, year, image_path }` or null); full or partial VINs | free |
-| `create3dModel({ make, model, year \| vehicle }, { color?, webhookUrl?, webhookSecret?, publish?, idempotencyKey? }?)` | `data` (the 3D request: `id`, `status`, `progress`, `files` once ready, `public` once published) and `billing` (`already_owned` when the account already had the vehicle and color: free); an `Idempotency-Key` is sent unless given | 100 credits at creation |
+| `create3dModel({ make, model, year \| vehicle }, { color?, webhookUrl?, webhookSecret?, publish?, idempotencyKey? }?)` | `data` (the 3D request: `id`, `status`, `progress`, `files` once ready, `public` once published) and `billing` (`charged_on: "checkout"`, `amount_cents`, `already_owned`). For a vehicle and color the account has not paid for it rejects with the `402` `model_3d_payment_required` (`price_cents` 500, `checkout_url` for a person); after the payment the same call returns the request. An `Idempotency-Key` is sent unless given | beta: $5 per vehicle and color, paid in Stripe Checkout; free once owned |
 | `get3dModel(id, options?)` | The same request, refreshed; poll every 10–15 s until `status` is `ready` or `failed` | free |
-| `list3dModels({ limit? }?, options?)` | Recent 3D requests, newest first, plus `pricing.credits_per_model` | free |
+| `list3dModels({ limit? }?, options?)` | Recent 3D requests, newest first, plus `pricing` (`price_cents` 500, `currency`, `beta`) | free |
 | `download3dModel(id, "glb" \| "glb_web" \| "usdz" \| "fbx" \| "thumbnail" \| "paint_mask", options?)` | The file's bytes (follows the one-hour signed redirect) with `contentType` | free |
 | `publish3dModel(id, options?)` / `unpublish3dModel(id, options?)` | The request with `data.public` (`id`, key-free `url` and `files`, `embed.html` to paste) or with `public: null` again | free |
 | `options(options?)` | Views with yaw angles, colors with hex, sizes, fit modes (`fits`, `default_fit`), `backgrounds`, `trim` limits, formats, pricing | free |
@@ -136,7 +136,7 @@ Tools come in two sets: `MCP_TOOLSETS.core` (`DEFAULT_MCP_TOOLSET`, `"core"`) is
 ## Make logos
 
 For application code, use the existing SDK client to retrieve logo image data.
-Each successful delivery costs 1 credit, including cache hits. There is no signed
+A logo counts as one vehicle image on the plan, once per make per UTC month, however often it is delivered. There is no signed
 logo URL: host the returned image data for a site. On 402, stop and ask the human;
 never buy anything.
 

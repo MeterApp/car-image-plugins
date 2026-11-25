@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.35.0 — 2026-11-25
+
+- 3D models are a beta paid upfront: $5 per vehicle and color, a one-time payment a person makes in Stripe Checkout before anything is built. Credits no longer buy a 3D model and no plan includes one. `create_3d_model` (`POST /api/v1/3d`) for a vehicle and color the account has not paid for starts nothing and answers `402` `model_3d_payment_required` with `checkout_url`; the agent stops and hands the human that link with the price, and after the payment the same call returns the model (`billing.already_owned: true`). A model that cannot be built is refunded to the card automatically, and models ordered with credits before 2026-11-25 stay owned. The car-3d skill teaches the new order of work, with the `402` body and the new `billing` object; the other skills and the README say the same.
+- A make logo counts as one vehicle image on the plan (once per make per UTC month, then delivered as often as wanted) instead of 1 credit per delivery. Credits pay only for quality upgrades. No tool, scope or sign-in change.
+
 ## 1.34.9 — 2026-11-24
 
 - `report_image` replaces `rate_image` on `?toolset=all` (twenty-two documented extras, forty-one tools in all): report a wrong image, a poorly drawn one or a vehicle the catalog lacks as one tracked report (`POST /api/v1/images/reports`), with its id, status and a page private to the account. car-image-mcp, the README and the feedback lines say so; the CLI's `car-image feedback report-image` (1.36.0) is the same report. No scope or sign-in change.
